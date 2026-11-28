@@ -41,7 +41,7 @@ data class Row(
 fun rows(ids: List<String>): Long {
   val all = { 
     if (ids.isEmpty()) {
-      return listOf()
+      return listOf<Row>()
     }
     return ids.map({ i -> (TODO()) })
 }()

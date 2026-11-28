@@ -43,7 +43,7 @@ fun describe(load: Load): String {
 }
 
 fun first(names: List<String>): String {
-  val name = names.firstOrNull() ?: run {
+  val name: String = names.firstOrNull() ?: run {
     return "nobody"
   }
   return name

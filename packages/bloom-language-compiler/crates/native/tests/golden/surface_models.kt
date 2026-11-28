@@ -18,7 +18,7 @@ data class Post(
 
 @Stable
 class FeedModel(source: String) {
-  var posts: List<Post> by mutableStateOf<List<Post>>(listOf())
+  var posts: List<Post> by mutableStateOf<List<Post>>(listOf<Post>())
     private set
   var isLoading by mutableStateOf(false)
     private set

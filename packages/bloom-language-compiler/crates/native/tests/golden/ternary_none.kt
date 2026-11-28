@@ -32,6 +32,6 @@ fun place(s: String): String {
 
 fun parts(location: String?, title: String): List<String> {
   val items = listOf((if (location != null) place(location) else null), title)
-  return items.compactMap({ it })
+  return items.mapNotNull({ it })
 }
 

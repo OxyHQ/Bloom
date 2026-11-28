@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import so.oxy.bloom.ui.*
 import so.oxy.bloom.std.*
 
-private val globalShowChannelInfo: (() -> Unit)? = null
+private var globalShowChannelInfo: (() -> Unit)? = null
 
 fun showChannelInfo() {
   globalShowChannelInfo()

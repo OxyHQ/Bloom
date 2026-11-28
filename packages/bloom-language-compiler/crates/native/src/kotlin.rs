@@ -24,7 +24,10 @@ use std::path::PathBuf;
 use bloom_lang::ast::*;
 use bloom_lang::backend::Ty;
 
-use crate::{Decls, Emitted, EnumInfo, ParamInfo, Problem, Program, SourceFile, escape, upper_first};
+use crate::{
+    Decls, Emitted, EnumInfo, ParamInfo, Problem, Program, SourceFile, escape, is_synthetic, static_name,
+    upper_first,
+};
 
 const KEYWORDS: &[&str] = &[
     "as",
@@ -132,6 +135,10 @@ struct Emitter<'a> {
     codecs: HashMap<String, String>,
     /// The view's `@Binding` props: a read is `.value`, a write `.set(…)`, `$x` the binding.
     binding_props: std::collections::HashSet<String>,
+    /// Static members of the item being emitted: top-level declarations (`Post__decode`),
+    /// written after it. A static member has no companion object, so a call site, a derived
+    /// coder and a witness all name it one way, as the TypeScript backend's `Post$$decode`.
+    hoisted: String,
 }
 
 /// A view expression unwound: the node or view call at its base, and the modifiers on it
@@ -243,6 +250,7 @@ impl<'a> Emitter<'a> {
             package: String::new(),
             private_names: Vec::new(),
             codecs: HashMap::new(),
+            hoisted: String::new(),
         }
     }
 
@@ -257,6 +265,67 @@ impl<'a> Emitter<'a> {
 
     fn type_at(&self, span: Span) -> Option<&str> {
         self.file.types.get(&span).map(|s| s.as_str())
+    }
+
+    /// A checker type as Kotlin writes it, where it has one (`[String: [Post]]` is
+    /// `Map<String, List<Post>>`): what an empty literal or a narrowed binding is annotated with.
+    fn kty(&self, ty: &Ty) -> Option<String> {
+        Some(match ty {
+            Ty::Int => "Long".into(),
+            Ty::Float => "Double".into(),
+            Ty::Bool => "Boolean".into(),
+            Ty::Str => "String".into(),
+            Ty::Unit => "Unit".into(),
+            Ty::Date => "Date".into(),
+            Ty::JsError => "Throwable".into(),
+            Ty::List(t) => format!("List<{}>", self.kty(t)?),
+            Ty::Map(v) => format!("Map<String, {}>", self.kty(v)?),
+            Ty::JsMap(k, v) => format!("Map<{}, {}>", self.kty(k)?, self.kty(v)?),
+            Ty::Set(t) => format!("Set<{}>", self.kty(t)?),
+            Ty::Option(t) => {
+                let inner = self.kty(t)?;
+                if inner.ends_with('?') || inner.contains("->") {
+                    format!("({inner})?")
+                } else {
+                    format!("{inner}?")
+                }
+            }
+            Ty::Result(a, b) => format!("BloomResult<{}, {}>", self.kty(a)?, self.kty(b)?),
+            Ty::Tuple(items) if items.len() == 2 => {
+                format!("Pair<{}, {}>", self.kty(&items[0])?, self.kty(&items[1])?)
+            }
+            Ty::Tuple(items) if items.len() == 3 => {
+                format!(
+                    "Triple<{}, {}, {}>",
+                    self.kty(&items[0])?,
+                    self.kty(&items[1])?,
+                    self.kty(&items[2])?
+                )
+            }
+            Ty::Param(_, name) => name.to_string(),
+            Ty::Foreign(_) => "Any?".into(),
+            Ty::Adt(id, args) => {
+                let def = self.file.checked.defs.get(*id)?;
+                if args.is_empty() {
+                    def.name.clone()
+                } else {
+                    let args: Option<Vec<String>> = args.iter().map(|a| self.kty(a)).collect();
+                    format!("{}<{}>", def.name, args?.join(", "))
+                }
+            }
+            _ => return None,
+        })
+    }
+
+    /// The checker's type of the binding declared at `span` (a `let`, a `guard let`'s name).
+    fn binding_ty(&self, span: Span) -> Option<String> {
+        let local = self.file.checked.locals.iter().find(|l| l.span == span)?;
+        self.kty(&local.ty)
+    }
+
+    /// Whether the name `e` is a local binding (a parameter, a `let`), by the checker.
+    fn is_local(&self, e: &Expr) -> bool {
+        self.file.checked.names.contains_key(&e.id)
     }
 
     /// The checker's type of `e` (the checked IR, by expression id).
@@ -307,20 +376,73 @@ impl<'a> Emitter<'a> {
         );
         out.push_str("@file:Suppress(\"UNUSED_VARIABLE\", \"UNUSED_PARAMETER\", \"NAME_SHADOWING\", \"unused\", \"RedundantSuppression\")\n\n");
         let _ = writeln!(out, "package {package}\n");
-        out.push_str("import androidx.compose.runtime.*\nimport androidx.compose.ui.Modifier\nimport kotlinx.coroutines.launch\nimport so.oxy.bloom.ui.*\nimport so.oxy.bloom.std.*\n");
-        for other in packages.iter().filter(|p| p.as_str() != package) {
+        if package == "so.oxy.bloom.std" {
+            // The standard library draws nothing: Compose's runtime (its stability annotations
+            // and state) only.
+            out.push_str("import androidx.compose.runtime.*\n");
+        } else {
+            out.push_str("import androidx.compose.runtime.*\nimport androidx.compose.ui.Modifier\nimport kotlinx.coroutines.launch\nimport so.oxy.bloom.ui.*\nimport so.oxy.bloom.std.*\n");
+        }
+        // The standard library sees no app module.
+        for other in packages.iter().filter(|p| p.as_str() != package && package != "so.oxy.bloom.std") {
             let _ = writeln!(out, "import {other}.*");
         }
         out.push('\n');
         let items = self.file.ast.items.clone();
+        let derived = self.derived_items();
         for item in &items {
             let text = self.item(item);
             if !text.is_empty() {
                 out.push_str(&text);
                 out.push('\n');
             }
+            let hoisted = std::mem::take(&mut self.hoisted);
+            if !hoisted.is_empty() {
+                out.push_str(&hoisted);
+                out.push('\n');
+            }
+            // What the compiler derives for a type (`Codable`'s coders), beside it.
+            if let Some(name) = Self::item_type_name(item) {
+                for d in derived.iter().filter(|(owner, _)| owner == name) {
+                    let text = self.item(&d.1);
+                    out.push_str(&text);
+                    out.push('\n');
+                }
+            }
         }
         out
+    }
+
+    fn item_type_name(item: &Item) -> Option<&str> {
+        match &item.kind {
+            ItemKind::Struct(s) => Some(&s.name.name),
+            ItemKind::Enum(e) => Some(&e.name.name),
+            _ => None,
+        }
+    }
+
+    /// The derived `Codable` members of the file's types, from the checked tree (`codable.rs`:
+    /// `T$$decode`, `T$$encode` and `T$$self`, typed by the checker), by their type.
+    fn derived_items(&self) -> Vec<(String, Item)> {
+        self.file
+            .lowered
+            .items
+            .iter()
+            .filter(|i| is_synthetic(i.span))
+            .filter_map(|i| {
+                let name = match &i.kind {
+                    ItemKind::Fn(f) => &f.name.name,
+                    ItemKind::Const(c) => &c.name.name,
+                    _ => return None,
+                };
+                let (owner, member, true) = bloom_lang::backend::demangle(name)? else { return None };
+                matches!(member, "decode" | "encode" | "self").then(|| (owner.to_string(), i.clone()))
+            })
+            .collect()
+    }
+
+    fn is_std(&self) -> bool {
+        self.package == "so.oxy.bloom.std"
     }
 
     fn file_name(&self) -> String {
@@ -349,9 +471,17 @@ impl<'a> Emitter<'a> {
                     // A view value (a prop, a builder's result): something to draw.
                     "View" => return "@Composable () -> Unit".into(),
                     "Self" => return "Self".into(),
+                    // `Foreign<"unknown">` (`JSONValue`): a value of the platform's own.
+                    "Foreign" => return "Any?".into(),
+                    // Bloom's `Result` (`ok` / `err`), not Kotlin's.
+                    "Result" if args.len() == 2 => {
+                        return format!("BloomResult<{}, {}>", self.ty(&args[0]), self.ty(&args[1]));
+                    }
                     // `any P`: a value of a type conforming to `P` is a `P` (an interface).
                     "any" if args.len() == 1 => return self.ty(&args[0]),
-                    "Set" if args.len() == 1 => format!("Set<{}>", self.ty(&args[0])),
+                    "Set" if args.len() == 1 => return format!("Set<{}>", self.ty(&args[0])),
+                    // What `throw` throws and `catch` binds.
+                    "Error" if args.is_empty() => return "Throwable".into(),
                     other => other.to_string(),
                 };
                 if args.is_empty() {
@@ -383,6 +513,9 @@ impl<'a> Emitter<'a> {
             TypeKind::Tuple(items) if items.len() == 2 => {
                 format!("Pair<{}, {}>", self.ty(&items[0]), self.ty(&items[1]))
             }
+            TypeKind::Tuple(items) if items.len() == 3 => {
+                format!("Triple<{}, {}, {}>", self.ty(&items[0]), self.ty(&items[1]), self.ty(&items[2]))
+            }
             _ => self.unsupported(t.span, "this type"),
         }
     }
@@ -405,15 +538,21 @@ impl<'a> Emitter<'a> {
             ItemKind::Const(c) => {
                 let ty = c.ty.as_ref().map(|t| format!(": {}", self.ty(t))).unwrap_or_default();
                 let value = self.expr(&c.value);
-                format!("{vis}val {}{ty} = {value}\n", kw(&c.name.name))
+                let kind = if c.mutable { "var" } else { "val" };
+                format!("{vis}{kind} {}{ty} = {value}\n", decl_name(&c.name.name))
             }
             // A type the program declares takes its extensions' members inside its class.
-            ItemKind::Extension(x) if self.decls.declared.contains(&x.name.name) => String::new(),
+            ItemKind::Extension(x) if self.decls.declared_here(&x.name.name, &self.file.path) => {
+                String::new()
+            }
             ItemKind::Extension(x) => self.extension(x),
             ItemKind::Alias(a) => {
                 let ty = self.ty(&a.ty);
                 format!("{vis}typealias {} = {ty}\n", a.name.name)
             }
+            // The standard library's externs are the runtime's, hand-written in Kotlin under their
+            // Bloom names (`so.oxy.bloom.std`'s `Externs.kt`).
+            ItemKind::Extern(_) if self.is_std() => String::new(),
             ItemKind::Extern(x) => self.unsupported(x.package.span, "an extern module").replace("TODO()", ""),
             ItemKind::Test(_) => String::new(),
         }
@@ -436,7 +575,9 @@ impl<'a> Emitter<'a> {
     /// A type's members: its own, then every extension's in the program, in file order.
     fn members_of(&self, ty: &str, own: &[TypeMember]) -> Vec<TypeMember> {
         let mut all = own.to_vec();
-        for body in self.decls.extensions.get(ty).into_iter().flatten() {
+        for (_, body) in
+            self.decls.extensions.get(ty).into_iter().flatten().filter(|(p, _)| *p == self.file.path)
+        {
             all.extend(body.members.iter().cloned());
         }
         all
@@ -450,31 +591,70 @@ impl<'a> Emitter<'a> {
         }
     }
 
-    /// A class body's members at `indent`, the static ones in a companion object.
+    /// A class body's members at `indent`; the static ones are top-level (`hoisted`).
     fn class_body(&mut self, ty: &str, members: &[TypeMember], indent: usize) -> String {
         let mut body = String::new();
-        let mut statics = String::new();
         for m in members {
             if m.modifiers.is_static {
-                let text = self.member(ty, m, indent + 1);
-                // A companion object is not generic: a static function of a generic type
-                // takes the type's parameters as its own (`Page.codec<T>(…)`).
-                let text = match (self.owner_generics.is_empty(), &m.kind) {
-                    (false, TypeMemberKind::Func(f)) if f.generics.is_empty() => {
-                        text.replacen("fun ", &format!("fun <{}> ", self.owner_generics.join(", ")), 1)
-                    }
-                    _ => text,
-                };
-                statics.push_str(&text);
+                let generics = self.owner_generics.clone();
+                let text = self.static_member(ty, m, &generics);
+                self.hoisted.push_str(&text);
             } else {
                 body.push_str(&self.member(ty, m, indent));
             }
         }
-        if !statics.is_empty() {
-            let p = pad(indent);
-            let _ = write!(body, "{p}companion object {{\n{statics}{p}}}\n");
-        }
         body
+    }
+
+    /// A static member of `owner` as a top-level declaration named as the checker lowers it
+    /// (`Post.decode` is `Post$$decode`, Kotlin's `Post__decode`). A static function of a
+    /// generic type takes the type's parameters as its own (`Array__decode<Element>`).
+    fn static_member(&mut self, owner: &str, m: &TypeMember, generics: &[String]) -> String {
+        let vis = Self::visibility(m.visibility);
+        let lowered = |member: &str| bloom_lang::backend::mangle(owner, member, true);
+        match &m.kind {
+            TypeMemberKind::Func(f) if f.name.name == "==" => String::new(),
+            TypeMemberKind::Func(f) => {
+                let mut f = f.clone();
+                f.name.name = lowered(&f.name.name);
+                let text = self.func(vis, &f, None, 0);
+                with_type_params(text, generics)
+            }
+            TypeMemberKind::Stored { mutable, name, ty: t, value: Some(v) } => {
+                if !generics.is_empty() {
+                    self.unsupported(
+                        name.span,
+                        format!("a static stored property of the generic type `{owner}`"),
+                    );
+                    return String::new();
+                }
+                let kind = if *mutable { "var" } else { "val" };
+                let t = t.as_ref().map(|t| format!(": {}", self.ty(t))).unwrap_or_default();
+                let v = self.expr(v);
+                format!("{vis}{kind} {}{t} = {v}\n", static_name(&lowered(&name.name)))
+            }
+            TypeMemberKind::Computed { name, ty: rty, body } => {
+                let rt = self.ty(rty);
+                self.locals.push(HashMap::new());
+                let body_text = self.block(&body.stmts, 2, Mode::Value);
+                self.locals.pop();
+                let head = format!("{vis}val {}: {rt}", static_name(&lowered(&name.name)));
+                if generics.is_empty() {
+                    format!("{head}\n  get() {{\n{body_text}  }}\n")
+                } else {
+                    self.unsupported(name.span, format!("a static property of the generic type `{owner}`"));
+                    String::new()
+                }
+            }
+            TypeMemberKind::Stored { name, .. } => {
+                self.unsupported(name.span, "a static stored property with no value");
+                String::new()
+            }
+            TypeMemberKind::Let(l) => {
+                self.unsupported(l.span, "a static `let` pattern");
+                String::new()
+            }
+        }
     }
 
     fn braces(body: String) -> String {
@@ -502,7 +682,7 @@ impl<'a> Emitter<'a> {
         self.owner_generics.clear();
         // A struct is a value: `data class` gives it structural `==`, `hashCode` and `copy`,
         // and Compose treats a class of `val`s of stable types as stable (it skips on `==`).
-        if s.fields.is_empty() && s.generics.is_empty() {
+        if fields.is_empty() && s.generics.is_empty() {
             return format!("{vis}data object {name}{supers}{}", Self::braces(body));
         }
         format!(
@@ -711,10 +891,12 @@ impl<'a> Emitter<'a> {
     fn extension(&mut self, x: &ExtensionDecl) -> String {
         let mut out = String::new();
         if !x.body.conformances.is_empty() {
-            self.unsupported(
-                x.name.span,
-                format!("a conformance added to `{}`, a type the program does not declare", x.name.name),
-            );
+            let why = if self.decls.declared.contains(&x.name.name) {
+                "a type declared in another file"
+            } else {
+                "a type the program does not declare"
+            };
+            self.unsupported(x.name.span, format!("a conformance added to `{}`, {why}", x.name.name));
         }
         for m in &x.body.members {
             out.push_str(&self.extension_member(&x.name.name, m));
@@ -725,37 +907,42 @@ impl<'a> Emitter<'a> {
     /// A member of a type the program does not declare (`String`, `[T]`): a Kotlin extension.
     fn extension_member(&mut self, ty: &str, m: &TypeMember) -> String {
         let vis = Self::visibility(m.visibility);
-        let receiver = match ty {
-            "String" => "String".to_string(),
-            "Int" => "Long".to_string(),
-            "Double" | "Float" => "Double".to_string(),
-            "Bool" => "Boolean".to_string(),
-            "Array" => "List<Element>".to_string(),
-            other => other.to_string(),
-        };
-        let generic = if ty == "Array" { "<Element> " } else { "" };
-        // A static member of a built-in type: an extension of its companion (`String.Companion`;
-        // Kotlin's `String`, `Long`, `Double` and `Boolean` have one, its collections do not).
-        let companion = matches!(ty, "String" | "Int" | "Double" | "Float" | "Bool")
-            .then(|| format!("{receiver}.Companion"));
+        let (receiver, params) = builtin_receiver(ty);
+        let generic = if params.is_empty() { String::new() } else { format!("<{}> ", params.join(", ")) };
+        let generic = generic.as_str();
+        // `init(…)` of a built-in type (`Date(timeIntervalSince1970:)`): a function of its labels
+        // returning the value its body makes (`Date__init_timeIntervalSince1970`), as the checker
+        // lowers it (`init_name`).
+        if let TypeMemberKind::Func(f) = &m.kind
+            && f.name.name == "init"
+            && !self.decls.declared.contains(ty)
+        {
+            let mut f = f.clone();
+            let labels: Vec<Option<String>> = f
+                .params
+                .iter()
+                .map(|p| Some(crate::param_info(p, true).label.unwrap_or_else(|| "_".into())))
+                .collect();
+            f.name.name = crate::init_name(ty, labels.iter().map(|l| l.as_deref()));
+            f.ret = Some(TypeExpr {
+                kind: TypeKind::Named {
+                    name: Ident { name: ty.to_string(), span: f.span },
+                    args: Vec::new(),
+                },
+                span: f.span,
+            });
+            let text = self.func(vis, &f, None, 0);
+            return with_type_params(text, &params.iter().map(|p| p.to_string()).collect::<Vec<_>>());
+        }
+        // A static member of any type is a top-level declaration (`String__decode`).
+        if m.modifiers.is_static {
+            let params: Vec<String> = params.iter().map(|p| p.to_string()).collect();
+            return self.static_member(ty, m, &params);
+        }
         match &m.kind {
-            TypeMemberKind::Func(f) if m.modifiers.is_static => match &companion {
-                Some(c) => self.func(vis, f, Some(c), 0),
-                None => {
-                    self.unsupported(f.name.span, format!("a static member of `{ty}`"));
-                    String::new()
-                }
-            },
-            TypeMemberKind::Stored { name, ty: t, value: Some(v), mutable: false }
-                if m.modifiers.is_static && companion.is_some() =>
-            {
-                let t = t.as_ref().map(|t| format!(": {}", self.ty(t))).unwrap_or_default();
-                let v = self.expr(v);
-                format!(
-                    "{vis}val {}.{}{t}\n  get() = {v}\n",
-                    companion.as_deref().unwrap_or_default(),
-                    kw(&name.name)
-                )
+            TypeMemberKind::Func(f) if !params.is_empty() && !f.generics.is_empty() => {
+                let text = self.func(vis, f, Some(&receiver), 0);
+                text.replacen("fun <", &format!("fun <{}, ", params.join(", ")), 1)
             }
             TypeMemberKind::Func(f) => {
                 let text = self.func(vis, f, Some(&receiver), 0);
@@ -900,7 +1087,10 @@ impl<'a> Emitter<'a> {
             None => String::new(),
         };
         let suspend = if f.is_async { "suspend " } else { "" };
-        let composable = if returns_view { "@Composable " } else { "" };
+        // A hook (a function with `@State var`s, or calling a hook) composes: its state is
+        // remembered in its caller's composition.
+        let hook = f.body.stmts.iter().any(|s| matches!(&s.kind, StmtKind::Var(v) if v.state.is_some()));
+        let composable = if returns_view || hook { "@Composable " } else { "" };
         let recv = receiver.map(|r| format!("{r}.")).unwrap_or_default();
         let (type_params, where_clause) = self.type_params(f);
         let mut params = self.params(&f.params, f.func);
@@ -933,7 +1123,7 @@ impl<'a> Emitter<'a> {
         let p = pad(indent);
         format!(
             "{p}{composable}{vis}{suspend}fun {type_params}{recv}{}({params}){ret}{where_clause} {{\n{body}{p}}}\n",
-            kw(&f.name.name)
+            decl_name(&f.name.name)
         )
     }
 
@@ -959,7 +1149,7 @@ impl<'a> Emitter<'a> {
         args.iter()
             .flatten()
             .filter_map(|w| match w {
-                WitnessArg::Codec(text) => Some(text.replace("$$", ".")),
+                WitnessArg::Codec(text) => Some(text.replace("$$", "__")),
                 WitnessArg::Param(name) if name.contains("Codable") => Some(witness_name(name)),
                 _ => None,
             })
@@ -1170,6 +1360,12 @@ impl<'a> Emitter<'a> {
         let p = pad(indent);
         match &stmt.kind {
             StmtKind::Let(l) => self.let_stmt(l, indent),
+            // `@State var x = v` in a hook function (2.0): the composable's own state, as a view's.
+            StmtKind::Var(v) if v.state.is_some() => {
+                let ty = v.ty.as_ref().map(|t| format!("<{}>", self.ty(t))).unwrap_or_default();
+                let value = self.expr(&v.value);
+                format!("{p}var {} by remember {{ mutableStateOf{ty}({value}) }}\n", kw(&v.name.name))
+            }
             StmtKind::Var(v) => {
                 let ty = v.ty.as_ref().map(|t| format!(": {}", self.ty(t))).unwrap_or_default();
                 let value = self.expr(&v.value);
@@ -1244,13 +1440,20 @@ impl<'a> Emitter<'a> {
                         format!("{p}if (!({c})) {{\n{otherwise}{p}}}\n")
                     }
                     Cond::Let(pat, value) => match &pat.kind {
+                        // Annotated with the unwrapped type: a smart-cast `T & Any` would make a
+                        // later `fold(first)` infer the non-null type.
                         PatternKind::Bind(n) => {
                             let v = self.expr(value);
-                            format!("{p}val {} = {v} ?: run {{\n{otherwise}{p}}}\n", kw(&n.name))
+                            let ty = self.binding_ty(n.span).map(|t| format!(": {t}")).unwrap_or_default();
+                            format!("{p}val {}{ty} = {v} ?: run {{\n{otherwise}{p}}}\n", kw(&n.name))
                         }
                         _ => format!("{p}{}\n", self.unsupported(pat.span, "this `guard let` pattern")),
                     },
                 }
+            }
+            // A thrown `Error` is a `Throwable` already; any other value is wrapped (`BloomError`).
+            StmtKind::Throw(e) if matches!(self.ty_of(e), Some(Ty::JsError)) => {
+                format!("{p}throw {}\n", self.expr(e))
             }
             StmtKind::Throw(e) => format!("{p}throw BloomError({})\n", self.expr(e)),
             StmtKind::Do(d) => {
@@ -1408,6 +1611,14 @@ impl<'a> Emitter<'a> {
     fn subject_enum(&self, scrutinee: &Expr) -> Option<(String, EnumInfo)> {
         let ty = self.type_at(scrutinee.span).map(String::from).or_else(|| self.receiver_type(scrutinee))?;
         let ty = ty.trim_end_matches('?').to_string();
+        // Bloom's `Result`: the runtime's `BloomResult.Ok(value)` / `BloomResult.Err(error)`.
+        if ty.starts_with("Result<") {
+            let cases = vec![
+                ("ok".to_string(), vec!["value".to_string()]),
+                ("err".to_string(), vec!["error".to_string()]),
+            ];
+            return Some(("BloomResult".into(), EnumInfo { cases }));
+        }
         self.decls.enums.get(&ty).map(|info| (ty, info.clone()))
     }
 
@@ -1878,6 +2089,11 @@ impl<'a> Emitter<'a> {
                             '\\' => out.push_str("\\\\"),
                             '$' => out.push_str("\\$"),
                             '\n' => out.push_str("\\n"),
+                            '\r' => out.push_str("\\r"),
+                            '\t' => out.push_str("\\t"),
+                            c if (c as u32) < 0x20 => {
+                                let _ = write!(out, "\\u{:04x}", c as u32);
+                            }
                             c => out.push(c),
                         }
                     }
@@ -1892,6 +2108,21 @@ impl<'a> Emitter<'a> {
     }
 
     fn implicit(&mut self, e: &Expr, name: &Ident) -> String {
+        use bloom_lang::backend::FieldRes;
+        // `.dateTime` where a `DateFormat` goes: the type's static (`DateFormat__dateTime`).
+        match self.file.checked.fields.get(&e.id) {
+            Some(FieldRes::Static(n)) => return static_name(n),
+            Some(FieldRes::StaticGet(n)) => return static_name(&n.replacen("$$get$", "$$", 1)),
+            _ => {}
+        }
+        if let Some(ty) = self.ty_of(e).map(|t| self.bloom_name(t)) {
+            let ty = ty.trim_end_matches('?');
+            for lowered in [format!("{ty}$$get${}", name.name), format!("{ty}$$${}", name.name)] {
+                if self.decls.static_lets.contains(&lowered) || self.decls.static_getters.contains(&lowered) {
+                    return static_name(&lowered.replacen("$$get$", "$$", 1));
+                }
+            }
+        }
         // A token where the spec takes one (`.muted`, `.lg`): the runtime's token constant.
         if let Some(Ty::Strings(set)) = self.ty_of(e).map(|t| match t {
             Ty::Option(inner) => inner.as_ref(),
@@ -1936,6 +2167,19 @@ impl<'a> Emitter<'a> {
             ExprKind::Name(n) if n == "self" => "this".into(),
             ExprKind::Name(n) if n == "$0" && self.shorthand_it => "it".into(),
             ExprKind::Name(n) if self.binding_props.contains(n) => format!("{}.value", kw(n)),
+            // A lowered static (`String$$decode` in derived code): a function as a value is a
+            // reference, a `let` its value.
+            ExprKind::Name(n) if n.contains("$$") => {
+                if self.decls.static_fns.contains(n) {
+                    format!("::{}", static_name(n))
+                } else {
+                    static_name(n)
+                }
+            }
+            // A top-level function as a value (`xs.map(format)`): a function reference.
+            ExprKind::Name(n) if self.decls.funcs.contains_key(n) && !self.is_local(e) => {
+                format!("::{}", kw(n))
+            }
             ExprKind::Name(n) => kw(&n.replace('$', "p")),
             ExprKind::ImplicitMember(name) => self.implicit(e, name),
             ExprKind::Binding(path) if path.len() == 1 && self.binding_props.contains(&path[0].name) => {
@@ -1950,6 +2194,34 @@ impl<'a> Emitter<'a> {
             ExprKind::Tuple(items) if items.len() == 2 => {
                 format!("Pair({}, {})", self.expr(&items[0]), self.expr(&items[1]))
             }
+            ExprKind::Tuple(items) if items.len() == 3 => {
+                format!(
+                    "Triple({}, {}, {})",
+                    self.expr(&items[0]),
+                    self.expr(&items[1]),
+                    self.expr(&items[2])
+                )
+            }
+            // `[..a, x]`: a list built from its parts.
+            ExprKind::List(items) if items.iter().any(|i| matches!(i.kind, ExprKind::Spread(_))) => {
+                let parts: Vec<String> = items
+                    .iter()
+                    .map(|i| match &i.kind {
+                        ExprKind::Spread(inner) => format!("addAll({})", self.expr(inner)),
+                        _ => format!("add({})", self.expr(i)),
+                    })
+                    .collect();
+                format!("buildList {{ {} }}", parts.join("; "))
+            }
+            // `[]` and `[:]`: typed by the checker, as Kotlin cannot infer an empty `listOf()`'s.
+            ExprKind::List(items) if items.is_empty() => match self.ty_of(e).and_then(|t| self.kty(t)) {
+                Some(t) if t.starts_with("List<") => format!("listOf<{}>()", &t[5..t.len() - 1]),
+                _ => "listOf()".into(),
+            },
+            ExprKind::Map(entries) if entries.is_empty() => match self.ty_of(e).and_then(|t| self.kty(t)) {
+                Some(t) if t.starts_with("Map<") => format!("mapOf<{}>()", &t[4..t.len() - 1]),
+                _ => "mapOf()".into(),
+            },
             ExprKind::List(items) => {
                 let items: Vec<String> = items.iter().map(|i| self.expr(i)).collect();
                 format!("listOf({})", items.join(", "))
@@ -1986,7 +2258,7 @@ impl<'a> Emitter<'a> {
                     TryKind::Plain | TryKind::Force => inner,
                 }
             }
-            ExprKind::Field(base, field) => self.field(base, field),
+            ExprKind::Field(base, field) => self.field(e, base, field),
             ExprKind::OptField(base, field) => format!("{}?.{}", self.expr(base), kw(&field.name)),
             ExprKind::Index(base, index) => format!("{}[{}]", self.expr(base), self.expr(index)),
             ExprKind::Call(call) => self.call(e, call),
@@ -2046,7 +2318,45 @@ impl<'a> Emitter<'a> {
 
     /// `x.count`, `xs.isEmpty`: the standard library's properties that are Kotlin functions
     /// or other names; a computed property of the app's extension stays a property.
-    fn field(&mut self, base: &Expr, field: &Ident) -> String {
+    fn field(&mut self, e: &Expr, base: &Expr, field: &Ident) -> String {
+        use bloom_lang::backend::FieldRes;
+        // `PrefKey.allCases` (`CaseIterable`): an enum class's `entries`.
+        if field.name == "allCases"
+            && let ExprKind::Name(n) = &base.kind
+            && self.decls.enums.contains_key(n)
+        {
+            return format!("{n}.entries");
+        }
+        // `T.m`, a static member: its top-level declaration (`Post.self` is `Post__self`), a
+        // function read as a value being a reference to it.
+        match self.file.checked.fields.get(&e.id) {
+            Some(FieldRes::Static(name)) => {
+                return if self.decls.static_fns.contains(name.as_ref()) {
+                    format!("::{}", static_name(name))
+                } else {
+                    static_name(name)
+                };
+            }
+            Some(FieldRes::StaticGet(name)) => return static_name(&name.replacen("$$get$", "$$", 1)),
+            // A dictionary's `keys`, `values` and `entries` are lists (of pairs, for `entries`).
+            Some(FieldRes::Prop {
+                recv: bloom_lang::backend::Recv::Map | bloom_lang::backend::Recv::JsMap,
+                name,
+            }) if matches!(*name, "keys" | "values" | "entries") => {
+                let b = self.expr(base);
+                return match *name {
+                    "entries" => format!("{b}.toList()"),
+                    other => format!("{b}.{other}.toList()"),
+                };
+            }
+            // `t.0`: a `Pair`'s or `Triple`'s component.
+            Some(FieldRes::Index(i)) => {
+                let b = self.expr(base);
+                let name = ["first", "second", "third"].get(*i).copied().unwrap_or("first");
+                return format!("{b}.{name}");
+            }
+            _ => {}
+        }
         // `T.self` of a `Codable` type parameter: its codec, passed as a witness.
         if field.name == "self"
             && let ExprKind::Name(n) = &base.kind
@@ -2101,9 +2411,76 @@ impl<'a> Emitter<'a> {
                     let set = set.map(|a| self.expr(&a.value)).unwrap_or_default();
                     return format!("Binding({{ {get} }}, {set})");
                 }
+                // A name the checker resolved to a lowered static (`Date(timeIntervalSince1970: s)`
+                // is `Date$$init$timeIntervalSince1970`).
+                let resolved = match self.file.checked.names.get(&call.callee.id) {
+                    Some(bloom_lang::backend::NameRes::Local(l)) => {
+                        self.file
+                            .checked
+                            .locals
+                            .get(*l)
+                            .map(|l| l.name.clone())
+                            .filter(|r| r.contains("$$") && r != n)
+                            // A declared type's `init` is its Kotlin constructor.
+                            .filter(|r| {
+                                bloom_lang::backend::demangle(r)
+                                    .is_some_and(|(o, _, _)| !self.decls.declared.contains(o))
+                            })
+                    }
+                    _ => None,
+                };
+                if let Some(lowered) = resolved {
+                    let args = self.args_by(
+                        None,
+                        &Call {
+                            args: call.args.iter().map(|a| Arg { label: None, ..a.clone() }).collect(),
+                            ..call.clone()
+                        },
+                    );
+                    return format!("{}({})", static_name(&lowered), args.join(", "));
+                }
+                // `min`, `max`, `abs`, `round`, `floor`, `ceil`: JavaScript's `Math`, which rounds
+                // half toward +infinity; an `Int` result is a `Long`.
+                if let Some(bloom_lang::backend::CallRes::Math(name)) = self.file.checked.calls.get(&_e.id) {
+                    let args = self.args_by(None, call);
+                    let a = args.join(", ");
+                    let int = matches!(self.ty_of(_e), Some(Ty::Int));
+                    let text = match *name {
+                        "min" => format!("minOf({a})"),
+                        "max" => format!("maxOf({a})"),
+                        "abs" => format!("kotlin.math.abs({a})"),
+                        "round" => format!("kotlin.math.floor(({a}).toDouble() + 0.5)"),
+                        other => format!("kotlin.math.{other}(({a}).toDouble())"),
+                    };
+                    return if int && matches!(*name, "round" | "floor" | "ceil") {
+                        format!("{text}.toLong()")
+                    } else {
+                        text
+                    };
+                }
+                // A lowered static called by name (derived code's `Optional$$decode(…)`).
+                if n.contains("$$") {
+                    let params = bloom_lang::backend::demangle(n).and_then(|(o, m, _)| {
+                        self.decls.methods.get(&(o.to_string(), m.to_string())).cloned()
+                    });
+                    let mut args = self.args_by(params.as_deref(), call);
+                    args.extend(self.witness_args(_e.id));
+                    return format!("{}({})", static_name(n), args.join(", "));
+                }
                 let mut args = self.call_args(n, call);
                 args.extend(self.witness_args(_e.id));
                 format!("{}({})", kw(n), args.join(", "))
+            }
+            ExprKind::Field(_, method)
+                if let Some(bloom_lang::backend::FieldRes::Static(name)) =
+                    self.file.checked.fields.get(&call.callee.id) =>
+            {
+                let owner =
+                    bloom_lang::backend::demangle(name).map(|(o, _, _)| o.to_string()).unwrap_or_default();
+                let params = self.decls.methods.get(&(owner, method.name.clone())).cloned();
+                let mut args = self.args_by(params.as_deref(), call);
+                args.extend(self.witness_args(_e.id));
+                format!("{}({})", static_name(name), args.join(", "))
             }
             ExprKind::Field(base, method) => {
                 // `PostKind.image(url:aspect:)`: a payload case constructed.
@@ -2127,6 +2504,25 @@ impl<'a> Emitter<'a> {
                 }
                 if method.name == "enumerated" && call.args.is_empty() {
                     return format!("{b}.enumerated()");
+                }
+                // The compiler's built-in members where Kotlin's own member of that name means
+                // something else (`Long.toFloat()` is a 32-bit `Float`, `List.indexOf` an `Int`).
+                if let Some(bloom_lang::backend::CallRes::Method { recv, name }) =
+                    self.file.checked.calls.get(&_e.id)
+                {
+                    use bloom_lang::backend::Recv;
+                    let joined = args.join(", ");
+                    match (recv, *name) {
+                        (Recv::Int, "toFloat") => return format!("{b}.toDouble()"),
+                        (Recv::Str, "toInt") => return format!("{b}.toLongOrNull()"),
+                        (Recv::Str, "toFloat") => return format!("{b}.toDoubleOrNull()"),
+                        (Recv::List, "indexOf") => return format!("{b}.bloomIndexOf({joined})"),
+                        (Recv::List, "find") => return format!("{b}.firstOrNull({joined})"),
+                        (Recv::List, "compactMap") => return format!("{b}.mapNotNull({joined})"),
+                        (Recv::Option, "map") => return format!("{b}?.let({joined})"),
+                        (Recv::Option, "unwrapOr") => return format!("({b} ?: {joined})"),
+                        _ => {}
+                    }
                 }
                 let name = match (recv_ty.starts_with('['), recv_ty == "String", method.name.as_str()) {
                     (_, true, "lowercased") => "lowercase",
@@ -2154,6 +2550,41 @@ fn mentions(text: &str, name: &str) -> bool {
         let after = text[at + name.len()..].chars().next();
         !before.is_some_and(ident) && !after.is_some_and(ident)
     })
+}
+
+/// A declaration's Kotlin name: a lowered static's (`Post$$decode`) is `Post__decode`.
+fn decl_name(name: &str) -> String {
+    if name.contains('$') { static_name(name) } else { kw(name) }
+}
+
+/// `fun …` of a static member of a generic type, with the type's parameters first.
+fn with_type_params(text: String, generics: &[String]) -> String {
+    if generics.is_empty() {
+        return text;
+    }
+    let list = generics.join(", ");
+    match text.find("fun <") {
+        Some(at) if text[..at].lines().count() <= 1 => text.replacen("fun <", &format!("fun <{list}, "), 1),
+        _ => text.replacen("fun ", &format!("fun <{list}> "), 1),
+    }
+}
+
+/// A built-in type's Kotlin receiver for its extensions, and the type parameters it brings
+/// (`extension Array` is `List<Element>`, generic over `Element`).
+fn builtin_receiver(ty: &str) -> (String, &'static [&'static str]) {
+    match ty {
+        "String" => ("String".into(), &[]),
+        "Int" => ("Long".into(), &[]),
+        "Double" | "Float" => ("Double".into(), &[]),
+        "Bool" => ("Boolean".into(), &[]),
+        "Array" => ("List<Element>".into(), &["Element"]),
+        "Set" => ("Set<Element>".into(), &["Element"]),
+        "Dictionary" => ("Map<String, Value>".into(), &["Value"]),
+        "Optional" => ("Wrapped?".into(), &["Wrapped"]),
+        "Result" => ("BloomResult<Success, Failure>".into(), &["Success", "Failure"]),
+        "Error" => ("Throwable".into(), &[]),
+        other => (other.to_string(), &[]),
+    }
 }
 
 /// A checker witness name (`$w_T_Codable`) as a Kotlin identifier.

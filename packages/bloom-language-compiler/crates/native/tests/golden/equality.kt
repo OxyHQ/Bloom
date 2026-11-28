@@ -52,7 +52,7 @@ fun sameScores(a: Map<String, Long>, b: Map<String, Long>): Boolean {
   return a == b
 }
 
-fun sameResult(a: Result<Point, String>, b: Result<Point, String>): Boolean {
+fun sameResult(a: BloomResult<Point, String>, b: BloomResult<Point, String>): Boolean {
   return a == b
 }
 

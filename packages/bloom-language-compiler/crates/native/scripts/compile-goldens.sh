@@ -14,7 +14,8 @@ unset TMPDIR
 TARGET=${CARGO_TARGET_DIR:-$C/target}
 cargo build -q --manifest-path "$C/Cargo.toml" -p bloom_native
 rm -rf "$W/app/src/main/kotlin"
-"$TARGET/debug/bloom-native" emit --target kotlin-compose "$C/examples/NativeBench" --android-project "$W" --app-id so.bloom.goldens
+# The standard library's Bloom modules compile through the backend beside the bench.
+"$TARGET/debug/bloom-native" emit --target kotlin-compose "$C/examples/NativeBench" --std JSON,Core --android-project "$W" --app-id so.bloom.goldens
 mkdir -p "$W/app/src/main/kotlin/goldens"
 for kt in "$HERE"/tests/golden/*.kt; do
   # A golden with uncovered constructs has TODO()s; it still has to compile.

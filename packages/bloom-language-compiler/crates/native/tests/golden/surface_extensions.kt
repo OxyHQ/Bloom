@@ -34,15 +34,14 @@ val String.isBlank: Boolean
   get() {
     return this.trimmed().isEmpty()
   }
-fun String.Companion.repeating(s: String, count: Long): String {
+fun String__repeating(s: String, count: Long): String {
   var out = ""
   while (out.count < s.count * count) {
     out = out + s
   }
   return out
 }
-val String.Companion.separator: String
-  get() = " · "
+val String__separator: String = " · "
 
 fun <Element> List<Element>.second(): Element? {
   return (if (this.count > 1L) this[1L] else null)
@@ -56,8 +55,8 @@ fun demo(post: Post): String {
   val next = post.liked(true)
   val title = "id".padded(4L)
   val blank = "  ".isBlank
-  val line = String.repeating("-", count = 3L)
+  val line = String__repeating("-", 3L)
   val second = listOf(1L, 2L, 3L).second() ?: 0L
-  return "${title}${String.separator}${next.label} ${blank} ${line} ${second.doubled()}"
+  return "${title}${String__separator}${next.label} ${blank} ${line} ${second.doubled()}"
 }
 
