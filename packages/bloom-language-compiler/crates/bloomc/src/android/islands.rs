@@ -131,6 +131,7 @@ import com.facebook.react.uimanager.events.Event
 import java.lang.ref.WeakReference
 import so.oxy.bloom.ui.BloomThemeProvider
 import so.oxy.bloom.ui.parseThemeColors
+import so.oxy.bloom.ui.PressAnchor
 import so.oxy.bloom.ui.DEFAULT_PRESET
 
 /** Registers the `BloomIsland` view and the `BloomIslands` module (autolinked by `bloom build android`). */
@@ -160,7 +161,7 @@ class BloomIslandPackage : BaseReactPackage() {
  * `BloomIslands`: a keyed island's data, set off React's commit. `setProps(key, json)` and
  * `setTheme(key, preset, scheme, colors)` reach the island's composition directly (a snapshot write,
  * drawn on the next frame), whether or not a host for the key is mounted yet; a keyed island's
- * intents are the device event `BloomIslandEvent` (`{ key, name, payload }`).
+ * intents are the device event `BloomIslandEvent` (`{ key, name, payload, anchor? }`).
  */
 class BloomIslandsModule(context: ReactApplicationContext) : NativeBloomIslandsSpec(context) {
   init {
@@ -213,8 +214,25 @@ object BloomIslands {
         putString("key", key)
         putString("name", name)
         putString("payload", payload)
+        anchorMap(target)?.let { putMap("anchor", it) }
       }
     target.emitDeviceEvent(EVENT, data)
+  }
+}
+
+/**
+ * The view an intent was pressed on, in the window's points (`{ x, y, width, height }`), when
+ * the intent comes from a press (`PressAnchor`, within a second): what the host presents from it,
+ * such as a menu growing out of the pressed glyph.
+ */
+internal fun anchorMap(context: ReactContext): WritableMap? {
+  val bounds = PressAnchor.recent() ?: return null
+  val density = context.resources.displayMetrics.density
+  return Arguments.createMap().apply {
+    putDouble("x", (bounds.left / density).toDouble())
+    putDouble("y", (bounds.top / density).toDouble())
+    putDouble("width", (bounds.width / density).toDouble())
+    putDouble("height", (bounds.height / density).toDouble())
   }
 }
 
@@ -385,6 +403,7 @@ class BloomIslandView(private val reactContext: ThemedReactContext) : FrameLayou
       Arguments.createMap().apply {
         putString("name", name)
         putString("payload", payload)
+        anchorMap(reactContext)?.let { putMap("anchor", it) }
       }
     dispatcher.dispatchEvent(IslandEvent(UIManagerHelper.getSurfaceId(this), id, data))
   }
