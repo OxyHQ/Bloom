@@ -38,3 +38,8 @@ export const Variants = view(function Variants({ variants }: { variants: Variant
     ]),
   );
 });
+
+// A spread of a name (PostItem's context line) is the text's runs, not a builder line.
+export function runsText(...runs: (string | undefined)[]) {
+  return Text(...runs).weight('semibold');
+}
