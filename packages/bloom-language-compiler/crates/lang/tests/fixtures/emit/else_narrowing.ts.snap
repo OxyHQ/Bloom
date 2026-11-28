@@ -1,0 +1,26 @@
+
+function need(s: string): string {
+return s;
+}
+
+export function pick(title: string | undefined, off: boolean): string {
+if ((title == null) || (title.length === 0)) {
+return "a";
+} else {
+return need(title);
+}
+}
+
+export function nested(title: string | undefined, sub: string | undefined, off: boolean): string {
+return (((title == null) || off) || (sub == null)) ? "a" : (title.length === 0) ? need(sub) : (need(title) + need(sub));
+}
+
+export function negated(title: string | undefined): string {
+return (!(title != null)) ? "none" : need(title);
+}
+
+export function value(title: string | undefined): string {
+const shown = (title == null) ? "?" : need(title);
+return shown;
+}
+
