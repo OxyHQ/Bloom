@@ -109,6 +109,17 @@ pub fn draw_views_as_nodes(source: &str, filename: &str, names: &[String]) -> Op
     Some(import_to_element(&out, &parsed.program))
 }
 
+/// `source` (a TS module at `filename`) importing `toElement` from the language, if it does not.
+pub fn with_to_element(source: &str, filename: &str) -> Option<String> {
+    let allocator = Allocator::default();
+    let source_type = SourceType::from_path(filename).unwrap_or_else(|_| SourceType::tsx());
+    let parsed = Parser::new(&allocator, source, source_type).parse();
+    if parsed.diagnostics.has_errors() {
+        return None;
+    }
+    Some(import_to_element(source, &parsed.program))
+}
+
 /// `source` importing `toElement` from the language (beside its other names when it already
 /// imports from it). `program` is the module before the edits, whose imports come first.
 fn import_to_element(source: &str, program: &oxc_ast::ast::Program) -> String {

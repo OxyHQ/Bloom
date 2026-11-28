@@ -284,6 +284,7 @@ pub(crate) fn rewrite_importers(
         let mut rest = source.as_str();
         let mut changed = false;
         let mut drawn = Vec::new();
+        let mut needs_to_element = false;
         while let Some(i) = rest.find(['\'', '"', '/']) {
             // A comment is copied as it is: an apostrophe in it opens no string.
             if rest.as_bytes()[i] == b'/' {
@@ -376,6 +377,48 @@ pub(crate) fn rewrite_importers(
                     rest = &rest[i + 1 + len + 1 + ").default".len()..];
                     continue;
                 }
+                // `lazy(() => import('./X').then((m) => ({ default: m.X })))` of a view (not a
+                // screen): `lazy` takes a component, and a view is a node factory, so the default
+                // is a component drawing it, `(props) => toElement(m.X(props))`.
+                let views = if head.ends_with("import(") {
+                    exported_views(&root.join(migrated[index].0.with_extension("d.bloom.ts")))
+                } else {
+                    Vec::new()
+                };
+                if !views.is_empty() {
+                    let after = &rest[i + 1 + len + 1..];
+                    // The `.then` written without its whitespace, and how much of `after` it took.
+                    let mut squeezed = String::new();
+                    let mut taken = 0;
+                    for (at, c) in after.char_indices() {
+                        if squeezed.len() > 120 {
+                            break;
+                        }
+                        if !c.is_whitespace() {
+                            squeezed.push(c);
+                        }
+                        taken = at + c.len_utf8();
+                        if squeezed.ends_with("}))") {
+                            break;
+                        }
+                    }
+                    let read = squeezed
+                        .strip_prefix(").then((")
+                        .and_then(|r| r.split_once(")=>({default:"))
+                        .and_then(|(m, read)| {
+                            let view = read.strip_prefix(&format!("{m}."))?.strip_suffix("}))")?;
+                            views.iter().any(|v| v == view).then(|| (m.to_string(), view.to_string()))
+                        });
+                    if let Some((m, view)) = read {
+                        out.push(quote);
+                        out.push_str(&format!(
+                            ").then(({m}) => ({{ default: (props: object) => toElement({m}.{view}(props as never)) }}))"
+                        ));
+                        rest = &after[taken..];
+                        needs_to_element = true;
+                        continue;
+                    }
+                }
                 // `lazy(() => import('./X'))` reads the module's default: 2.0 exports it by name,
                 // so the import hands it on as the default `lazy` takes.
                 if let Some(name) = name
@@ -444,6 +487,11 @@ pub(crate) fn rewrite_importers(
             let names: Vec<String> = drawn.to_vec();
             let redrawn = bloom_migrate::draw_views_as_nodes(&out, &file.to_string_lossy(), &names);
             let out = redrawn.clone().unwrap_or(out);
+            let out = if needs_to_element && redrawn.is_none() {
+                bloom_migrate::with_to_element(&out, &file.to_string_lossy()).unwrap_or(out)
+            } else {
+                out
+            };
             std::fs::write(&file, &out).map_err(|e| format!("{}: {e}", file.display()))?;
             let shown = file.strip_prefix(root).unwrap_or(&file).display().to_string();
             notes.push(format!("{shown}: imports the .bloom module(s)"));

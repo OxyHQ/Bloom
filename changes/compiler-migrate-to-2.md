@@ -68,3 +68,4 @@ section: Added
   - an object literal read by a key that is not a field name (`pages["edit-profile"]`, `PRESETS[key]`) and never iterated is a dictionary literal.
   - a caught value cast to an Axios-like shape (`error as { response?: … }`) is `error.jsValue`, read `err?["response"]?["data"]?["error"]?.string`; a statement's `ok && asyncFn()` is an `if`; a type-guard `filter` on a TS array stays JS's `filter`.
   - the language's node types (`ScrollViewNode`) are `View`; a ternary of two record shapes gives each branch the other's fields as `none`.
+  - `--write`: a view a `lazy(() => import(…).then(…))` reads is wrapped as a component, `(props) => toElement(m.X(props))`.

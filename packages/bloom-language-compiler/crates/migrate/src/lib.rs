@@ -26,7 +26,7 @@ mod jsx;
 mod module;
 mod props;
 pub mod report;
-pub use importers::draw_views_as_nodes;
+pub use importers::{draw_views_as_nodes, with_to_element};
 mod stdlib;
 mod swiftui;
 mod tokens;
