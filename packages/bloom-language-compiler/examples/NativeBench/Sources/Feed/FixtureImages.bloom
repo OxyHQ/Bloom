@@ -1,0 +1,36 @@
+// The feed's pictures (crates/native/scripts/fixture_images.py writes this file; --inline
+// inlines them as data: URLs for the device bench). Photos: picsum.photos (Unsplash licence).
+
+let postImages: [String] = [
+  "https://picsum.photos/id/10/480/360.jpg",
+  "https://picsum.photos/id/11/480/360.jpg",
+  "https://picsum.photos/id/12/480/360.jpg",
+  "https://picsum.photos/id/13/480/360.jpg",
+  "https://picsum.photos/id/14/480/360.jpg",
+  "https://picsum.photos/id/15/480/360.jpg",
+  "https://picsum.photos/id/16/480/360.jpg",
+  "https://picsum.photos/id/17/480/360.jpg",
+  "https://picsum.photos/id/18/480/360.jpg",
+  "https://picsum.photos/id/19/480/360.jpg",
+  "https://picsum.photos/id/20/480/360.jpg",
+  "https://picsum.photos/id/21/480/360.jpg",
+]
+
+let avatarImages: [String] = [
+  "https://picsum.photos/id/61/96/96.jpg",
+  "https://picsum.photos/id/62/96/96.jpg",
+  "https://picsum.photos/id/63/96/96.jpg",
+  "https://picsum.photos/id/64/96/96.jpg",
+  "https://picsum.photos/id/65/96/96.jpg",
+  "https://picsum.photos/id/66/96/96.jpg",
+  "https://picsum.photos/id/67/96/96.jpg",
+  "https://picsum.photos/id/68/96/96.jpg",
+  "https://picsum.photos/id/69/96/96.jpg",
+  "https://picsum.photos/id/70/96/96.jpg",
+  "https://picsum.photos/id/71/96/96.jpg",
+  "https://picsum.photos/id/72/96/96.jpg",
+  "https://picsum.photos/id/73/96/96.jpg",
+  "https://picsum.photos/id/74/96/96.jpg",
+  "https://picsum.photos/id/75/96/96.jpg",
+  "https://picsum.photos/id/76/96/96.jpg",
+]

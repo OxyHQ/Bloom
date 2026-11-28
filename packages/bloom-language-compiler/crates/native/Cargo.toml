@@ -1,0 +1,14 @@
+[package]
+name = "bloom_native"
+version = "0.0.0"
+edition.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+description = "Experimental native backends for .bloom (ADR 0003): Kotlin + Jetpack Compose, and SwiftUI."
+
+[[bin]]
+name = "bloom-native"
+path = "src/main.rs"
+
+[dependencies]
+bloom_lang = { path = "../lang" }

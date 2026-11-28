@@ -1,0 +1,16 @@
+// The feed: 500 PostItem rows in a virtualized list, with an optimistic like.
+
+public struct FeedScreen: View {
+  @State private var posts: [Post] = fixturePosts(500)
+
+  func like(_ post: Post) {
+    posts = posts.updating(where: { $0.id == post.id }, { $0.liked(!post.isLiked) })
+  }
+
+  var body: some View {
+    VirtualList(posts, { row in
+      PostRow(post: row.item, onLike: { p in like(p) })
+    })
+    .onAppear { print("BENCH feed-shown") }
+  }
+}
