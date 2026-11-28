@@ -1103,6 +1103,48 @@ impl Tr<'_> {
                 let index = index.as_expression().map_or_else(String::new, |e| self.expr(e));
                 return format!("let {item} = {name}[{index}]\n{name} = {name}.removing(at: {index})");
             }
+            // `const [whole = '0', fraction = ''] = s.split('.')`: a list's elements, each read as
+            // JS reads one past the end (`undefined`, so its default): `parts.at(i) ?? d`.
+            BindingPattern::ArrayPattern(p)
+                if immutable
+                    && p.rest.is_none()
+                    && p.elements.iter().any(|e| matches!(e, Some(BindingPattern::AssignmentPattern(_))))
+                    && p.elements.iter().all(|e| match e {
+                        None | Some(BindingPattern::BindingIdentifier(_)) => true,
+                        Some(BindingPattern::AssignmentPattern(a)) => {
+                            matches!(a.left, BindingPattern::BindingIdentifier(_))
+                        }
+                        _ => false,
+                    }) =>
+            {
+                let value = self.expr(init);
+                let mut names = Vec::new();
+                let mut lines = Vec::new();
+                for (i, element) in p.elements.iter().enumerate() {
+                    let (id, default) = match element {
+                        Some(BindingPattern::BindingIdentifier(id)) => (id, None),
+                        Some(BindingPattern::AssignmentPattern(a)) => match &a.left {
+                            BindingPattern::BindingIdentifier(id) => (id, Some(&a.right)),
+                            _ => unreachable!(),
+                        },
+                        _ => continue,
+                    };
+                    let name = self.bind(&id.name, id.span);
+                    names.push(name.clone());
+                    let read = match default {
+                        Some(d) => format!("{{list}}.at({i}) ?? {}", self.expr(d)),
+                        None => format!("{{list}}.at({i})"),
+                    };
+                    lines.push(format!("let {name} = {read}"));
+                }
+                let list = format!(
+                    "{}{}",
+                    names.first().cloned().unwrap_or_default(),
+                    names.iter().skip(1).map(|n| n[..1].to_uppercase() + &n[1..]).collect::<String>()
+                ) + "Parts";
+                let lines: Vec<String> = lines.iter().map(|l| l.replace("{list}", &list)).collect();
+                return format!("let {list} = {value}\n{}", lines.join("\n"));
+            }
             BindingPattern::ArrayPattern(p) if immutable => {
                 // `const [a, b] = f()`: a tuple pattern (a TS tuple is a Bloom tuple).
                 if p.rest.is_some() {
@@ -1403,7 +1445,8 @@ impl Tr<'_> {
                     body,
                 );
                 self.scope = Default::default();
-                out
+                // `function f<T>(…)`: a generic `fn f<T>(…)`.
+                self.generic_fn(name, out, f.type_parameters.as_deref(), f.span)
             }
             None => self.refuse("fn:declare", "a function without a body", f.span),
         }
@@ -1463,7 +1506,18 @@ impl Tr<'_> {
         let ret = arrow.return_type.as_deref().map(|t| &t.type_annotation);
         let text = self.fn_text(name, vis, arrow.r#async, &arrow.params, ret, Body::of_arrow(arrow));
         // `const f = <T,>(…) => …`: a generic `fn f<T>(…)` (a closure `let` takes no type parameters).
-        match arrow.type_parameters.as_deref() {
+        self.generic_fn(name, text, arrow.type_parameters.as_deref(), arrow.span)
+    }
+
+    /// `fn name(` of `text` with the TS type parameters: `fn name<T>(`.
+    fn generic_fn(
+        &mut self,
+        name: &str,
+        text: String,
+        params: Option<&oxc_ast::ast::TSTypeParameterDeclaration>,
+        span: Span,
+    ) -> String {
+        match params {
             Some(p) if !p.params.is_empty() => {
                 // `T extends string` (or `number`): compared with `==`, so `T: Equatable`.
                 let names: Vec<String> = p
@@ -1483,11 +1537,7 @@ impl Tr<'_> {
                         text.insert_str(at + head.len() - 1, &format!("<{}>", names.join(", ")));
                         text
                     }
-                    None => self.refuse(
-                        "fn:generic",
-                        "a generic arrow function without a return type",
-                        arrow.span,
-                    ),
+                    None => self.refuse("fn:generic", "a generic arrow function without a return type", span),
                 }
             }
             _ => text,

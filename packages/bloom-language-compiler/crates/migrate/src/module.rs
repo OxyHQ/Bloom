@@ -2089,7 +2089,7 @@ fn closes_at_end(t: &str) -> bool {
 }
 
 /// The identifier a chain (`v.a().b()`) starts from.
-fn chain_root(expression: &Expression) -> Option<String> {
+pub fn chain_root(expression: &Expression) -> Option<String> {
     match expression.without_parentheses() {
         Expression::Identifier(id) => Some(id.name.to_string()),
         Expression::CallExpression(call) => chain_root(&call.callee),
