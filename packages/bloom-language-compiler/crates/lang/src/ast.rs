@@ -525,6 +525,10 @@ pub enum StmtKind {
     Throw(Expr),
     /// `do { … } catch … { … }` (2.0): a JS `try`/`catch`.
     Do(DoStmt),
+    /// `break`, `break outer` (2.0): leaves the innermost loop or `switch`, or the loop named.
+    Break(Option<Ident>),
+    /// `continue`, `continue outer` (2.0): the innermost loop's, or the named loop's, next turn.
+    Continue(Option<Ident>),
     Expr(Expr),
 }
 
@@ -602,6 +606,8 @@ pub struct AssignStmt {
 pub struct WhileStmt {
     pub cond: Expr,
     pub body: Block,
+    /// `outer: while …` (2.0): the name `break outer` and `continue outer` give.
+    pub label: Option<Ident>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -609,6 +615,8 @@ pub struct ForStmt {
     pub pattern: Pattern,
     pub iter: Expr,
     pub body: Block,
+    /// `outer: for …` (2.0): the name `break outer` and `continue outer` give.
+    pub label: Option<Ident>,
 }
 
 /// An expression's identity in the checker's side tables.

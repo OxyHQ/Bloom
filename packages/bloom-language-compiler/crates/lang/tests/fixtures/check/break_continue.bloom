@@ -1,0 +1,22 @@
+// `break` and `continue` leave a loop of their own frame (a closure's body is not its loop's), or a
+// named one around them.
+public func outside() -> Int {
+  break
+  return 0
+}
+
+public func inClosure(_ xs: [Int]) -> [Int] {
+  for x in xs {
+    let _ = [x].map { y in
+      if y > 1 { continue }
+      return y
+    }
+  }
+  return xs
+}
+
+public func named(_ xs: [Int]) {
+  for x in xs {
+    if x > 1 { break inner }
+  }
+}

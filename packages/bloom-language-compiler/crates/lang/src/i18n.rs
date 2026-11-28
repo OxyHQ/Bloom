@@ -400,6 +400,7 @@ impl Lowering<'_> {
                 StmtKind::Assign(s) => self.expr(&mut s.value),
                 StmtKind::Return(Some(x)) | StmtKind::Expr(x) | StmtKind::Throw(x) => self.expr(x),
                 StmtKind::Return(None) => {}
+                StmtKind::Break(_) | StmtKind::Continue(_) => {}
                 StmtKind::Defer(b) => self.block(b),
                 StmtKind::While(w) => {
                     self.expr(&mut w.cond);

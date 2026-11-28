@@ -885,10 +885,15 @@ impl<'a> Formatter<'a> {
                 Some(value) => concat(vec![text("return "), self.expr(value)]),
                 None => text("return"),
             },
-            StmtKind::While(w) => {
-                concat(vec![text("while "), self.expr(&w.cond), text(" "), self.block(&w.body, Layout::Own)])
-            }
+            StmtKind::While(w) => concat(vec![
+                text(label_text(w.label.as_ref())),
+                text("while "),
+                self.expr(&w.cond),
+                text(" "),
+                self.block(&w.body, Layout::Own),
+            ]),
             StmtKind::For(f) => concat(vec![
+                text(label_text(f.label.as_ref())),
                 text("for "),
                 self.pattern(&f.pattern),
                 text(" in "),
@@ -902,6 +907,12 @@ impl<'a> Formatter<'a> {
                 concat(vec![text("guard "), cond, text(" else "), self.block(&g.otherwise, Layout::Own)])
             }
             StmtKind::Throw(e) => concat(vec![text("throw "), self.expr(e)]),
+            StmtKind::Break(label) => {
+                text(format!("break{}", label.as_ref().map_or(String::new(), |l| format!(" {}", l.name))))
+            }
+            StmtKind::Continue(label) => {
+                text(format!("continue{}", label.as_ref().map_or(String::new(), |l| format!(" {}", l.name))))
+            }
             StmtKind::Do(d) => {
                 let mut parts = vec![text("do "), self.block(&d.body, Layout::Own)];
                 for catch in &d.catches {
@@ -1595,4 +1606,9 @@ fn swift_interpolation(literal: &str) -> String {
         i += ch.len_utf8();
     }
     out
+}
+
+/// `outer: ` before a named loop.
+fn label_text(label: Option<&bloom_lang::ast::Ident>) -> String {
+    label.map_or_else(String::new, |l| format!("{}: ", l.name))
 }

@@ -1,0 +1,60 @@
+// Swift's `break` and `continue` (lang-mention-11's loop-continue: MediaGrid, VideosGrid,
+// SuggestedUsers), emitted as JS's own. A named loop (`outer: for …`) is left or continued by
+// name. An unnamed `break` in a `switch` case leaves the `switch`, as Swift's does.
+public enum Kind {
+  case skip
+  case stop
+  case keep
+}
+
+public func firstKeys(_ xs: [String?]) -> [String] {
+  var out: [String] = []
+  for x in xs {
+    if x == none { continue }
+    if out.count > 3 { break }
+    out = [..out, x!]
+  }
+  return out
+}
+
+public func pairs(_ grid: [[Int]], _ target: Int) -> Int {
+  var found = 0
+  outer: for row in grid {
+    for cell in row {
+      if cell < 0 { continue outer }
+      if cell == target {
+        found = cell
+        break outer
+      }
+    }
+  }
+  return found
+}
+
+public func countdown(_ n: Int) -> Int {
+  var i = n
+  var seen = 0
+  while i > 0 {
+    i -= 1
+    if i % 2 == 0 { continue }
+    seen += 1
+  }
+  return seen
+}
+
+public func kept(_ kinds: [Kind]) -> Int {
+  var count = 0
+  for (index, kind) in kinds.enumerated() {
+    switch kind {
+    case .skip:
+      if index > 0 { break }
+      count += 100
+    case .stop:
+      count += 1000
+      break
+    case .keep:
+      count += 1
+    }
+  }
+  return count
+}

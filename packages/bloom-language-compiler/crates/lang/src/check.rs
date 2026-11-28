@@ -303,6 +303,9 @@ pub struct CheckResult {
     /// `catch let e as T` with a `T` that casts (keyed by the catch's span): its `cast`, which
     /// tests the error (a catch of any other `T` types it, as a typed `throws(T)` does).
     pub catch_casts: HashMap<Span, Rc<str>>,
+    /// A `break` (by its span) that leaves a `switch` (by its scrutinee's span), Swift's
+    /// `break` in a case: the `switch`'s statement takes a label and the `break` names it.
+    pub switch_breaks: HashMap<Span, Span>,
     /// `if x is T`: the narrowed local and the one it narrows.
     pub narrowed: HashMap<ExprId, (LocalId, LocalId)>,
     /// `@ref` names passed as the ref itself (`.ref(x)`), not its value.
@@ -446,6 +449,15 @@ struct Frame {
     handled: u32,
 }
 
+/// What a `break` or `continue` leaves.
+#[derive(Debug, Clone)]
+enum Breakable {
+    /// A `for` or `while`, and its name (`outer: for …`).
+    Loop(Option<String>),
+    /// A `switch` statement, by its scrutinee's span.
+    Switch(Span),
+}
+
 /// A generic call waiting for its witnesses: the call, its type arguments, its constraints,
 /// where it is, and the constrained type parameters in scope there.
 type PendingWitnesses = (ExprId, Vec<(Ty, Rc<str>)>, Span, Vec<(String, Bound)>);
@@ -558,6 +570,9 @@ pub struct Checker<'o> {
     /// a ternary's first branch): it is not met with a generic method's result, which only a
     /// declared type (an annotation, a parameter's) is.
     inferred_expected: HashSet<ExprId>,
+    /// The loops and `switch`es around this point, innermost last, each with the frame it is
+    /// in: what `break` and `continue` leave.
+    breakables: Vec<(usize, Breakable)>,
     /// The base of an implicit member chain (`.dateTime` of `.dateTime.month()`), by its id: the
     /// type the whole chain is expected to be.
     implicit_chains: HashMap<ExprId, Ty>,
@@ -675,6 +690,7 @@ impl<'o> Checker<'o> {
             call_expected: HashMap::default(),
             inferred_expected: HashSet::default(),
             implicit_chains: HashMap::default(),
+            breakables: Vec::new(),
             callback_results: HashSet::default(),
             claim_only: HashSet::default(),
             pending_shapes: Vec::new(),
@@ -3035,14 +3051,24 @@ impl<'o> Checker<'o> {
             }
             StmtKind::While(w) => {
                 self.expr(&w.cond, Some(&Ty::Bool));
+                self.breakables
+                    .push((self.frames.len(), Breakable::Loop(w.label.as_ref().map(|l| l.name.clone()))));
                 self.block(&w.body, Some(&Ty::Unit));
+                self.breakables.pop();
             }
             StmtKind::For(f) => {
                 let elem = self.iterable(&f.iter);
                 self.push();
                 self.bind_irrefutable(&f.pattern, &elem, LocalKind::Let);
+                self.breakables
+                    .push((self.frames.len(), Breakable::Loop(f.label.as_ref().map(|l| l.name.clone()))));
                 self.stmts(&f.body.stmts, Some(&Ty::Unit), f.body.span);
+                self.breakables.pop();
                 self.pop();
+            }
+            StmtKind::Break(label) | StmtKind::Continue(label) => {
+                let is_break = matches!(stmt.kind, StmtKind::Break(_));
+                self.leave(stmt.span, label.as_ref(), is_break);
             }
             StmtKind::Defer(block) => {
                 self.block(block, Some(&Ty::Unit));
@@ -4299,7 +4325,54 @@ impl<'o> Checker<'o> {
         tys
     }
 
+    /// `break` / `continue` (with a loop's name or not): what it leaves, which is a loop of this
+    /// frame (a closure's body is not its loop's), or for an unnamed `break` a `switch`.
+    fn leave(&mut self, span: Span, label: Option<&Ident>, is_break: bool) {
+        let word = if is_break { "break" } else { "continue" };
+        let depth = self.frames.len();
+        let here: Vec<Breakable> =
+            self.breakables.iter().rev().take_while(|(d, _)| *d == depth).map(|(_, b)| b.clone()).collect();
+        match label {
+            Some(label) => {
+                if !here.iter().any(|b| matches!(b, Breakable::Loop(Some(n)) if *n == label.name)) {
+                    self.report(
+                        Diagnostic::error(
+                            "B0219",
+                            label.span,
+                            format!("no loop named `{}` is around this `{word}`", label.name),
+                        )
+                        .label("not the name of an enclosing loop")
+                        .help(format!("name the loop: `{}: for … {{ … }}`", label.name))
+                        .spec("62-control-flow-and-errors-20"),
+                    );
+                }
+            }
+            None => match here.iter().find(|b| is_break || matches!(b, Breakable::Loop(_))) {
+                Some(Breakable::Switch(scrutinee)) => {
+                    self.out.switch_breaks.insert(span, *scrutinee);
+                }
+                Some(Breakable::Loop(_)) => {}
+                None => {
+                    let what = if is_break { "a loop or a `switch`" } else { "a loop" };
+                    self.report(
+                        Diagnostic::error("B0219", span, format!("`{word}` is only valid inside {what}"))
+                            .label("nothing here to leave")
+                            .help("a closure's body is not its loop's: `return` leaves the closure")
+                            .spec("62-control-flow-and-errors-20"),
+                    );
+                }
+            },
+        }
+    }
+
     fn match_expr(&mut self, m: &MatchExpr, expected: Option<&Ty>, span: Span) -> Ty {
+        self.breakables.push((self.frames.len(), Breakable::Switch(m.scrutinee.span)));
+        let ty = self.match_value(m, expected, span);
+        self.breakables.pop();
+        ty
+    }
+
+    fn match_value(&mut self, m: &MatchExpr, expected: Option<&Ty>, span: Span) -> Ty {
         let expected = expected.cloned();
         let tys = self.match_arms(m, span, &mut |checker, body| match body {
             ArmBody::Expr(e) => checker.expr(e, expected.as_ref()),
@@ -7373,6 +7446,7 @@ pub fn walk_stmts(stmts: &[Stmt], f: &mut dyn FnMut(&str, ExprId)) {
             }
             StmtKind::Return(Some(e)) | StmtKind::Expr(e) => walk_names(e, f),
             StmtKind::Return(None) => {}
+            StmtKind::Break(_) | StmtKind::Continue(_) => {}
             StmtKind::Defer(block) => walk_stmts(&block.stmts, f),
             StmtKind::While(w) => {
                 walk_names(&w.cond, f);
@@ -7400,9 +7474,8 @@ pub fn walk_stmts(stmts: &[Stmt], f: &mut dyn FnMut(&str, ExprId)) {
 /// A statement that leaves its block: `return`, `throw`, or a call to `fatalError`.
 fn exits(stmt: &Stmt) -> bool {
     match &stmt.kind {
-        StmtKind::Return(_) | StmtKind::Throw(_) => true,
+        StmtKind::Return(_) | StmtKind::Throw(_) | StmtKind::Break(_) | StmtKind::Continue(_) => true,
         StmtKind::Expr(e) => match &e.kind {
-            ExprKind::Name(n) => n == "break" || n == "continue",
             ExprKind::Call(call) => matches!(&call.callee.kind, ExprKind::Name(n) if n == "fatalError"),
             _ => false,
         },

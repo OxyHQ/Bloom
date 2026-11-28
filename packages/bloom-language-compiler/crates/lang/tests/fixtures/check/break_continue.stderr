@@ -1,0 +1,26 @@
+error[B0219]: `break` is only valid inside a loop or a `switch`
+ --> check/break_continue.bloom:4:3
+  |
+4 |   break
+  |   ^^^^^ nothing here to leave
+  |
+help: a closure's body is not its loop's: `return` leaves the closure
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#62-control-flow-and-errors-20
+
+error[B0219]: `continue` is only valid inside a loop
+  --> check/break_continue.bloom:11:18
+   |
+11 |       if y > 1 { continue }
+   |                  ^^^^^^^^ nothing here to leave
+   |
+help: a closure's body is not its loop's: `return` leaves the closure
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#62-control-flow-and-errors-20
+
+error[B0219]: no loop named `inner` is around this `break`
+  --> check/break_continue.bloom:20:22
+   |
+20 |     if x > 1 { break inner }
+   |                      ^^^^^ not the name of an enclosing loop
+   |
+help: name the loop: `inner: for … { … }`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#62-control-flow-and-errors-20

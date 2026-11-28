@@ -919,6 +919,7 @@ pub fn walk_stmt<'a>(stmt: &'a Stmt, f: &mut dyn FnMut(Node<'a>)) {
             }
             walk_block(&g.otherwise, f);
         }
+        StmtKind::Break(_) | StmtKind::Continue(_) => {}
         StmtKind::Throw(e) => walk_expr(e, f),
         StmtKind::Do(d) => {
             walk_block(&d.body, f);
