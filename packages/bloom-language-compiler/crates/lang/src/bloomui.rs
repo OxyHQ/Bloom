@@ -65,6 +65,7 @@ fn call(callee: Expr, args: Vec<Arg>, trailing: Option<Closure>, span: Span) -> 
 
 fn node(name: &str, args: Vec<Arg>, children: Option<Vec<Stmt>>, span: Span) -> Expr {
     let trailing = children.map(|body| Closure {
+        ret: None,
         params: Vec::new(),
         has_in: false,
         tuple: false,

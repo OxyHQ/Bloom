@@ -3138,11 +3138,25 @@ impl<'s, 'i> Parser<'s, 'i> {
         let quiet = self.diagnostics.len();
         let was_panicking = self.panicking;
         self.skip_newlines();
-        let tuple = matches!(self.tok(), Tok::P(P::LParen)) && matches!(self.nth(1), Tok::Ident(_));
+        let mut ret = None;
+        // `{ () -> T in … }`: no parameter, and the result's type.
+        if matches!(self.tok(), Tok::P(P::LParen)) && matches!(self.nth(1), Tok::P(P::RParen)) {
+            self.bump();
+            self.bump();
+            if self.eat(P::Arrow) {
+                ret = Some(self.type_expr());
+            }
+            if self.at_kw(Kw::In) {
+                self.bump();
+                has_in = true;
+            }
+        }
+        let tuple =
+            !has_in && matches!(self.tok(), Tok::P(P::LParen)) && matches!(self.nth(1), Tok::Ident(_));
         if tuple {
             self.bump();
         }
-        if matches!(self.tok(), Tok::Ident(_)) {
+        if !has_in && matches!(self.tok(), Tok::Ident(_)) {
             while let Tok::Ident(_) = self.tok() {
                 let name = self.ident("a parameter");
                 let ty = if self.at(P::Colon) {
@@ -3159,6 +3173,10 @@ impl<'s, 'i> Parser<'s, 'i> {
             if tuple && !self.eat(P::RParen) {
                 params.clear();
             }
+            // `{ (a: Int) -> String in … }`.
+            if tuple && !params.is_empty() && self.eat(P::Arrow) {
+                ret = Some(self.type_expr());
+            }
             if self.at_kw(Kw::In) && (!tuple || !params.is_empty()) {
                 self.bump();
                 has_in = true;
@@ -3168,6 +3186,7 @@ impl<'s, 'i> Parser<'s, 'i> {
         let tuple = tuple && has_in && params.len() != 1;
         if !has_in {
             params.clear();
+            ret = None;
             self.pos = save;
             self.diagnostics.truncate(quiet);
             self.panicking = was_panicking;
@@ -3182,7 +3201,14 @@ impl<'s, 'i> Parser<'s, 'i> {
                 .collect();
         }
         self.expect_close(P::RBrace, open);
-        Closure { params, has_in, tuple, body, span: open.to(Span::new(self.prev_end(), self.prev_end())) }
+        Closure {
+            params,
+            has_in,
+            tuple,
+            ret,
+            body,
+            span: open.to(Span::new(self.prev_end(), self.prev_end())),
+        }
     }
 
     fn if_expr(&mut self) -> Expr {

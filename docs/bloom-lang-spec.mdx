@@ -225,7 +225,16 @@ members after `.` and the names of a struct's or a protocol's properties may be 
 Local bidirectional inference with unification (Hindley–Milner without let-generalisation of
 locals). Signatures are required at module level (parameters and results of `fn`, fields,
 view parameters), inferred everywhere inside: `let`, closure parameters (from the expected
-function type), generic arguments at call sites, empty collections from use. A literal
+function type), generic arguments at call sites, empty collections from use. What is expected
+reaches in: a closure called at once (`let all: [Item] = { … }()`) gives it, so each `return` is
+checked against `[Item]`, and a generic method's result meets it before its arguments are read
+(`uris.map { u in ({ id: u }) }` builds `Item`s). Only a declared type (an annotation, a
+parameter's, a modifier's) reaches a generic method's result this way, never one inferred from a
+sibling (a list literal's earlier item, a ternary's first branch). A record a closure gives (its
+last line or a `return`, its result type not written) takes an expected struct or TS type with
+any extra fields, as TS checks no excess property on a callback's result; a literal written where
+the type is declared (`let x: [T] = [{ … }]`) is checked for them (B0205). Swift's signature writes a closure's result
+type by hand: `{ () -> [Item] in … }`, `{ (n: Int) -> Int in n * 2 }`. A literal
 `"md"` checks against an expected token set; `none` against an expected `T?`. A `T` is
 promoted to `T?` where a `T?` is expected (never the reverse; unwrap with `if let`, `??`,
 `?.`, `match` or `?`). In `if x != none { … }` (also `none != x`, and each side of `&&`) a

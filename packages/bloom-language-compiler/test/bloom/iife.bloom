@@ -1,0 +1,42 @@
+/// A closure called at once, typed by what is expected; Swift's closure signature (FeedCard).
+public struct Item {
+  var id: String
+  var uri: String? = none
+  var name: String? = none
+}
+
+public func items(names: [String]?, uris: [String]) -> [Item] {
+  let all: [Item] = {
+    if let names = names {
+      return names.map { n in ({ id: n, uri: none, name: n }) }
+    }
+    return uris.map { u in ({ id: u, uri: u }) }
+  }()
+  return all
+}
+public struct Row {
+  var id: String
+  var label: String? = none
+}
+public func rows(_ ids: [String]) -> Int {
+  let all = { () -> [Row] in
+    if ids.isEmpty { return [] }
+    return ids.map { i in ({ id: i }) }
+  }()
+  let twice = { (n: Int) -> Int in n * 2 }
+  return twice(all.count)
+}
+public struct Section {
+  let title: String
+  let data: [String]
+}
+/// A list's first record does not type the `map` closure's records (explore/trending).
+public func sectionRows(_ sections: [Section]) -> Int {
+  let all = sections.flatMap { section in
+    [
+      { kind: "header", title: section.title },
+      ..section.data.enumerated().map { (index, item) in ({ kind: "item", title: section.title, item: item, index: index }) },
+    ]
+  }
+  return all.count
+}

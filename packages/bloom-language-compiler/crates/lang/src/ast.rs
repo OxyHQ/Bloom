@@ -835,6 +835,8 @@ pub struct Closure {
     pub has_in: bool,
     /// `{ (i, x) in … }`: one tuple parameter, its items named.
     pub tuple: bool,
+    /// `{ () -> [Item] in … }`, `{ (a: Int) -> String in … }` (Swift's signature): the result type.
+    pub ret: Option<TypeExpr>,
     pub body: Vec<Stmt>,
     pub span: Span,
 }

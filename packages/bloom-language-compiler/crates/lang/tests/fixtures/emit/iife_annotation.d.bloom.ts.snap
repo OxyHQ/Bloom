@@ -1,0 +1,11 @@
+export interface Item {
+  readonly id: string;
+  readonly uri?: string | undefined;
+  readonly name?: string | undefined;
+}
+export declare function items(names: (readonly string[]) | undefined | null, uris: readonly string[]): readonly Item[];
+export interface Row {
+  readonly id: string;
+  readonly label?: string | undefined;
+}
+export declare function rows(ids: readonly string[]): number;

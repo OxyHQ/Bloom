@@ -552,6 +552,16 @@ pub struct Checker<'o> {
     binding_stmt: bool,
     /// `let path = pathOf()` with a TS value: the local holds TS's claim (`ts_claimed`).
     ts_claimed_locals: HashSet<LocalId>,
+    /// What each call is expected to give (by its id), for a generic method's result.
+    call_expected: HashMap<ExprId, Ty>,
+    /// Calls whose expected type is only inferred, from a sibling (a list literal's earlier item,
+    /// a ternary's first branch): it is not met with a generic method's result, which only a
+    /// declared type (an annotation, a parameter's) is.
+    inferred_expected: HashSet<ExprId>,
+    /// Record literals a closure gives (its tail, its `return`s) when its result type is not
+    /// written: an expected struct types them but takes their extra fields, as TS checks no
+    /// excess property on a callback's result.
+    callback_results: HashSet<ExprId>,
     /// Values optional only through a guard kept on a TS value TS says is present
     /// (`viewPost?.id`, `viewPost` a TS `HydratedPost`): TS's own type is the present one.
     claim_only: HashSet<ExprId>,
@@ -659,6 +669,9 @@ impl<'o> Checker<'o> {
             literal_record: false,
             binding_stmt: false,
             ts_claimed_locals: HashSet::default(),
+            call_expected: HashMap::default(),
+            inferred_expected: HashSet::default(),
+            callback_results: HashSet::default(),
             claim_only: HashSet::default(),
             pending_shapes: Vec::new(),
             in_init: false,
@@ -4528,6 +4541,15 @@ impl<'o> Checker<'o> {
                     },
                     _ => self.fresh(),
                 };
+                // With no declared item type, an item's expected type is its siblings': inferred.
+                if matches!(self.resolve(&elem), Ty::Var(_)) {
+                    for item in items {
+                        match &item.kind {
+                            ExprKind::Spread(inner) => inferred_calls(inner, &mut self.inferred_expected),
+                            _ => inferred_calls(item, &mut self.inferred_expected),
+                        }
+                    }
+                }
                 for item in items {
                     if let ExprKind::Spread(inner) = &item.kind {
                         let list = Ty::List(Box::new(elem.clone()));
@@ -4712,6 +4734,10 @@ impl<'o> Checker<'o> {
                     _ if optional_a.is_some() => optional_a.as_ref(),
                     _ => expected.or(Some(&a)).filter(|_| !matches!(then.kind, ExprKind::None)),
                 };
+                // The first branch's type held to the other is inferred, not declared.
+                if expected.is_none() {
+                    inferred_calls(otherwise, &mut self.inferred_expected);
+                }
                 self.push();
                 self.narrow(cond, BinaryOp::Eq, BinaryOp::Or);
                 let b = self.expr(otherwise, hint);
@@ -6623,7 +6649,14 @@ impl<'o> Checker<'o> {
             }];
         }
         let mut ret = expected_fn.as_ref().map_or_else(|| self.fresh(), |f| f.ret.clone());
-
+        // `{ () -> [Item] in … }`: the written result type, which each `return` is checked against.
+        if let Some(written) = &c.ret {
+            let declared = self.resolve_type(written);
+            if expected_fn.is_some() && !self.coerce(&declared, &ret) {
+                self.mismatch(written.span, &declared, &ret);
+            }
+            ret = declared;
+        }
         // TS's `() => Promise<void> | void` (read as `Promise<Unit>?`): a closure that returns
         // nothing, or one that awaits (its promise), fits it (R1).
         if let Ty::Option(inner) = self.resolve(&ret) {
@@ -6661,6 +6694,9 @@ impl<'o> Checker<'o> {
             locals.push(self.declare(&param.name, ty, LocalKind::Param));
         }
         let ret_resolved = self.resolve(&ret);
+        if c.ret.is_none() {
+            closure_results(&c.body, true, &mut self.callback_results);
+        }
         let trying = std::mem::take(&mut self.trying);
         let body_ty = self.stmts(&c.body, Some(&ret), c.span);
         self.trying = trying;
@@ -7304,6 +7340,89 @@ fn optional_chain(expr: &Expr) -> bool {
 }
 
 /// Whether a conditional chain gives `none` in one of its branches (`d ? y : none`).
+/// The calls `expr` gives, through parentheses, branches and `??`: their expected type is
+/// inferred from a sibling.
+fn inferred_calls(expr: &Expr, out: &mut HashSet<ExprId>) {
+    match &expr.kind {
+        ExprKind::Call(_) => {
+            out.insert(expr.id);
+        }
+        ExprKind::Paren(inner) | ExprKind::Await(inner) | ExprKind::Try(inner) | ExprKind::Force(inner) => {
+            inferred_calls(inner, out);
+        }
+        ExprKind::Ternary(_, then, otherwise) | ExprKind::Binary(BinaryOp::Default, then, otherwise) => {
+            inferred_calls(then, out);
+            inferred_calls(otherwise, out);
+        }
+        _ => {}
+    }
+}
+
+/// The record literals a closure's body gives: its tail (when `tail`) and its `return`s, through
+/// parentheses, branches, `??` and list literals, not inside a nested closure.
+fn closure_results(stmts: &[Stmt], tail: bool, out: &mut HashSet<ExprId>) {
+    fn given(expr: &Expr, out: &mut HashSet<ExprId>) {
+        match &expr.kind {
+            ExprKind::Record(_) => {
+                out.insert(expr.id);
+            }
+            ExprKind::Paren(inner) => given(inner, out),
+            ExprKind::Ternary(_, then, otherwise) | ExprKind::Binary(BinaryOp::Default, then, otherwise) => {
+                given(then, out);
+                given(otherwise, out);
+            }
+            ExprKind::List(items) => items.iter().for_each(|item| given(item, out)),
+            ExprKind::If(i) => {
+                closure_results(&i.then.stmts, true, out);
+                match i.otherwise.as_deref() {
+                    Some(Else::If(e)) => given(e, out),
+                    Some(Else::Block(b)) => closure_results(&b.stmts, true, out),
+                    None => {}
+                }
+            }
+            ExprKind::Match(m) => m.arms.iter().for_each(|arm| match &arm.body {
+                ArmBody::Expr(e) => given(e, out),
+                ArmBody::Block(b) => closure_results(&b.stmts, true, out),
+            }),
+            _ => {}
+        }
+    }
+    /// The `return`s inside a statement-level `if` or `switch`.
+    fn returns(expr: &Expr, out: &mut HashSet<ExprId>) {
+        match &expr.kind {
+            ExprKind::If(i) => {
+                closure_results(&i.then.stmts, false, out);
+                match i.otherwise.as_deref() {
+                    Some(Else::If(e)) => returns(e, out),
+                    Some(Else::Block(b)) => closure_results(&b.stmts, false, out),
+                    None => {}
+                }
+            }
+            ExprKind::Match(m) => m.arms.iter().for_each(|arm| {
+                if let ArmBody::Block(b) = &arm.body {
+                    closure_results(&b.stmts, false, out);
+                }
+            }),
+            _ => {}
+        }
+    }
+    for (index, stmt) in stmts.iter().enumerate() {
+        match &stmt.kind {
+            StmtKind::Return(Some(e)) => given(e, out),
+            StmtKind::Expr(e) if tail && index + 1 == stmts.len() => given(e, out),
+            StmtKind::Expr(e) => returns(e, out),
+            StmtKind::While(w) => closure_results(&w.body.stmts, false, out),
+            StmtKind::For(f) => closure_results(&f.body.stmts, false, out),
+            StmtKind::Guard(g) => closure_results(&g.otherwise.stmts, false, out),
+            StmtKind::Do(d) => {
+                closure_results(&d.body.stmts, false, out);
+                d.catches.iter().for_each(|c| closure_results(&c.body.stmts, false, out));
+            }
+            _ => {}
+        }
+    }
+}
+
 fn ends_in_none(expr: &Expr) -> bool {
     match &expr.kind {
         ExprKind::None => true,
