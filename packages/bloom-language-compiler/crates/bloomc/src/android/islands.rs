@@ -9,11 +9,11 @@
 //!   --std JSON,Core --runtime` (the native backend, `crates/native`): the modules, the
 //!   standard library modules they use and Bloom's Kotlin runtime (`so.oxy.bloom.ui`,
 //!   `so.oxy.bloom.std`, `BloomTheme.generated.kt`);
-//! - `IslandRegistry`: each island by name, its module's `IslandEntry(props, onEvent)`
-//!   (`FeedIsland` → `bloom.<app>.feedisland.IslandEntry`), which the backend writes: `props`
-//!   is the JSON of the island's `Codable` props, `onEvent` sends an intent's JSON back;
+//! - `IslandRegistry`: each island by name, its module's `<Module>__island(props, emit)`
+//!   (`FeedIsland` → `bloom.<app>.feedisland.FeedIsland__island`), which the backend writes:
+//!   `props` is the JSON of the island's `Codable` props, `emit(name, payload)` an intent;
 //! - `BloomIslandPackage`: the view `BloomIsland` (a Compose view), with the props `island`
-//!   (which island) and `props` (JSON), and the direct event `onIslandEvent` (`{ event }`).
+//!   (which island) and `props` (JSON), and the direct event `onIslandEvent` (`{ name, payload }`).
 //!   Its JS side is the standard library's `extern native "BloomIsland"` view.
 //!
 //! Compose comes in this library only: its compiler plugin, `runtime`, `ui` and `foundation`,
@@ -58,14 +58,15 @@ fn backend() -> PathBuf {
 }
 
 /// `IslandRegistry.kt`: each island's entry by name. An island module's entry is the
-/// backend's `IslandEntry(props, onEvent)` in the module's package: `props` is the JSON of
-/// the island's `Codable` props, and `onEvent` sends an intent's JSON back to React Native.
+/// backend's `<Module>__island(props, emit)` in the module's package: `props` is the JSON of
+/// the island's `Codable` props, and `emit(name, payload)` sends an intent (its payload JSON)
+/// back to React Native.
 pub fn registry(app: &str, islands: &[String]) -> String {
     let entries: String = islands
         .iter()
         .map(|name| {
             format!(
-                "    \"{name}\" to @Composable {{ props: String, onEvent: (String) -> Unit -> {}.IslandEntry(props, onEvent) }},\n",
+                "    \"{name}\" to @Composable {{ props: String, emit: (String, String) -> Unit -> {}.{name}__island(props, emit) }},\n",
                 module_package(app, name)
             )
         })
@@ -76,8 +77,8 @@ package {PACKAGE}
 
 import androidx.compose.runtime.Composable
 
-/** An island: drawn from its props (JSON), sending its intents (JSON) back to React Native. */
-typealias Island = @Composable (props: String, onEvent: (String) -> Unit) -> Unit
+/** An island: drawn from its props (JSON), emitting its intents (a name and a JSON payload) back to React Native. */
+typealias Island = @Composable (props: String, emit: (String, String) -> Unit) -> Unit
 
 /** The Compose islands of this app, by module name. */
 object IslandRegistry {{
@@ -125,7 +126,8 @@ class BloomIslandPackage : ReactPackage {{
 /**
  * An island in the React Native tree: the registry's `island`, drawn from `props` in Bloom's
  * theme. A change of `props` recomposes the island (its state is kept); a change of `island`
- * draws another. Each intent the island sends is an `onIslandEvent` with `{{ event }}` (JSON).
+ * draws another. Each intent the island emits is an `onIslandEvent` with `{{ name, payload }}` (the
+ * payload is JSON). Its content is set once ([Content]); a prop change only recomposes.
  */
 class BloomIslandView(private val reactContext: ThemedReactContext) : AbstractComposeView(reactContext) {{
   var island by mutableStateOf<String?>(null)
@@ -137,9 +139,13 @@ class BloomIslandView(private val reactContext: ThemedReactContext) : AbstractCo
     BloomThemeProvider {{ entry(props, ::send) }}
   }}
 
-  private fun send(event: String) {{
+  private fun send(name: String, payload: String) {{
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id) ?: return
-    val data = Arguments.createMap().apply {{ putString("event", event) }}
+    val data =
+      Arguments.createMap().apply {{
+        putString("name", name)
+        putString("payload", payload)
+      }}
     dispatcher.dispatchEvent(IslandEvent(UIManagerHelper.getSurfaceId(this), id, data))
   }}
 
@@ -294,16 +300,14 @@ mod tests {
         assert!(text.contains("package so.oxy.bloom.islands\n"), "{text}");
         assert!(
             text.contains(
-                "    \"FeedIsland\" to @Composable { props: String, onEvent: (String) -> Unit -> bloom.mention.feedisland.IslandEntry(props, onEvent) },\n"
+                "    \"FeedIsland\" to @Composable { props: String, emit: (String, String) -> Unit -> bloom.mention.feedisland.FeedIsland__island(props, emit) },\n"
             ),
             "{text}"
         );
-        assert!(text.contains("bloom.mention.settings.IslandEntry(props, onEvent)"), "{text}");
-        assert!(
-            text.contains(
-                "typealias Island = @Composable (props: String, onEvent: (String) -> Unit) -> Unit"
-            )
-        );
+        assert!(text.contains("bloom.mention.settings.Settings__island(props, emit)"), "{text}");
+        assert!(text.contains(
+            "typealias Island = @Composable (props: String, emit: (String, String) -> Unit) -> Unit"
+        ));
     }
 
     #[test]
@@ -332,5 +336,9 @@ mod tests {
         assert!(text.contains("\"registrationName\" to \"onIslandEvent\""), "{text}");
         assert!(text.contains("const val EVENT = \"topIslandEvent\""), "{text}");
         assert!(text.contains("entry(props, ::send)"), "{text}");
+        assert!(
+            text.contains("putString(\"name\", name)") && text.contains("putString(\"payload\", payload)"),
+            "{text}"
+        );
     }
 }
