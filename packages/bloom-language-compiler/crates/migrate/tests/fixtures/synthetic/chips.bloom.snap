@@ -1,6 +1,6 @@
 // A TS component's hyphenated prop (`aria-pressed`) is passed as JSX passes it, a spread of a
 // one-entry dictionary. A `ReadonlySet<T>` is a `Set<T>`, and `new Set(s).add(x)` (a copy, then
-// an add) is `s.inserting(x)`.
+// an add) is `s.inserting(x)`. `Embed(<></>)` draws nothing: an empty `Group`.
 
 import { Chip } from "./chip"
 
@@ -15,6 +15,7 @@ public struct Chips: View {
       for slug in slugs {
         Chip(label: slug, onPress: { choose(slug) }, ..["aria-pressed": chosen.contains(slug)])
       }
+      Group {}
     }
   }
 }
