@@ -14,7 +14,7 @@ export function row(account: Account): Child {
 return Text(account.name);
 }
 
-const $fn0 = (a: NonNullable<ReturnType<typeof useAccounts>["data"]>[number]) => a.id;
+const $fn0 = (a: NonNullable<ReturnType<typeof useAccounts>["data"]>[number]) => (a.id satisfies string);
 export const Accounts = view(function Accounts() {
 "use no memo";
 const $ = $c(2);
@@ -22,7 +22,7 @@ const query = useAccounts();
 let $t0;
 if ($[0] !== query.data) {
 const accounts = query.data ?? [];
-const ids = new Set<string>((accounts.map((v0) => ($fn0)(v0)) satisfies readonly string[]));
+const ids = new Set<string>(accounts.map((v0) => ($fn0)(v0)));
 $t0 = VStack(Text(`${names((accounts satisfies readonly Account[])).length}`), Embed($jsx(AccountList, { accounts: accounts } satisfies ComponentProps<typeof AccountList>)), Text(`${ids.size}`), ...accounts.map((row satisfies (p0: NonNullable<ReturnType<typeof useAccounts>["data"]>[number]) => Child)).map((item) => item));
 $[0] = query.data;
 $[1] = $t0;

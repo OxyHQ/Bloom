@@ -352,6 +352,7 @@ fn queued(visibility: Visibility, modifiers: &Modifiers, at: Span, f: &FnDecl, i
         work = expr(ExprKind::Throwing(TryKind::Plain, Box::new(work)));
     }
     let closure = Closure {
+        ret: None,
         params: Vec::new(),
         has_in: false,
         tuple: false,

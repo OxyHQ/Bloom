@@ -1,0 +1,32 @@
+// A closure called at once gives what is expected, as Swift reads a binding's type into it
+// (lang-mention-10's iife-annotation, FeedCard's `useMemo`): each `return` is checked against `[Item]`,
+// a generic method's result (`map`'s `[U]`) meets it first, and a record literal there may leave
+// out a defaulted field. Swift's signature `{ () -> T in … }` writes the result type by hand.
+public struct Item {
+  var id: String
+  var uri: String? = none
+  var name: String? = none
+}
+
+public func items(names: [String]?, uris: [String]) -> [Item] {
+  let all: [Item] = {
+    if let names = names {
+      return names.map { n in ({ id: n, uri: none, name: n }) }
+    }
+    return uris.map { u in ({ id: u, uri: u }) }
+  }()
+  return all
+}
+
+public struct Row {
+  var id: String
+  var label: String? = none
+}
+public func rows(_ ids: [String]) -> Int {
+  let all = { () -> [Row] in
+    if ids.isEmpty { return [] }
+    return ids.map { i in ({ id: i }) }
+  }()
+  let twice = { (n: Int) -> Int in n * 2 }
+  return twice(all.count)
+}

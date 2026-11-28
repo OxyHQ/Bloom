@@ -110,3 +110,9 @@ export declare function NestedCard(props: {
   renderPost: NestedRenderer;
   post: FeedPost;
 }): import('react').ReactNode;
+/** An avatar of a group (Bloom's `AvatarGroupItem`): it has no `color`. */
+export interface AvatarItem {
+  id?: string;
+  uri?: string | null;
+  username?: string;
+}

@@ -1,0 +1,13 @@
+// A record literal written where a TS type is declared is checked for extra fields, as TS checks
+// a fresh literal; a callback's result is not (`emit/iife_regressions`).
+import { type AvatarItem } from "@/corpus"
+
+func one(_ c: String) -> AvatarItem {
+  let item: AvatarItem = { id: "a", color: c }
+  return item
+}
+
+func listed(_ c: String) -> [AvatarItem] {
+  let items: [AvatarItem] = [{ id: "a", color: c }]
+  return items
+}

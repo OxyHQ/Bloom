@@ -1,0 +1,17 @@
+error[B0205]: `AvatarItem` has no field `color`
+ --> check/excess_field_declared.bloom:6:37
+  |
+6 |   let item: AvatarItem = { id: "a", color: c }
+  |                                     ^^^^^ no such field
+  |
+help: its fields are `id`, `uri`, `username`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
+
+error[B0205]: `AvatarItem` has no field `color`
+  --> check/excess_field_declared.bloom:11:41
+   |
+11 |   let items: [AvatarItem] = [{ id: "a", color: c }]
+   |                                         ^^^^^ no such field
+   |
+help: its fields are `id`, `uri`, `username`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs
