@@ -932,6 +932,32 @@ impl Checker<'_> {
                 }
                 foreign_of(&text, |t| format!("ReturnType<{t}>"))
             }
+            // A TS value callable by its call signatures beside its members (zustand's store
+            // hook: `useStore()`, `useStore { s in s.items }`, `useStore.getState()`), as a Swift
+            // value with `callAsFunction` overloads is: the signature the arguments fit, by count
+            // (TS's overloads differ in it), first one first; generic, so `U` is the closure's.
+            Ty::Adt(def, args) if self.out.defs[def].fields().iter().any(|f| f.name == crate::ts::CALL) => {
+                let named = call.args.iter().any(|a| a.label.is_some());
+                let given = call.args.iter().filter(|a| a.label.is_none()).count()
+                    + usize::from(named)
+                    + usize::from(call.trailing.is_some());
+                let signatures: Vec<Ty> = self.out.defs[def]
+                    .fields()
+                    .iter()
+                    .filter(|f| f.name == crate::ts::CALL)
+                    .map(|f| substitute(&f.ty, &args))
+                    .collect();
+                let fits = |ty: &Ty| match ty {
+                    Ty::Fn(f) => {
+                        let required = f.params.iter().filter(|p| !p.optional && !p.rest).count();
+                        required <= given && (given <= f.params.len() || f.params.iter().any(|p| p.rest))
+                    }
+                    _ => false,
+                };
+                let chosen = signatures.iter().find(|t| fits(t)).or(signatures.last()).cloned();
+                let ty = chosen.map_or(Ty::Unknown, |t| self.instantiate(&t));
+                self.value_call(expr, call, &ty)
+            }
             Ty::Unknown => {
                 self.args_unchecked(call);
                 Ty::Unknown
@@ -2378,6 +2404,7 @@ impl Checker<'_> {
             options: self.options,
             named: &mut self.ts_named,
             reads: &mut self.out.dependencies,
+            module: None,
         };
         mapper.export(file, name, &format!("{ns}.{name}"), 0)?.component
     }

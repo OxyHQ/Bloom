@@ -1,11 +1,13 @@
 // @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
 import { c as $c } from "react/compiler-runtime";
 import { Text, VStack, view } from "@oxy.so/bloom-language";
-import { pinnedTrends, recentTitles, trendIds } from "@/stores/trends";
+import { pinnedTrends, recentTitles, trendIds, useTrendsStore } from "@/stores/trends";
 
+const $fn0 = (s: import("@/stores/trends").TrendsState) => s.trends;
+const $fn2 = (s: import("@/stores/trends").TrendsState) => s.loaded;
 export const Shelf = view(function Shelf() {
 "use no memo";
-const $ = $c(2);
+const $ = $c(8);
 let pinned: readonly ReturnType<typeof pinnedTrends>[number][];
 if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
 pinned = pinnedTrends();
@@ -13,12 +15,18 @@ $[0] = pinned;
 } else {
 pinned = $[0];
 }
+const trends = useTrendsStore($fn0);
+const loaded = useTrendsStore($fn2);
+const state = useTrendsStore();
 let $t0;
-if ($[1] === Symbol.for("react.memo_cache_sentinel")) {
-$t0 = VStack(pinned.map((trend, index) => Text(`${index} ${trend.title}`)), Text(`${pinned.length} ${(recentTitles().length === 0)} ${trendIds()[0] ?? ""}`));
-$[1] = $t0;
+if ($[4] !== trends || $[5] !== loaded || $[6] !== state.recent) {
+$t0 = VStack(pinned.map((trend, index) => Text(`${index} ${trend.title}`)), trends.map((trend, index) => Text(`${index} ${trend.id}`)), Text(`${pinned.length} ${(recentTitles().length === 0)} ${trendIds()[0] ?? ""}`), ($[1] !== loaded || $[2] !== state.recent ? ($[1] = loaded, $[2] = state.recent, $[3] = Text(`${loaded} ${state.recent.length} ${useTrendsStore.getState().trends.length}`)) : $[3]));
+$[4] = trends;
+$[5] = loaded;
+$[6] = state.recent;
+$[7] = $t0;
 } else {
-$t0 = $[1];
+$t0 = $[7];
 }
 return $t0;
 });

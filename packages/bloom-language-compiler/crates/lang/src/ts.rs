@@ -664,10 +664,22 @@ impl Reader {
                     let value = self.ty(&index.type_annotation.type_annotation);
                     members.push(TsMember { name: "[index]".into(), optional: false, ty: value });
                 }
-                // `(content: string) => void` inside an interface: the value is callable.
-                TSSignature::TSCallSignatureDeclaration(_)
-                | TSSignature::TSConstructSignatureDeclaration(_) => {
-                    members.push(TsMember { name: "[call]".into(), optional: false, ty: TsType::Other });
+                // `(content: string) => void` inside an interface: the value is callable, by each
+                // signature (zustand's `UseBoundStore`: `(): S` and `<U>(selector) => U`).
+                TSSignature::TSCallSignatureDeclaration(call) => {
+                    let function = self.function(
+                        &call.type_parameters,
+                        &call.params,
+                        call.return_type.as_ref().map(|t| &t.type_annotation),
+                    );
+                    members.push(TsMember {
+                        name: CALL.into(),
+                        optional: false,
+                        ty: TsType::Fn(Box::new(function)),
+                    });
+                }
+                TSSignature::TSConstructSignatureDeclaration(_) => {
+                    members.push(TsMember { name: "[new]".into(), optional: false, ty: TsType::Other });
                 }
             }
         }
@@ -842,6 +854,19 @@ fn fn_type_bounds(declaration: &Option<oxc_allocator::Box<TSTypeParameterDeclara
 
 /// The mark of a type parameter bound by a view's modifiers.
 const VIEW_PARAM: &str = "\0view";
+
+/// The field a TS call signature becomes (one per signature, in order): a value of an object
+/// type with one is callable, as a Swift value with `callAsFunction` is (zustand's store hook,
+/// `useStore { s in s.items }`), and keeps its other members (`useStore.getState()`). Not a
+/// Bloom name, so no `.bloom` code reads it as a field.
+pub const CALL: &str = "[call]";
+
+/// Whether an object type's members are TS's to check (`Foreign`): an index signature takes any
+/// key, a construct signature makes a class, and one only callable stays the TS function it is.
+fn foreign_members(members: &[TsMember]) -> bool {
+    members.iter().any(|m| m.name == "[index]" || m.name == "[new]")
+        || members.iter().all(|m| m.name == CALL) && !members.is_empty()
+}
 
 fn type_name(name: &TSTypeName) -> String {
     match name {
@@ -1113,6 +1138,10 @@ pub struct Mapper<'m> {
     pub named: &'m mut HashMap<(PathBuf, String), Ty>,
     /// Every file the mapping reads (a compile's dependencies).
     pub reads: &'m mut std::collections::BTreeSet<PathBuf>,
+    /// The module a `.bloom` file imports, and the specifier it names it by: its exported
+    /// types are named `import("specifier").Name` where nothing else names them (a generic's
+    /// type argument, `UseBoundStore<TrendsState>`).
+    pub module: Option<(PathBuf, String)>,
 }
 
 /// The type parameters in scope while mapping a generic declaration.
@@ -1780,18 +1809,39 @@ impl Mapper<'_> {
             return Ty::View(None);
         }
         if file.decls.contains_key(name) {
-            let mapped: Vec<Ty> = args.iter().map(|a| self.ty(file, a, scope, path, depth)).collect();
+            let mapped: Vec<Ty> =
+                args.iter().map(|a| self.ty(file, a, scope, &self.arg_path(file, a, path), depth)).collect();
             return self.named(file, name, &mapped, path, depth + 1);
         }
         if let Some((specifier, imported)) = file.imports.get(name).cloned()
             && let Some(target) = self.open(&file.path, &specifier)
             && let Some(local) = self.exported_type(&target, &imported, depth)
         {
-            let mapped: Vec<Ty> = args.iter().map(|a| self.ty(file, a, scope, path, depth)).collect();
+            let mapped: Vec<Ty> =
+                args.iter().map(|a| self.ty(file, a, scope, &self.arg_path(file, a, path), depth)).collect();
             let (target, local) = local;
             return self.named(&target, &local, &mapped, path, depth + 1);
         }
         Ty::Foreign(path.into())
+    }
+
+    /// How emitted TS names a generic's type argument: an exported type of the imported module
+    /// by its name (`import("@/stores/trends").TrendsState`), else `path` (the reference's own).
+    fn arg_path(&self, file: &Rc<TsFile>, arg: &TsType, path: &str) -> String {
+        if let TsType::Ref(name, args) = arg
+            && args.is_empty()
+            && let Some((module, specifier)) = &self.module
+            && *module == file.path
+            && let Some(exported) = file
+                .exports
+                .iter()
+                .filter(|(_, e)| matches!(e, Export::Local(local) if local == name))
+                .map(|(k, _)| k)
+                .min()
+        {
+            return format!("import({}).{exported}", crate::emit::string_literal(specifier));
+        }
+        path.to_string()
     }
 
     /// The type of the module value `name` (`typeof name`), named `path` in emitted TS: a
@@ -1969,9 +2019,9 @@ impl Mapper<'_> {
                     return Ty::Foreign(path.into());
                 }
                 all.extend(members);
-                // An index signature (`[key: string]: unknown`) takes any key, and a call
-                // signature makes it callable: TS checks those values (`Foreign`).
-                if all.iter().any(|m| m.name == "[index]" || m.name == "[call]") {
+                // An index signature (`[key: string]: unknown`) takes any key: TS checks those
+                // values (`Foreign`). One with call signatures beside members is callable.
+                if foreign_members(&all) {
                     return Ty::Foreign(path.into());
                 }
                 // Reserve the definition first, so a recursive field refers to it.
@@ -2000,15 +2050,29 @@ impl Mapper<'_> {
                     self.defs[id].kind = DefKind::Struct(fields);
                     return Ty::Adt(id, mapped);
                 }
-                let fields = fields
-                    .into_iter()
-                    .map(|f| FieldDef { ty: crate::types::substitute(&f.ty, args), ..f })
-                    .collect();
+                let fields = fields.into_iter().map(|f| FieldDef { ty: given(&f.ty, args), ..f }).collect();
                 self.defs[id].kind = DefKind::Struct(fields);
                 return ty;
             }
             TsDecl::Alias { params, ty } => {
                 if !params.is_empty() {
+                    // `type UseBoundStore<S> = { (): S; getState(): S }` given its arguments: the
+                    // object type with them, as a generic interface is.
+                    if let TsType::Object(members) = &ty
+                        && params.len() == args.len()
+                        && !args.iter().any(mentions_param)
+                    {
+                        let mapped = self.object(file, members, &params, path, name, depth);
+                        if let Ty::Adt(id, _) = mapped {
+                            let fields: Vec<FieldDef> = self.defs[id]
+                                .fields()
+                                .iter()
+                                .map(|f| FieldDef { ty: given(&f.ty, args), ..f.clone() })
+                                .collect();
+                            self.defs[id].kind = DefKind::Struct(fields);
+                        }
+                        return mapped;
+                    }
                     return Ty::Foreign(path.into());
                 }
                 match &ty {
@@ -2106,7 +2170,7 @@ impl Mapper<'_> {
         name: &str,
         depth: usize,
     ) -> Ty {
-        if members.iter().any(|m| m.name == "[index]" || m.name == "[call]") {
+        if foreign_members(members) {
             return Ty::Foreign(path.into());
         }
         let id = self.defs.len();
@@ -2155,7 +2219,12 @@ impl Mapper<'_> {
         members
             .iter()
             .map(|member| {
-                let field_path = format!("{path}[\"{}\"]", member.name);
+                // A call signature is the value's own (`Parameters<typeof useStore>`).
+                let field_path = if member.name == CALL {
+                    path.to_string()
+                } else {
+                    format!("{path}[\"{}\"]", member.name)
+                };
                 let mut ty = self.optional_member(file, member, scope, &field_path, depth);
                 if member.optional && !matches!(ty, Ty::Option(_) | Ty::Foreign(_)) {
                     ty = Ty::Option(Box::new(ty));
@@ -2258,6 +2327,18 @@ fn returns_view_node(file: &TsFile, ret: &TsType) -> bool {
 }
 
 /// Whether `ty` names a type parameter.
+/// A generic declaration's member type given its arguments: its own parameters (`Param(0..n)`)
+/// are the arguments, and a generic method's (`<U>(selector: (s: S) => U) => U`, mapped after
+/// them) become that method's own `Param(0..)`, as a call instantiates them.
+fn given(ty: &Ty, args: &[Ty]) -> Ty {
+    let n = args.len() as u32;
+    crate::types::map_ty(ty, &mut |t| match t {
+        Ty::Param(i, _) if *i < n => Some(args[*i as usize].clone()),
+        Ty::Param(i, name) => Some(Ty::Param(i - n, name.clone())),
+        _ => None,
+    })
+}
+
 fn mentions_param(ty: &Ty) -> bool {
     let mut found = false;
     crate::types::map_ty(ty, &mut |t| {

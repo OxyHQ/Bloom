@@ -1225,7 +1225,12 @@ so a wrong path is a compile error.
   returning an element, `memo(Inner)` or `memo(function Inner(props: P) { … })` (`Inner`'s
   props), or an `UpperCamel` class (`extends Component<P>` gives `P`; any other's
   props are TS's to check), or, when it is `Foreign`, when its name is `UpperCamel` and it is
-  used as a node. A TS interface with a call signature (`ToastFn`) or an index signature
+  used as a node. A TS object type with call signatures beside members (zustand's store hook,
+  `{ (): S; <U>(selector: (state: S) => U): U; getState(): S }`) is callable by each signature,
+  as a Swift value with `callAsFunction` overloads is: a call takes the first signature its
+  arguments fit by count, a generic one instantiated (`useStore { s in s.items }` is the
+  selector's `[Item]`), and the members stay members (`useStore.getState()`). One with only a
+  call signature (`ToastFn`), a construct signature or an index signature
   (`[key: string]: unknown`) is `Foreign`: callable, and taking any keys, checked by TS.
 - **Resolution:** relative paths; the project's `tsconfig.json` `compilerOptions.paths` (`@/*`);
   packages through `node_modules` and their `exports` (`types`, then `react-native`, `import`).

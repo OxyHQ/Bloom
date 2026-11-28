@@ -1,17 +1,24 @@
 // TS array types are Bloom lists (`string[]`, `readonly Trend[]`, `ReadonlyArray<string>`), read
-// with Swift's collection members, emitted as the list's (a JS array). A zustand selector's
-// result (`useTrendsStore { s in s.trends }`) is still a TS value Bloom does not type: a list
-// method on it is B0601 (check/foreign_list_method).
-import { pinnedTrends, recentTitles, trendIds } from "@/stores/trends"
+// with Swift's collection members, emitted as the list's (a JS array). A zustand store hook is
+// callable by each of its call signatures beside its members, as a Swift value with
+// `callAsFunction` is: `useTrendsStore { s in s.trends }` is the selector's `[Trend]`, a list.
+import { pinnedTrends, recentTitles, trendIds, useTrendsStore } from "@/stores/trends"
 
 public struct Shelf: View {
   let pinned = pinnedTrends()
+  let trends = useTrendsStore { s in s.trends }
+  let loaded = useTrendsStore({ s in s.loaded })
+  let state = useTrendsStore()
   var body: some View {
     VStack {
       for (index, trend) in pinned.enumerated() {
         Text("\(index) \(trend.title)")
       }
+      for (index, trend) in trends.enumerated() {
+        Text("\(index) \(trend.id)")
+      }
       Text("\(pinned.count) \(recentTitles().isEmpty) \(trendIds().first ?? "")")
+      Text("\(loaded) \(state.recent.count) \(useTrendsStore.getState().trends.count)")
     }
   }
 }

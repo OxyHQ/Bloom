@@ -1137,6 +1137,13 @@ impl<'o> Checker<'o> {
                 self.coerce(&shape, &e)
             }
             (Ty::Foreign(_), _) => false,
+            // A function where a callable TS object type is wanted (`{ (): S; getState(): S }`):
+            // TS checks it has the members, as it checks any value passed to TS.
+            (Ty::Fn(_), Ty::Adt(def, _))
+                if self.out.defs[*def].fields().iter().any(|f| f.name == crate::ts::CALL) =>
+            {
+                true
+            }
             (Ty::Option(x), Ty::Option(y)) => self.coerce(x, y),
             (_, Ty::Option(inner)) => self.coerce(&a, inner),
             (Ty::Strings(_), Ty::Str) => true,
@@ -2794,6 +2801,7 @@ impl<'o> Checker<'o> {
                                 options: self.options,
                                 named: &mut self.ts_named,
                                 reads: &mut self.out.dependencies,
+                                module: Some((file.path.clone(), specifier.to_string())),
                             };
                             let mapped = mapper.export(file, &spec.name.name, &local.name, 0);
                             if mapped.is_none()
