@@ -1,0 +1,34 @@
+// Bloom (app): the launch splash, held until the app's first screen is ready.
+//
+//     await Splash.preventAutoHide()   // at start: keep the splash past the first content
+//     await Splash.hide()              // when the first screen has laid out
+//
+// A `bloom build` keeps the window's launch splash (the manifest's `App(splash:splashImage:)`)
+// on screen until the first content of the root view appears, so the app draws no frame of a
+// half-loaded screen; an app that called `preventAutoHide()` keeps it until `hide()`. An
+// adopted app's `expo-splash-screen` calls (`preventAutoHideAsync`, `hideAsync`) are these.
+// Off a native build (the web, tests) both do nothing.
+
+/// The splash hold (ADR 0002, section 7): the Kotlin side (`Native/BloomSplash/android`)
+/// conforms to the spec the toolchain generates from this interface.
+extern native "BloomSplash" {
+  @extern("preventAutoHide") private func nativePreventAutoHide() async throws -> Bool
+  @extern("hide") private func nativeHide() async throws -> Bool
+}
+
+/// The launch splash of a native build.
+public enum Splash {
+  /// Keeps the splash on screen past the first content, until `hide()`.
+  public static func preventAutoHide() async {
+    do {
+      try await nativePreventAutoHide()
+    } catch {}
+  }
+
+  /// Uncovers the app: its next frame is drawn.
+  public static func hide() async {
+    do {
+      try await nativeHide()
+    } catch {}
+  }
+}
