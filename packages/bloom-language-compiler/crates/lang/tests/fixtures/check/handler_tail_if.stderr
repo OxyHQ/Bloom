@@ -1,0 +1,17 @@
+error[B0430]: this async call is neither awaited nor started as a task
+  --> check/handler_tail_if.bloom:12:50
+   |
+12 |     Button(Text("a")).onPress { if let id = id { work(id) } else { note("none") } }
+   |                                                  ^^^^^^^^ its result (and any failure) would be dropped
+   |
+help: write `await` before it, or start it on its own: `task { await … }`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency
+
+error[B0430]: this async call is neither awaited nor started as a task
+  --> check/handler_tail_if.bloom:17:20
+   |
+17 |   if let id = id { work(id) } else { note("none") }
+   |                    ^^^^^^^^ its result (and any failure) would be dropped
+   |
+help: write `await` before it, or start it on its own: `task { await … }`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#8-effects-tasks-and-concurrency

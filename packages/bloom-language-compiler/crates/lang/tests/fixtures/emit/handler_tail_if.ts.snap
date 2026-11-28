@@ -1,0 +1,51 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
+
+function note(s: string): void {
+}
+
+async function work(id: string): Promise<void> {
+note(id);
+}
+
+export type Mode = "on" | "off";
+
+const $view0 = Button(Text("a"));
+const $view1 = Button(Text("b"));
+export interface RowProps {
+  readonly id: string | undefined;
+  readonly mode: Mode;
+}
+export const Row = view(function Row(props: RowProps) {
+"use no memo";
+const $ = $c(5);
+const { id, mode } = props;
+let $t0;
+if ($[2] !== id || $[3] !== mode) {
+$t0 = VStack($view0.onPress(() => {
+if (id != null) {
+void (async () => {
+await (work(id));
+})();
+} else {
+note("none");
+}
+}), ($[0] !== mode ? ($[0] = mode, $[1] = $view1.onPress(() => {
+if (mode === "on") {
+note("on");
+} else {
+void (async () => {
+await (work("off"));
+})();
+}
+})) : $[1]));
+$[2] = id;
+$[3] = mode;
+$[4] = $t0;
+} else {
+$t0 = $[4];
+}
+return $t0;
+});
+

@@ -3138,7 +3138,10 @@ impl<'o> Checker<'o> {
                 }
             }
             StmtKind::Expr(expr) => {
-                let ty = self.expr(expr, None);
+                // An `if … else` or a `switch` on a line of its own is a statement: each branch's
+                // lines are statements (an async call in one is B0430 there), never a value.
+                let statement = matches!(expr.kind, ExprKind::If(_) | ExprKind::Match(_));
+                let ty = self.expr(expr, statement.then_some(&Ty::Unit));
                 // A node on a line of its own outside a builder (a closure that is not a
                 // builder, a function's body): built, then dropped, so nothing draws it.
                 if matches!(self.resolve(&ty), Ty::View(_)) {
@@ -6820,7 +6823,25 @@ impl<'o> Checker<'o> {
                 rest: false,
             }];
         }
-        let mut ret = expected_fn.as_ref().map_or_else(|| self.fresh(), |f| f.ret.clone());
+        // A closure TS calls whose type Bloom does not know (`.onPress { … }`): a last `if … else`
+        // or `switch` is a statement, as in a handler, not a value (Swift reads an `if` as a value
+        // only where one is expected), so each branch's lines are statements.
+        let statement_tail = boundary
+            && expected_fn.is_none()
+            && c.ret.is_none()
+            && match c.body.last().map(|s| &s.kind) {
+                Some(StmtKind::Expr(e)) => match &e.kind {
+                    ExprKind::If(i) => i.otherwise.is_some(),
+                    ExprKind::Match(_) => true,
+                    _ => false,
+                },
+                _ => false,
+            };
+        let mut ret = match &expected_fn {
+            Some(f) => f.ret.clone(),
+            None if statement_tail => Ty::Unit,
+            None => self.fresh(),
+        };
         // `{ () -> [Item] in … }`: the written result type, which each `return` is checked against.
         if let Some(written) = &c.ret {
             let declared = self.resolve_type(written);

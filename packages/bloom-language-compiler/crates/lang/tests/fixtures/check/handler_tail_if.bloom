@@ -1,0 +1,18 @@
+// A handler's last `if … else` (and any `if … else` on a line of its own) is a statement: an async
+// call in a branch is B0430 at that call, never at the whole `if` (lang-mention-11's handler-tail-if).
+func note(_ s: String) {}
+
+func work(_ id: String) async {
+  note(id)
+}
+
+public struct Row: View {
+  let id: String?
+  var body: some View {
+    Button(Text("a")).onPress { if let id = id { work(id) } else { note("none") } }
+  }
+}
+
+public func run(_ id: String?) {
+  if let id = id { work(id) } else { note("none") }
+}
