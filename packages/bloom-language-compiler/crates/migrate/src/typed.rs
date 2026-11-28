@@ -606,6 +606,28 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     (end - 1, end - 1, pad)
                 })
             }
+            // `match await f() { case .ok(v) => { …; await g() } case .err(_) => {} }` as a block's
+            // last statement: the `.ok` case ends in a TS `await` whose `Result` nothing reads
+            // (TS's `await g();`), so it is discarded, `let _ = await g()`.
+            ("B0201", _)
+                if d.message.starts_with("the branches give `Result<")
+                    && d.message.ends_with("` and `Unit`")
+                    && text.starts_with("match await ") =>
+            {
+                let err = text.rfind("case .err(_) => {}")?;
+                let ok_end = text[..err].trim_end().strip_suffix('}')?.trim_end().len();
+                let line = text[..ok_end].rfind('\n').map_or(0, |i| i + 1);
+                let indent = text[line..].len() - text[line..].trim_start().len();
+                // The last statement's first line: the last line at the case body's indentation.
+                let head = text[..ok_end].rmatch_indices('\n').map(|(i, _)| i + 1).find(|&i| {
+                    let l = &text[i..];
+                    l.len() - l.trim_start().len() == indent && !l.trim_start().starts_with(['}', ')', '.'])
+                })?;
+                text[head + indent..].starts_with("await ").then(|| {
+                    let at = start + head + indent;
+                    (at, at, "let _ = ".to_string())
+                })
+            }
             // A TS tuple's `length` (`coordinates: [number, number]`): its arity.
             ("B0205", "count")
                 if receiver.is_some_and(|r| r.starts_with('(') && r.ends_with(')'))
