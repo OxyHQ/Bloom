@@ -22,3 +22,9 @@ section: Added
   - `Boolean(x?.trim())` and a value `a && "…"` keep JS's truthiness;
   - `[value, onValueChange]` is a `Binding`;
   - a keyed write is a subscript set, and a `switch` that returns from every case has no `case _`.
+- Round 10 (lang-mention-10):
+  - reads TS had typed are spelled as Bloom types them: `x as T['k']` where a union is expected, a called `Record` read (`ICONS[k]!`), `s.slice(n)`, i18next's `t(key, "default", { … })`, optional members tested for their truthiness (narrowed), and a type-guard `filter` (`compactMap`);
+  - a value built by a local closure is one member; a closure's optional parameter is `T?`, passed as `none`;
+  - a `defineModifier` made in place, or inside another, is a modifier value; a list pattern with defaults reads `at(i) ?? d`; `function f<T>` keeps its type parameters, and a generic view's members are 2.0's;
+  - a `switch`'s `never` default is Swift's exhaustive `switch`; a TS component's `aria-pressed` is `..["aria-pressed": x]`; `ReadonlySet` is `Set`; `Embed(<></>)` is an empty `Group`;
+  - a module `let` of one file is a file-scope `private var` (needs the compiler's #1058).
