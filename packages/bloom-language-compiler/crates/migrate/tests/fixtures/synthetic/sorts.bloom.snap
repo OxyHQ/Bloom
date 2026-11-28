@@ -1,0 +1,20 @@
+// JS's comparator sort of a copy (`[...xs].sort((a, b) => b.n - a.n)`) is Swift's `sorted`, the
+// comparator's "a first" as a Bool; a TS value keeps JS's own `sort`.
+
+public struct Point {
+  let label: String
+  let value: Float
+}
+
+public struct Peaks: View {
+  let points: [Point]
+  let highest = [..points].sorted { a, b in b.value < a.value }
+  let lowest = [..points].sorted { a, b in (a.value > b.value ? 1 : -1) < 0 }
+
+  var body: some View {
+    VStack {
+      Text(highest.map { p in p.label }.joined(", "))
+      Text(lowest.map { p in p.label }.joined(", "))
+    }
+  }
+}

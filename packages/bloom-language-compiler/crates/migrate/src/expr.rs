@@ -1869,6 +1869,48 @@ impl Tr<'_> {
                 _ => unreachable!(),
             };
         }
+        // JS's `[...xs].sort((a, b) => a.n - b.n)` of a fresh Bloom list (a copy):
+        // Swift's `sorted { a, b in a.n < b.n }`, the comparator's "a first" as Swift's Bool
+        // (`cmp(a, b) < 0`). A named array keeps its in-place `sort` (JS mutates it), and a TS value
+        // (`Object.entries(…)`) JS's own.
+        if let Expression::StaticMemberExpression(m) = &call.callee
+            && m.property.name == "sort"
+            && !m.optional
+            && matches!(m.object.without_parentheses(), Expression::ArrayExpression(_))
+            && let [Argument::ArrowFunctionExpression(arrow)] = call.arguments.as_slice()
+            && arrow.params.items.len() == 2
+            && arrow.params.rest.is_none()
+        {
+            let object = self.expr(&m.object);
+            let simple: Option<(String, String)> = match arrow.params.items.as_slice() {
+                [a, b] => match (&a.pattern, &b.pattern) {
+                    (BindingPattern::BindingIdentifier(a), BindingPattern::BindingIdentifier(b)) => {
+                        Some((a.name.to_string(), b.name.to_string()))
+                    }
+                    _ => None,
+                },
+                _ => None,
+            };
+            if let Some((a, b)) = simple
+                && let Some(body) = arrow.get_expression()
+            {
+                let saved = self.scope.clone();
+                let a = self.bind_param(&a, arrow.span);
+                let b = self.bind_param(&b, arrow.span);
+                let order = match body.without_parentheses() {
+                    Expression::BinaryExpression(bin)
+                        if bin.operator == oxc_ast::ast::BinaryOperator::Subtraction =>
+                    {
+                        format!("{} < {}", self.expr(&bin.left), self.expr(&bin.right))
+                    }
+                    other => format!("({}) < 0", self.expr(other)),
+                };
+                self.scope = saved;
+                return format!("{object}.sorted {{ {a}, {b} in {order} }}");
+            }
+            let compare = call.arguments[0].as_expression().map(|e| self.expr(e)).unwrap_or_default();
+            return format!("{object}.sorted {{ ({compare})($0, $1) < 0 }}");
+        }
         let callee = match &call.callee {
             Expression::StaticMemberExpression(m) => {
                 let method = m.property.name.as_str();
