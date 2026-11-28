@@ -1544,6 +1544,7 @@ impl<'o> Checker<'o> {
                     is_async: *is_async,
                     generics: 0,
                     ts: false,
+                    options: false,
                     throws: *throws,
                     bounds: Vec::new(),
                     shapes: Vec::new(),
@@ -1863,6 +1864,7 @@ impl<'o> Checker<'o> {
             let local = match &item.kind {
                 ItemKind::Fn(f) => {
                     let ty = self.fn_signature(f);
+                    let ty = self.js_options(item, ty, true);
                     if let Ty::Fn(fn_ty) = &ty
                         && !fn_ty.bounds.is_empty()
                     {
@@ -2190,10 +2192,60 @@ impl<'o> Checker<'o> {
             is_async: f.is_async,
             generics: f.generics.len() as u32,
             ts: false,
+            options: false,
             throws: f.throws.is_some(),
             bounds,
             shapes,
         }))
+    }
+
+    /// `@jsOptions func f(tab: Tab, isWeb: Bool = false)`: called with labels in Bloom and with
+    /// one object of them in TS (`f({ tab, isWeb })`), so TS callers of a function migrated from
+    /// an options-object signature keep their calls. Every parameter is labelled (its label is
+    /// the field) and none is a rest; a type's member keeps the positional ABI. `report`: this
+    /// file's own declaration (another file's is reported there).
+    fn js_options(&mut self, item: &Item, ty: Ty, report: bool) -> Ty {
+        let Some(attr) = item.modifiers.attrs.iter().find(|a| a.name.name == "jsOptions") else { return ty };
+        let (ItemKind::Fn(f), Ty::Fn(fn_ty)) = (&item.kind, &ty) else { return ty };
+        let mut fits = true;
+        if crate::extensions::demangle(&f.name.name).is_some() {
+            fits = false;
+            if report {
+                self.report(
+                    Diagnostic::error("B0106", attr.span, "`@jsOptions` is for a free function")
+                        .label("a type's member")
+                        .help("move it out of the type, or remove `@jsOptions`")
+                        .spec("10-modules-and-interop"),
+                );
+            }
+        } else {
+            for (param, param_ty) in f.params.iter().zip(&fn_ty.params) {
+                let why = if param_ty.positional {
+                    "`_` has no field name"
+                } else if param.rest || param_ty.rest {
+                    "a rest parameter has no field"
+                } else {
+                    continue;
+                };
+                fits = false;
+                if report {
+                    self.report(
+                        Diagnostic::error(
+                            "B0106",
+                            param.span,
+                            format!("a `@jsOptions` function's parameters are its object's fields: {why}"),
+                        )
+                        .label("not a field")
+                        .help(format!("label it: `{}: …`", param.name.name))
+                        .spec("10-modules-and-interop"),
+                    );
+                }
+            }
+        }
+        if !fits {
+            return ty;
+        }
+        Ty::Fn(Rc::new(FnTy { options: true, ..(**fn_ty).clone() }))
     }
 
     /// `@Environment(\.k)`: the built-in value `k` (`disabled`, `controlSize`,
@@ -2576,6 +2628,7 @@ impl<'o> Checker<'o> {
             is_async: false,
             generics: v.generics.len() as u32,
             ts: false,
+            options: false,
             throws: false,
             bounds,
             shapes,
@@ -2817,6 +2870,7 @@ impl<'o> Checker<'o> {
                     is_async: false,
                     generics: 0,
                     ts: false,
+                    options: false,
                     throws: false,
                     bounds: Vec::new(),
                     shapes: Vec::new(),
@@ -3261,6 +3315,7 @@ impl<'o> Checker<'o> {
             match &item.kind {
                 ItemKind::Fn(f) => {
                     let ty = self.fn_signature(f);
+                    let ty = self.js_options(item, ty, false);
                     self.declare(&f.name, ty, LocalKind::ModuleFn);
                 }
                 ItemKind::View(v)
@@ -8132,6 +8187,7 @@ impl<'o> Checker<'o> {
             is_async,
             generics: 0,
             ts: false,
+            options: false,
             // A closure whose `try` or `throw` nothing in it catches throws (Swift's inference),
             // where a throwing function, or any, is expected. Where TS or a Bloom function expects
             // one that does not throw it is typed so, as before (its error reaches the caller as

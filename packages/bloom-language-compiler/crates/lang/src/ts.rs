@@ -1650,6 +1650,7 @@ impl Mapper<'_> {
             is_async: false,
             generics,
             ts: true,
+            options: false,
             throws: false,
             bounds: Vec::new(),
             shapes,

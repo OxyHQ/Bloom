@@ -222,6 +222,8 @@ struct Emitter<'a> {
     enumerated: bool,
     /// The next closure maps a range for `Array.from`: its `i` is `($_, i)`.
     range_index: bool,
+    /// Emitting a `@jsOptions` function (`FnTy::options`): its parameters are one object's fields.
+    options_fn: bool,
     /// Emitting a function's result (its expression body, a `return`, its last line), through
     /// parentheses and a ternary's branches: an absent view there crosses as `null`, which a TS
     /// render callback's `ReactElement | null` takes; anywhere else as `undefined`.
@@ -301,6 +303,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         names,
         enumerated: false,
         range_index: false,
+        options_fn: false,
         result_position: false,
         int_checked: None,
         guarded: HashSet::default(),
@@ -869,6 +872,26 @@ impl<'a> Emitter<'a> {
         }
     }
 
+    /// A `@jsOptions` function's object type: a field per parameter, by its label, optional when
+    /// it has a default. `input`: a declaration's parameter type (`ts_input`).
+    fn options_type(&mut self, f: &FnDecl, types: &[Ty], input: bool) -> String {
+        let fields: Vec<String> = f
+            .params
+            .iter()
+            .zip(types)
+            .map(|(param, ty)| {
+                let label = param.label.as_ref().map_or(&param.name.name, |l| &l.name);
+                let text = if input { self.ts_input(ty) } else { self.ts_type(ty) };
+                format!(
+                    "readonly {}{}: {text}",
+                    prop_key(label),
+                    if param.default.is_some() { "?" } else { "" }
+                )
+            })
+            .collect();
+        format!("{{ {} }}", fields.join("; "))
+    }
+
     fn ts_return(&mut self, ty: &Ty, is_async: bool) -> String {
         let inner = if *ty == Ty::Unit { "void".to_string() } else { self.ts_type(ty) };
         if is_async { format!("Promise<{inner}>") } else { inner }
@@ -1007,11 +1030,17 @@ impl<'a> Emitter<'a> {
             }
             ItemKind::Fn(f) => {
                 let mut out = Frag::at(item.span, export);
+                self.options_fn = self
+                    .ck
+                    .items
+                    .get(&index)
+                    .is_some_and(|local| matches!(&self.ck.locals[*local].ty, Ty::Fn(t) if t.options));
                 let function = if crate::check::is_hook_name(&f.name.name) && !f.is_async {
                     self.hook_function(f)
                 } else {
                     self.function(f, None)
                 };
+                self.options_fn = false;
                 out.f(function);
                 out.s("\n");
                 out
@@ -1337,6 +1366,32 @@ impl<'a> Emitter<'a> {
                 p.s(" = ").f(self.value_expr(default));
             }
             list.push(p);
+        }
+        if std::mem::take(&mut self.options_fn) && !list.is_empty() {
+            // `@jsOptions`: one object, destructured (`{ tab, isWeb = false }: { … }`).
+            let mut targets = Vec::new();
+            for (param, local) in f.params.iter().zip(&params) {
+                let label = param.label.as_ref().map_or(&param.name.name, |l| &l.name);
+                let name = js_name(&param.name.name);
+                let mut target = Frag::at(
+                    param.span,
+                    if *label == param.name.name { name } else { format!("{}: {name}", prop_key(label)) },
+                );
+                if let Some(default) = &param.default {
+                    target.s(" = ").f(self.value_expr(default));
+                }
+                let _ = local;
+                targets.push(target);
+            }
+            let fields = self.options_type(
+                f,
+                &params.iter().map(|l| self.ck.locals[*l].ty.clone()).collect::<Vec<_>>(),
+                false,
+            );
+            let every_optional = f.params.iter().all(|p| p.default.is_some());
+            let mut object = Frag::join(targets, ", ").wrap("{ ", " }");
+            object.s(&format!(": {fields}{}", if every_optional { " = {}" } else { "" }));
+            list = vec![object];
         }
         for witness in self.witness_params(f.span, &f.generics) {
             list.push(Frag::of(witness));
@@ -3831,6 +3886,31 @@ impl<'a> Emitter<'a> {
                 let mut out = Frag::of(func.to_string());
                 out.f(Frag::join(values, ", ").wrap("(", ")"));
                 self.guarded_call(expr, guard, out)
+            }
+            CallRes::Bloom { order, rest } if matches!(self.expr_ty(&call.callee), Ty::Fn(ref f) if f.options) =>
+            {
+                // `@jsOptions`: the given arguments as one object, by their labels.
+                let Ty::Fn(fn_ty) = self.expr_ty(&call.callee) else { unreachable!("checked") };
+                let mut entries = Vec::new();
+                for (slot, param) in order.iter().zip(&fn_ty.params) {
+                    let Some(i) = slot else { continue };
+                    let value = if *i == call.args.len() {
+                        self.closure(call.trailing.as_ref().expect("a trailing closure"))
+                    } else {
+                        self.expr(&call.args[*i].value)
+                    };
+                    let mut entry = Frag::of(format!("{}: ", prop_key(param.name.as_deref().unwrap_or("_"))));
+                    entry.f(value);
+                    entries.push(entry);
+                }
+                let mut values = vec![Frag::join(entries, ", ").wrap("{ ", " }")];
+                if values[0].text == "{  }" {
+                    values[0] = Frag::of("{}");
+                }
+                self.push_witnesses(expr, &order, &rest, &mut values);
+                let mut out = self.operand(&call.callee);
+                out.f(Frag::join(values, ", ").wrap(open, ")"));
+                out
             }
             CallRes::Bloom { order, rest } => {
                 let mut values = self.ordered_args(call, &order, &rest);
@@ -7154,6 +7234,15 @@ impl<'a> Emitter<'a> {
                         })
                         .collect();
                     let mut params = params;
+                    if fn_ty.options && !params.is_empty() {
+                        let types: Vec<Ty> = fn_ty.params.iter().map(|t| t.ty.clone()).collect();
+                        let every_optional = f.params.iter().all(|p| p.default.is_some());
+                        params = vec![format!(
+                            "options{}: {}",
+                            if every_optional { "?" } else { "" },
+                            self.options_type(f, &types, true)
+                        )];
+                    }
                     params.extend(self.witness_params(f.span, &f.generics));
                     let ret = self.ts_return(&fn_ty.ret, fn_ty.is_async);
                     let generics = self.shaped_generics(&f.generics, f.span);

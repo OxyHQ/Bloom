@@ -70,6 +70,10 @@ pub struct FnTy {
     pub generics: u32,
     /// A TS function: named arguments form one options object, passed last.
     pub ts: bool,
+    /// A `@jsOptions` Bloom function: called with labels in Bloom, and in TS with one object of
+    /// them (`f({ tab, isWeb })`), a defaulted parameter an optional field. Natively it is a
+    /// function of labelled parameters.
+    pub options: bool,
     /// `throws` (2.0): a call of it is written `try`.
     pub throws: bool,
     /// Its constrained type parameters that take a witness (2.0): each one's type
@@ -295,6 +299,7 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
             is_async: fn_ty.is_async,
             generics: fn_ty.generics,
             ts: fn_ty.ts,
+            options: fn_ty.options,
             throws: fn_ty.throws,
             bounds: fn_ty.bounds.iter().map(|(t, p)| (map_ty(t, f), p.clone())).collect(),
             shapes: fn_ty.shapes.iter().map(|(t, s)| (map_ty(t, f), map_ty(s, f))).collect(),

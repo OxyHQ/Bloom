@@ -598,7 +598,8 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut modifiers = Modifiers::default();
         loop {
             match self.tok().clone() {
-                Tok::P(P::At) if matches!(self.nth(1), Tok::Ident(n) if is_upper(n) || n == "extern") => {
+                Tok::P(P::At) if matches!(self.nth(1), Tok::Ident(n) if is_upper(n) || n == "extern" || n == "jsOptions") =>
+                {
                     let start = self.bump();
                     let name = self.ident("an attribute");
                     let args = if self.at(P::LParen) && !self.token().space_before {

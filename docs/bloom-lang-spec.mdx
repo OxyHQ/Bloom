@@ -1353,6 +1353,14 @@ so a wrong path is a compile error.
   PostItemContent`, and a private view it names is declared beside it, unexported. A view's
   `T?` prop and a function's `T?` parameter are declared `T | undefined | null`: TS's `null`
   is `none` to Bloom, so a TS caller may pass either.
+- **`@jsOptions` functions:** a function migrated from a TS options-object signature keeps that
+  ABI for its TS callers. `@jsOptions func shouldScroll(tab: Tab, isWeb: Bool = false)` is
+  called with labels in Bloom, as any function (`shouldScroll(tab: t)`), and is emitted taking one
+  object of its labels, `shouldScroll({ tab, isWeb = false }: { readonly tab: Tab; readonly
+  isWeb?: boolean })`. A defaulted parameter is an optional field, and when every one is, the
+  object may be left out. The label is the field, so a parameter labelled `_` and a rest
+  parameter are B0106, and so is a type's member. Without the attribute a function's TS
+  parameters are positional. Natively (Swift, Kotlin) it is a function of labelled parameters.
 - **Gradual:** a `.bloom` file and a `.tsx` file import each other freely, one file at a time.
 
 ## 11. What bloomc emits
