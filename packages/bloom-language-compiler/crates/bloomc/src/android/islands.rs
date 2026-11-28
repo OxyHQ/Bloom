@@ -139,6 +139,22 @@ class BloomIslandView(private val reactContext: ThemedReactContext) : AbstractCo
     BloomThemeProvider {{ entry(props, ::send) }}
   }}
 
+  // React Native lays its views out itself and drops a child's `requestLayout`: the island's
+  // content (set after attach, and on every size change it asks for) would never be measured.
+  // The view measures and lays itself out at its current size instead, on the next frame.
+  private val measureAndLayout = Runnable {{
+    measure(
+      MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+      MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY),
+    )
+    layout(left, top, right, bottom)
+  }}
+
+  override fun requestLayout() {{
+    super.requestLayout()
+    post(measureAndLayout)
+  }}
+
   private fun send(name: String, payload: String) {{
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id) ?: return
     val data =
@@ -332,6 +348,8 @@ mod tests {
         assert!(text.contains("class BloomIslandPackage : ReactPackage"), "{text}");
         assert!(text.contains("const val NAME = \"BloomIsland\""), "{text}");
         assert!(text.contains("@ReactProp(name = \"island\")"), "{text}");
+        // React Native drops a child's `requestLayout`: the island measures itself.
+        assert!(text.contains("override fun requestLayout()"), "{text}");
         assert!(text.contains("@ReactProp(name = \"props\")"), "{text}");
         assert!(text.contains("\"registrationName\" to \"onIslandEvent\""), "{text}");
         assert!(text.contains("const val EVENT = \"topIslandEvent\""), "{text}");
