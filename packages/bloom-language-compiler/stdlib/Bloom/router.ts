@@ -59,6 +59,8 @@ export type RouterTab = {
 export type RouterSpec = {
   readonly root: string;
   readonly routes: Readonly<Record<string, readonly string[]>>;
+  /** Each route's path pattern, for file routes (`NavigationTable.paths`). */
+  readonly paths?: Readonly<Record<string, readonly string[]>>;
   readonly sheets: readonly string[];
   readonly tabs: readonly RouterTab[];
   /** Each case's reader: its value from a path's parameters, typed by the generated code. */
@@ -67,6 +69,10 @@ export type RouterSpec = {
 
 type Entry = { readonly key: string; readonly route: Route; readonly sheet: boolean };
 type State = { readonly entries: readonly Entry[]; readonly tab: string };
+
+/** A file route's value: its tag alone, or the tag and the path's parameters. */
+const fileRoute = (tag: string, params: Readonly<Record<string, string>>): Route =>
+  Object.keys(params).length === 0 ? tag : { tag, ...params };
 
 const tagOf = (route: Route): string => (typeof route === 'string' ? route : route.tag);
 
@@ -152,8 +158,14 @@ export class RouterStore {
   /** A deep link or web URL: the route its path names, over the root. */
   open(url: string): boolean {
     const found = routeOfPath(url, this.spec);
-    const read = found && this.spec.read[found.tag];
-    if (!found || !read) return false;
+    if (!found) return false;
+    // A file route has no reader: its value is its file and the path's parameters.
+    const read =
+      this.spec.read[found.tag] ??
+      (this.spec.paths?.[found.tag]
+        ? (params: Readonly<Record<string, string>>) => fileRoute(found.tag, params)
+        : undefined);
+    if (!read) return false;
     const route = read(found.params);
     const tag = tagOf(route);
     const [root] = this.state.entries;
@@ -333,5 +345,11 @@ export function bloomRouter(spec: RouterSpec): NavigationTable {
   function BloomNavigator(): ReactNode {
     return createElement(Navigator, { store, spec });
   }
-  return { root: spec.root, routes: spec.routes, navigator: BloomNavigator, driver };
+  return {
+    root: spec.root,
+    routes: spec.routes,
+    paths: spec.paths,
+    navigator: BloomNavigator,
+    driver,
+  };
 }

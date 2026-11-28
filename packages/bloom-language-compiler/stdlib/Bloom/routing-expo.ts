@@ -32,7 +32,9 @@ function expoRouter(): ExpoRouter {
 }
 
 /** expo-router's moves, by the path each route's file has. */
-export function expoDriver(routes: Pick<NavigationTable, 'root' | 'routes'>): NavigationDriver {
+export function expoDriver(
+  routes: Pick<NavigationTable, 'root' | 'routes' | 'paths'>,
+): NavigationDriver {
   return {
     push: (route) => expoRouter().router.push(routePath(route, routes)),
     replace: (route) => expoRouter().router.replace(routePath(route, routes)),

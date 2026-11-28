@@ -38,6 +38,13 @@ export type NavigationTable = {
   readonly root: string;
   /** Every case, with its associated values' labels in order (its path's parameters). */
   readonly routes: Readonly<Record<string, readonly string[]>>;
+  /**
+   * Each route's path pattern, when its path is not `/<tag>/<values…>`: an adopted app's
+   * file routes (`bloom routes --out`), most specific first. A segment is a name, `:param`
+   * (one segment), `*rest` (the rest of the path, one segment or more) or `*` (anything
+   * under it, nothing included: a `+not-found`).
+   */
+  readonly paths?: Readonly<Record<string, readonly string[]>>;
   /** The navigator's component for the table (its stack, tabs and sheets). */
   readonly navigator: unknown;
   /** How the navigator moves. */
@@ -60,9 +67,50 @@ function installed(): NavigationTable {
   return table;
 }
 
+type PathTable = Pick<NavigationTable, 'root' | 'routes' | 'paths'>;
+
+/** A route's path from its pattern: each `:param` and `*rest` filled from the route's value. */
+function patternPath(route: Route, pattern: readonly string[]): string {
+  const value = (label: string) => (typeof route === 'string' ? '' : String(route[label] ?? ''));
+  const parts: string[] = [];
+  for (const segment of pattern) {
+    if (segment === '*') continue;
+    if (segment.startsWith(':')) parts.push(encodeURIComponent(value(segment.slice(1))));
+    else if (segment.startsWith('*')) {
+      parts.push(...value(segment.slice(1)).split('/').filter(Boolean).map(encodeURIComponent));
+    } else parts.push(segment);
+  }
+  return `/${parts.join('/')}`;
+}
+
+/** The parameters `segments` give a pattern, when it matches them. */
+function matchPattern(
+  pattern: readonly string[],
+  segments: readonly string[],
+): Record<string, string> | undefined {
+  const params: Record<string, string> = {};
+  let i = 0;
+  for (const segment of pattern) {
+    if (segment === '*') return params;
+    if (segment.startsWith('*')) {
+      if (i >= segments.length) return undefined;
+      params[segment.slice(1)] = segments.slice(i).map(decodeURIComponent).join('/');
+      return params;
+    }
+    const part = segments[i];
+    if (part === undefined) return undefined;
+    if (segment.startsWith(':')) params[segment.slice(1)] = decodeURIComponent(part);
+    else if (segment !== part) return undefined;
+    i += 1;
+  }
+  return i === segments.length ? params : undefined;
+}
+
 /** A case's path: `/` for the root, `/post/42` for `post(id: "42")`. */
-export function routePath(route: Route, routes: Pick<NavigationTable, 'root' | 'routes'>): string {
+export function routePath(route: Route, routes: PathTable): string {
   const tag = typeof route === 'string' ? route : route.tag;
+  const pattern = routes.paths?.[tag];
+  if (pattern) return patternPath(route, pattern);
   if (tag === routes.root) return '/';
   const labels = routes.routes[tag] ?? [];
   const values = typeof route === 'string' ? [] : labels.map((label) => route[label]);
@@ -76,7 +124,7 @@ export function routePath(route: Route, routes: Pick<NavigationTable, 'root' | '
  */
 export function routeOfPath(
   path: string,
-  routes: Pick<NavigationTable, 'root' | 'routes'>,
+  routes: PathTable,
 ): { tag: string; params: Record<string, string> } | undefined {
   let rest = path;
   const scheme = /^[a-z][a-z0-9+.-]*:\/\//i.exec(rest);
@@ -87,6 +135,14 @@ export function routeOfPath(
   }
   rest = rest.replace(/[?#].*$/, '');
   const segments = rest.split('/').filter((s) => s.length > 0);
+  if (routes.paths) {
+    // File routes: the first pattern that matches, the patterns most specific first.
+    for (const [tag, pattern] of Object.entries(routes.paths)) {
+      const params = matchPattern(pattern, segments);
+      if (params) return { tag, params };
+    }
+    return undefined;
+  }
   if (segments.length === 0) return { tag: routes.root, params: {} };
   const [tag, ...values] = segments as [string, ...string[]];
   const labels = routes.routes[tag];
