@@ -55,3 +55,6 @@ section: Added
   - `e instanceof Error ? e.message : fallback` is `(e as? JSError)?.message ?? fallback` (needs the compiler's #1066); a TS `===` on an object that holds what has no equality is Swift's `===`;
   - a local function's `ReactNode` parameter that only goes to a TS component's prop, every call giving it text, is `String?`: the component draws the TS's text in its own `Text`, with no nested `Text`; a fragment's string literals are part of its string;
   - JS's `Number(s)` of a string the file types is `s.trimmed().isEmpty ? 0 : (Float(s) ?? Double.nan)` (JS's blank 0 and `NaN`), of an `Int` `n.toFloat()`; `Number.isNaN`, `Number.NaN` and `Number.MAX_SAFE_INTEGER` are the stdlib's or the number.
+  - an `effect(id:)` whose top-level `defer` would run as soon as its `.task` body returns (React ran it on unmount or a deps change) is refused until the stdlib's `Task.cancellation` (`repros/mention15/task-defer-runs-at-once`);
+  - TS `unknown` is the stdlib's `JSONValue`, and `typeof x === "object"` on one, with `null` ruled out by its chain, is `x.object != none || x.array != none`;
+  - JS regexes are the stdlib `Regex`: `Regex(pattern:flags:)`, `isMatch`, `firstMatch(in:)` and `group(n)`, `replacing(in:with:)` and `split`.
