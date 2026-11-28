@@ -212,7 +212,42 @@ impl Tr<'_> {
                 Some(s) => s,
                 None => self.refuse("type:literal", "a literal type other than a string", literal.span),
             },
-            TSType::TSIntersectionType(i) => self.refuse("type:intersection", "an intersection type", i.span),
+            // `Request & { signal?: AbortSignal }` of the file's object types and inline ones: one
+            // record type of all their fields (no general intersection; a later field wins, as in TS).
+            TSType::TSIntersectionType(i) => {
+                let mut fields: Vec<String> = Vec::new();
+                let mut push = |fields: &mut Vec<String>, field: String| {
+                    let name = field.split(':').next().unwrap_or_default().to_string();
+                    fields.retain(|f| f.split(':').next() != Some(name.as_str()));
+                    fields.push(field);
+                };
+                for part in &i.types {
+                    match part {
+                        TSType::TSTypeLiteral(literal) => {
+                            for member in &literal.members {
+                                let Some((name, ty, optional)) = self.field(member) else {
+                                    return self.refuse("type:intersection", "an intersection type", i.span);
+                                };
+                                push(
+                                    &mut fields,
+                                    format!("{name}: {}", if optional { optional_ty(&ty) } else { ty }),
+                                );
+                            }
+                        }
+                        TSType::TSTypeReference(r)
+                            if r.type_arguments.is_none()
+                                && let TSTypeName::IdentifierReference(id) = &r.type_name
+                                && let Some(own) = self.object_fields.get(id.name.as_str()).cloned() =>
+                        {
+                            for field in own {
+                                push(&mut fields, field);
+                            }
+                        }
+                        _ => return self.refuse("type:intersection", "an intersection type", i.span),
+                    }
+                }
+                format!("{{ {} }}", fields.join(", "))
+            }
             TSType::TSAnyKeyword(_) => self.foreign_ty("any"),
             // `object`: a TS value Bloom passes on as it is.
             TSType::TSObjectKeyword(_) => self.foreign_ty("object"),

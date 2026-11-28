@@ -11,20 +11,20 @@ public struct Byline: View {
   let joiner: String
   var body: some View {
     HStack {
-      RawText(
+      RawText {
         authors
-          .enumerated()
-          .flatMap { (i, a) in
-            // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
-            let separator = i == 0 ? "" : joiner
-            return [
-              RawText(separator),
-              a.href != none && !a.href.isEmpty ? Text(a.firstName).weight(.semibold) : RawText(
-                a.firstName,
-              ),
-            ]
-          },
-      )
+        .enumerated()
+        .flatMap { (i, a) in
+          // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+          let separator = i == 0 ? "" : joiner
+          return [
+            RawText(separator),
+            a.href != none && !a.href.isEmpty ? Text(a.firstName).weight(.semibold) : RawText(
+              a.firstName,
+            ),
+          ]
+        }
+      }
     }
   }
 }
@@ -39,16 +39,16 @@ public struct Variants: View {
   let variants: [Variant]
   var body: some View {
     // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
-    RawText(
+    RawText {
       variants
-        .enumerated()
-        .flatMap {
-          (index, variant) in
-          [
-            RawText(index > 0 ? " · " : ""),
-            variant.rendered ? RawText(variant.label) : Text(variant.label).foreground(.muted),
-          ]
-        },
-    )
+      .enumerated()
+      .flatMap {
+        (index, variant) in
+        [
+          RawText(index > 0 ? " · " : ""),
+          variant.rendered ? RawText(variant.label) : Text(variant.label).foreground(.muted),
+        ]
+      }
+    }
   }
 }
