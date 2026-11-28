@@ -683,6 +683,17 @@ ${Object.entries(withoutComment(spec.signatures ?? {}))
 /// \`none\` there), read from \`Node\`'s methods by \`generate-signatures.mjs\`.
 pub const NONE_MODIFIERS: &[&str] = ${rustList(spec.noneModifiers ?? [])};
 
+/// Each universal modifier's category (\`modifierCategories\`): what a backend that draws
+/// modifiers itself (the native runtimes, ADR 0003) does with it. A modifier not listed is
+/// \`node\`: an option its node's own implementation reads.
+pub const MODIFIER_CATEGORIES: &[(&str, &str)] = &[
+${Object.entries(spec.modifierCategories?.universal ?? {})
+  .flatMap(([category, names]) =>
+    names.map((name) => `    (${rustStr(name)}, ${rustStr(category)}),`),
+  )
+  .join('\n')}
+];
+
 /// A glass value's methods (\`regular.tint('primary', 'subtle')\`) → their parameter types.
 pub const GLASS_VALUE: &[(&str, &[&str])] = &[
 ${Object.entries(glassValue)
