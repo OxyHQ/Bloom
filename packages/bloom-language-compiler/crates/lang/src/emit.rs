@@ -222,6 +222,10 @@ struct Emitter<'a> {
     enumerated: bool,
     /// The next closure maps a range for `Array.from`: its `i` is `($_, i)`.
     range_index: bool,
+    /// Emitting a function's result (its expression body, a `return`, its last line), through
+    /// parentheses and a ternary's branches: an absent view there crosses as `null`, which a TS
+    /// render callback's `ReactElement | null` takes; anywhere else as `undefined`.
+    result_position: bool,
     /// The `Int` arithmetic being emitted inside its dev-build check (`$int(…)`).
     int_checked: Option<ExprId>,
     /// Optional-chain links emitted as a guard (`(t == null ? undefined : …)`), not as JS's own
@@ -297,6 +301,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         names,
         enumerated: false,
         range_index: false,
+        result_position: false,
         int_checked: None,
         guarded: HashSet::default(),
         memo_group: None,
@@ -1484,7 +1489,9 @@ impl<'a> Emitter<'a> {
                 self.push_stmt(line);
             }
             (_, Tail::Return) => {
+                let outer = std::mem::replace(&mut self.result_position, true);
                 let value = self.expr(expr);
+                self.result_position = outer;
                 let mut line = Frag::at(expr.span, "return ");
                 line.f(value).s(";");
                 self.push_stmt(line);
@@ -2525,10 +2532,14 @@ impl<'a> Emitter<'a> {
             out.s("(async (...$args) => (").f(inner).s(")(...$args))");
             return out;
         }
+        let result = self.result_position;
+        self.result_position = result && matches!(expr.kind, ExprKind::Paren(_) | ExprKind::Ternary(..));
         out.f(self.expr_inner(expr));
+        self.result_position = result;
         // A Bloom view where TS takes a React element.
         if self.ck.elements.contains(&expr.id) && self.hoisting != Some(expr.id) {
             self.import_name(LANGUAGE, "toElement");
+            let nothing = if result { "null" } else { "undefined" };
             return match self.expr_ty(expr) {
                 // A function giving views where TS takes one giving elements (`renderCell`): each
                 // view it gives crosses (`none` stays `undefined`).
@@ -2545,18 +2556,19 @@ impl<'a> Emitter<'a> {
                         ))
                     }
                 }
-                // `meta: View?`: `none` is `null`, never `toElement(undefined)` (an element drawing
-                // nothing, which TS reads as present): a `ReactNode` takes it, and so does a
-                // render callback's `ReactElement | null`.
+                // `meta: View?`: `none` is `undefined`, as every optional crosses, never
+                // `toElement(undefined)` (an element drawing nothing, which TS reads as present): a
+                // prop left unset stays unset (`'k' in props`, a default prop). A function's result
+                // is `null`, which a render callback's `ReactElement | null` takes.
                 Ty::Option(_) if is_path_text(&out.text) => {
-                    Frag::of(format!("({0} == null ? null : toElement({0}))", out.text))
+                    Frag::of(format!("({0} == null ? {nothing} : toElement({0}))", out.text))
                 }
                 Ty::Option(_) => {
                     let name = self.temp();
                     let mut stmt = Frag::of(format!("const {name} = "));
                     stmt.f(out).s(";");
                     self.push_stmt(stmt);
-                    Frag::of(format!("({name} == null ? null : toElement({name}))"))
+                    Frag::of(format!("({name} == null ? {nothing} : toElement({name}))"))
                 }
                 _ => out.wrap("toElement(", ")"),
             };
@@ -3588,7 +3600,9 @@ impl<'a> Emitter<'a> {
                 if !matches!(e.kind, ExprKind::If(_) | ExprKind::Match(_)) =>
             {
                 self.bufs.push(Vec::new());
+                let outer = std::mem::replace(&mut self.result_position, true);
                 let value = self.expr(e);
+                self.result_position = outer;
                 let stmts = self.bufs.pop().expect("the closure");
                 if stmts.is_empty() {
                     // An object literal (also a `.setting(…)` spread) is not a block.

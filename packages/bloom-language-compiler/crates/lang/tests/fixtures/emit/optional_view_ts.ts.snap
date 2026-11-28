@@ -14,7 +14,7 @@ export interface ProfileProps {
 export const Profile = inlineView(function Profile(props: ProfileProps) {
 "use no memo";
 const { tabs = undefined, content = undefined } = props;
-return VStack(Embed($jsx(Rows, { count: 2, renderItem: (index: number) => (index === 0) ? (tabs == null ? null : toElement(tabs)) : (content == null ? null : toElement(content)), header: (content == null ? null : toElement(content)) } satisfies ComponentProps<typeof Rows>)), VirtualList(ITEMS, (arg: { item: "tabs" | "posts"; index: number }) => {
+return VStack(Embed($jsx(Rows, { count: 2, renderItem: (index: number) => (index === 0) ? (tabs == null ? null : toElement(tabs)) : (content == null ? null : toElement(content)), header: (content == null ? undefined : toElement(content)) } satisfies ComponentProps<typeof Rows>)), VirtualList(ITEMS, (arg: { item: "tabs" | "posts"; index: number }) => {
 const { item } = arg;
 return (item === "tabs") ? tabs : content;
 }));
