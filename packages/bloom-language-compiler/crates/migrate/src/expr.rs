@@ -195,8 +195,9 @@ impl Tr<'_> {
             Expression::TSNonNullExpression(n) => self.forced(&n.expression),
             Expression::ArrayExpression(array) => {
                 let pairs = std::mem::replace(&mut self.pairs, false);
+                let missing = missing_record_fields(array);
                 let mut items = Vec::new();
-                for element in &array.elements {
+                for (index, element) in array.elements.iter().enumerate() {
                     match element {
                         ArrayExpressionElement::SpreadElement(s) => {
                             items.push(format!("..{}", self.expr(&s.argument)))
@@ -206,7 +207,17 @@ impl Tr<'_> {
                         }
                         other => {
                             let value = other.to_expression();
-                            items.push(self.expr(value));
+                            let mut text = self.expr(value);
+                            // `[{ key, url }, { key, url, label }]`: TS's element type has an
+                            // optional `label`, so the records that lack it say `label: none`.
+                            if let Some(keys) = missing.as_ref().and_then(|m| m.get(index))
+                                && !keys.is_empty()
+                                && let Some(head) = text.strip_suffix(" }")
+                            {
+                                let fill: Vec<String> = keys.iter().map(|k| format!("{k}: none")).collect();
+                                text = format!("{head}, {} }}", fill.join(", "));
+                            }
+                            items.push(text);
                         }
                     }
                 }
@@ -2363,6 +2374,45 @@ fn keyed_modifier(name: &str) -> bool {
 }
 
 /// Whether `text` is a name or a member chain, so `!` binds to all of it.
+/// A list literal of records with differing keys (`[{ key, url }, { key, url, label }]`): each
+/// record's keys that another one has and it lacks, in first-seen order. `None` when an item is
+/// not a record of plain keys, or when every record has the same keys.
+fn missing_record_fields(array: &oxc_ast::ast::ArrayExpression) -> Option<Vec<Vec<String>>> {
+    let mut records = Vec::new();
+    for element in &array.elements {
+        let Expression::ObjectExpression(o) = element.as_expression()?.without_parentheses() else {
+            return None;
+        };
+        let mut keys = Vec::new();
+        for property in &o.properties {
+            let ObjectPropertyKind::ObjectProperty(p) = property else { return None };
+            if p.computed || p.method {
+                return None;
+            }
+            keys.push(match &p.key {
+                PropertyKey::StaticIdentifier(id) => id.name.to_string(),
+                PropertyKey::StringLiteral(s) if crate::module::is_identifier(s.value.as_str().unwrap_or_default()) => {
+                    s.value.as_str().unwrap_or_default().to_string()
+                }
+                _ => return None,
+            });
+        }
+        records.push(keys);
+    }
+    let mut all: Vec<String> = Vec::new();
+    for keys in &records {
+        for k in keys {
+            if !all.contains(k) {
+                all.push(k.clone());
+            }
+        }
+    }
+    if records.len() < 2 || records.iter().all(|keys| keys.len() == all.len()) {
+        return None;
+    }
+    Some(records.iter().map(|keys| all.iter().filter(|k| !keys.contains(k)).cloned().collect()).collect())
+}
+
 pub fn is_postfix_text(text: &str) -> bool {
     !text.is_empty() && text.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.' | '?' | '$'))
 }

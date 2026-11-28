@@ -19,3 +19,14 @@ export function submitNote(
 ): void {
   onSubmit({ text: text.trim(), url: text });
 }
+
+// A list of records where some lack a key (TS's element type has it optional): those say
+// `label: none`, and `'label' in link` reads it.
+const LINKS = [
+  { key: 'about', url: 'https://oxy.so/mention' },
+  { key: 'oxy', url: 'https://oxy.so/', label: 'Oxy' },
+] as const;
+
+export function linkLabels(t: (key: string) => string): string[] {
+  return LINKS.map((link) => ('label' in link ? link.label : t(link.key)));
+}

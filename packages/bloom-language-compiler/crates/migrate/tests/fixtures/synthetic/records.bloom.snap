@@ -19,3 +19,16 @@ public struct Item: View {
 public func submitNote(_ onSubmit: ({ text: String, url: String }) -> Unit, _ text: String) {
   onSubmit({ text: text.trimmed(), url: text })
 }
+
+// A list of records where some lack a key (TS's element type has it optional): those say
+// `label: none`, and `'label' in link` reads it.
+private let LINKS = [
+  { key: "about", url: "https://oxy.so/mention", label: none },
+  { key: "oxy", url: "https://oxy.so/", label: "Oxy" },
+]
+
+public func linkLabels(_ t: (String) -> String) -> [String] {
+  // bloom: review: `"label" in …` is whether `.label` is there (JS also counts a key set to `undefined`)
+  // bloom: review: `"label" in …` is whether `.label` is there (JS also counts a key set to `undefined`)
+  LINKS.map { link in (link.label != none ? link.label : t(link.key)) }
+}
