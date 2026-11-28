@@ -1,0 +1,16 @@
+// A guard narrows a name in its own scope (`if amount == none { return none }`, then `amount` is
+// `String`): the narrowing is the same declaration, never a second one (B0217 is for two `let`s).
+public func label(_ a: Int?) -> String? {
+  let amount: String? = a != none ? "x\(a)" : none
+  if amount == none { return none }
+  return "\(amount)!"
+}
+
+public func total(_ values: [Int]?) -> Int {
+  var sum = 0
+  let xs = values
+  guard let ys = xs else { return -1 }
+  if xs == none { return -2 }
+  for v in ys { sum += v }
+  return sum
+}

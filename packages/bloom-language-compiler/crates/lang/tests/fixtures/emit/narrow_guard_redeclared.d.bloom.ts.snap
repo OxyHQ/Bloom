@@ -1,0 +1,2 @@
+export declare function label(a: number | undefined | null): string | undefined;
+export declare function total(values: (readonly number[]) | undefined | null): number;

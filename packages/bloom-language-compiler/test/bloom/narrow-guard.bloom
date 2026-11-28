@@ -1,0 +1,15 @@
+// A guard narrows a name in its scope: no second declaration (narrow-guard-redeclared).
+public func label(_ a: Int?) -> String? {
+  let amount: String? = a != none ? "x\(a)" : none
+  if amount == none { return none }
+  return "\(amount)!"
+}
+
+public func total(_ values: [Int]?) -> Int {
+  var sum = 0
+  let xs = values
+  guard let ys = xs else { return -1 }
+  if xs == none { return -2 }
+  for v in ys { sum += v }
+  return sum
+}

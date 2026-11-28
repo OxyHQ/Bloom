@@ -1284,6 +1284,9 @@ impl<'o> Checker<'o> {
                     | LocalKind::Handler
             )
             && !crate::codable::is_synthetic(name.span)
+            // A narrowing (`if x == none { return }`, then `x` is `T`) declares the narrowed
+            // local at the original's own span: the same declaration, never a second one.
+            && self.out.locals[earlier].span != name.span
         {
             let first = self.out.locals[earlier].span;
             self.report(
