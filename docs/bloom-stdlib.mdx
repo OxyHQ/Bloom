@@ -829,7 +829,7 @@ The launch splash of a native build.
 Bloom (UI): a Compose island in a React Native screen (ADR 0003).
 
 ```swift
-Island("FeedIsland", json: JSON.encode(FeedProps.self, props)) { name, payload in
+Island("FeedIsland", props: JSON.encode(FeedProps.self, props)) { name, payload in
   if name == "onIntent" { handle(try JSON.decode(FeedIntent.self, from: payload)) }
 }
 
@@ -844,7 +844,7 @@ side keeps the network and the stores; the island draws and reports intents.
 
 ### `struct Island: View`
 
-The island `name` (a module marked `native: .island`), drawn from its props as one JSON object (`json`), its events to `onEvent` as `(prop name, value as JSON)`.
+The island `name` (a module marked `native: .island`), drawn from its props as one JSON object (`props`), its events to `onEvent` as `(prop name, value as JSON)`. It draws in the app's theme: `preset` (an `AppColorName`) and `scheme` (`"light"` or `"dark"`; none, the system's), Bloom's default preset when none is given.
 
 
 ## Concurrency
