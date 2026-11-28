@@ -37,6 +37,15 @@ import java.net.URL
 import java.security.MessageDigest
 
 object ImagePipeline {
+  @Volatile private var drawn = false
+
+  /** The first content picture drawn in the process (not an avatar): one `BLOOM_BENCH island-first-image` line (the bench's mark, as React Native's `feed-image`). */
+  fun markFirstDraw() {
+    if (drawn) return
+    drawn = true
+    Log.i("Bloom", "BLOOM_BENCH island-first-image")
+  }
+
   private val maxBytes = (Runtime.getRuntime().maxMemory() / 4).coerceAtMost(96L * 1024 * 1024).toInt()
   private val memory = object : LruCache<String, ImageBitmap>(maxBytes) {
     override fun sizeOf(key: String, value: ImageBitmap): Int = value.width * value.height * 4
@@ -121,7 +130,7 @@ object ImagePipeline {
 
 /** Draws `url` at the view's size, `cover` or `contain`; a placeholder fill until it arrives. */
 @Composable
-fun BloomImage(url: String, contentFit: ContentFit, modifier: Modifier = Modifier) {
+fun BloomImage(url: String, contentFit: ContentFit, modifier: Modifier = Modifier, benchMark: Boolean = true) {
   val context = LocalContext.current
   var size by remember { mutableStateOf(IntSize.Zero) }
   var bitmap by remember(url) { mutableStateOf<ImageBitmap?>(null) }
@@ -139,6 +148,7 @@ fun BloomImage(url: String, contentFit: ContentFit, modifier: Modifier = Modifie
       .drawWithCache {
         onDrawBehind {
           if (current != null) {
+            if (benchMark) ImagePipeline.markFirstDraw()
             // The draw scope's size (floats), not the state above it.
             val box = this.size
             val sw = box.width / current.width
