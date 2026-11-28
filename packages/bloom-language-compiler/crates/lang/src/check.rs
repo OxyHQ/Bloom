@@ -303,6 +303,9 @@ pub struct CheckResult {
     pub constructors: HashSet<LocalId>,
     /// `x is T`: the type tested.
     pub is_tests: HashMap<ExprId, Ty>,
+    /// A function value that does not await where a Bloom `async` function is expected
+    /// (`let load: () async -> Int = count`): a backend gives it as an `async` function.
+    pub async_wraps: HashSet<ExprId>,
     /// `x as? T`: `T`'s lowered `cast` (`HTTPError$$cast`).
     pub casts: HashMap<ExprId, Rc<str>>,
     /// `x as? Tab` / `x as! Tab` with `Tab` a string literal union: its values, tested at run
@@ -1309,7 +1312,10 @@ impl<'o> Checker<'o> {
                         _ => self.coerce(&f.ret, inner),
                     }
                 } else {
-                    f.is_async == g.is_async && self.coerce(&f.ret, &g.ret)
+                    // A function that does not await fits an `async` type (Swift's); the emitter
+                    // wraps it where it is given (`async_wraps`).
+                    (f.is_async == g.is_async || (!f.is_async && g.is_async && !g.ts))
+                        && self.coerce(&f.ret, &g.ret)
                 };
                 // `() throws -> T` is a type of its own (Swift's): a function that throws never fits
                 // where one that does not is expected (its caller writes no `try`); one that does not
@@ -4977,6 +4983,16 @@ impl<'o> Checker<'o> {
         if covered {
             self.trying = false;
         }
+        // A function value that does not await, where a Bloom `async` one is expected
+        // (`let load: () async -> Int = count`): the emitter wraps it in an `async` function.
+        if !matches!(expr.kind, ExprKind::Closure(_) | ExprKind::Paren(_))
+            && let (Ty::Fn(f), Some(Ty::Fn(g))) = (self.resolve(&ty), expected.map(|e| self.resolve(e)))
+            && !f.is_async
+            && g.is_async
+            && !g.ts
+        {
+            self.out.async_wraps.insert(expr.id);
+        }
         if matches!(expr.kind, ExprKind::Field(..) | ExprKind::OptField(..)) && !self.paths.is_empty() {
             ty = self.narrowed_path(expr, ty);
         }
@@ -7765,7 +7781,10 @@ impl<'o> Checker<'o> {
         }
         let frame = self.frames.pop().expect("the closure's frame");
         self.pop();
-        let info = ClosureInfo { params: locals, is_async: frame.is_async, ret: ret.clone(), builder: false };
+        // A closure where a Bloom `async` function is expected is one, `await` or not (Swift's):
+        // the call site gets its promise.
+        let is_async = frame.is_async || expected_fn.as_ref().is_some_and(|f| f.is_async && !f.ts);
+        let info = ClosureInfo { params: locals, is_async, ret: ret.clone(), builder: false };
         self.out.closures.insert(c.span, info);
         let throws = escaped && expected_fn.as_ref().is_none_or(|f| f.throws);
         if throws {
@@ -7774,7 +7793,7 @@ impl<'o> Checker<'o> {
         Ty::Fn(Rc::new(FnTy {
             params: param_tys,
             ret,
-            is_async: frame.is_async,
+            is_async,
             generics: 0,
             ts: false,
             // A closure whose `try` or `throw` nothing in it catches throws (Swift's inference),
