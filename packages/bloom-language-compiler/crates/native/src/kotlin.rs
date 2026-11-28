@@ -84,8 +84,10 @@ pub fn emit_all(program: &Program) -> (Vec<Emitted>, Vec<Problem>) {
     let packages: Vec<String> = program.modules.iter().filter(|m| !m.std).map(package_for).collect();
     for module in &program.modules {
         let package = package_for(module);
+        let island = program.islands.contains(&module.name).then_some(module.name.as_str());
         for file in &module.files {
             let mut e = Emitter::new(&program.decls, file);
+            e.island = island;
             let text = e.file(&package, &packages);
             problems.extend(e.problems);
             let stem = file.path.file_stem().unwrap_or_default().to_string_lossy().into_owned();
@@ -139,6 +141,9 @@ struct Emitter<'a> {
     /// written after it. A static member has no companion object, so a call site, a derived
     /// coder and a witness all name it one way, as the TypeScript backend's `Post$$decode`.
     hoisted: String,
+    /// The module being emitted is a Compose island: its view of the same name gets the entry
+    /// the island host calls (`island_entry`).
+    island: Option<&'a str>,
 }
 
 /// A view expression unwound: the node or view call at its base, and the modifiers on it
@@ -251,6 +256,7 @@ impl<'a> Emitter<'a> {
             private_names: Vec::new(),
             codecs: HashMap::new(),
             hoisted: String::new(),
+            island: None,
         }
     }
 
@@ -401,6 +407,13 @@ impl<'a> Emitter<'a> {
                 out.push_str(&hoisted);
                 out.push('\n');
             }
+            // The island's entry, beside the view named after its module.
+            if let ItemKind::View(v) = &item.kind
+                && self.island == Some(v.name.name.as_str())
+            {
+                out.push_str(&self.island_entry(v));
+                out.push('\n');
+            }
             // What the compiler derives for a type (`Codable`'s coders), beside it.
             if let Some(name) = Self::item_type_name(item) {
                 for d in derived.iter().filter(|(owner, _)| owner == name) {
@@ -411,6 +424,59 @@ impl<'a> Emitter<'a> {
             }
         }
         out
+    }
+
+    /// `<Island>__island(props, emit)`: what the island host (`bloom build`'s `IslandRegistry`,
+    /// #1074) draws. `props` is the React Native side's JSON object of the view's props: each
+    /// is decoded by its type's `Codable` decoder, remembered by its own JSON value, so a props
+    /// change re-decodes only what changed (and Compose skips what is equal). Each event prop
+    /// (`(T) -> Void`) emits its name and its value's JSON, which `onIslandEvent` carries out.
+    fn island_entry(&mut self, v: &ViewDecl) -> String {
+        let name = v.name.name.clone();
+        let mut body = String::from("  val json = remember(props) { JSON__parse(props.ifEmpty { \"{}\" }) }\n");
+        let mut args = Vec::new();
+        for p in v.params.iter().flatten() {
+            let prop = p.name.name.clone();
+            let at = format!("{name}.{prop}");
+            let value = format!("jsonField(json, \"{prop}\", \"{name}\")");
+            match &p.ty.kind {
+                TypeKind::Fn { params, ret, .. } if is_void(ret) => {
+                    let emit = match params.as_slice() {
+                        [] => format!("{{ emit(\"{prop}\", \"null\") }}"),
+                        [one] => match coder(one, false) {
+                            Some(enc) => format!("{{ v -> emit(\"{prop}\", JSON__stringify(({enc})(v))) }}"),
+                            None => self.unsupported(one.span, "an island event of a type with no encoder"),
+                        },
+                        _ => self.unsupported(p.ty.span, "an island event with more than one value"),
+                    };
+                    args.push(format!("{} = {emit}", kw(&prop)));
+                }
+                _ => {
+                    let optional = matches!(p.ty.kind, TypeKind::Optional(_));
+                    let decode = match (&p.default, optional) {
+                        (Some(d), false) => {
+                            let wrapped =
+                                TypeExpr { kind: TypeKind::Optional(Box::new(p.ty.clone())), span: p.ty.span };
+                            let d = self.expr(d);
+                            coder(&wrapped, true).map(|dec| format!("({dec})(member, \"{at}\") ?: {d}"))
+                        }
+                        _ => coder(&p.ty, true).map(|dec| format!("({dec})(member, \"{at}\")")),
+                    };
+                    let Some(decode) = decode else {
+                        self.unsupported(p.ty.span, "an island prop of a type with no decoder");
+                        continue;
+                    };
+                    let local = format!("p_{prop}");
+                    let _ = writeln!(body, "  val {local}Json = {value}");
+                    let _ = writeln!(body, "  val {local} = remember({local}Json) {{ val member = {local}Json; {decode} }}");
+                    args.push(format!("{} = {local}", kw(&prop)));
+                }
+            }
+        }
+        format!(
+            "/** The island host's entry for `{name}` (`IslandRegistry`): its props decoded from `props`, its events to `emit`. */\n@Composable\nfun {name}__island(props: String, emit: (String, String) -> Unit) {{\n{body}  {name}({})\n}}\n",
+            args.join(", ")
+        )
     }
 
     fn item_type_name(item: &Item) -> Option<&str> {
@@ -2549,6 +2615,36 @@ fn mentions(text: &str, name: &str) -> bool {
         let before = text[..at].chars().next_back();
         let after = text[at + name.len()..].chars().next();
         !before.is_some_and(ident) && !after.is_some_and(ident)
+    })
+}
+
+fn is_void(t: &TypeExpr) -> bool {
+    match &t.kind {
+        TypeKind::Named { name, .. } => matches!(name.name.as_str(), "Void" | "Unit"),
+        TypeKind::Tuple(items) => items.is_empty(),
+        _ => false,
+    }
+}
+
+/// The derived coder of a written type, as a Kotlin function value: its decoder
+/// (`(JSONValue, String) -> T`) or its encoder (`(T) -> JSONValue`), as `codable.rs` composes
+/// them (`[Post]` is `Array__decoder(::Post__decode)`).
+fn coder(t: &TypeExpr, decode: bool) -> Option<String> {
+    let (member, list) = if decode { ("decode", "decoder") } else { ("encode", "encoder") };
+    Some(match &t.kind {
+        TypeKind::Named { name, args } if args.is_empty() => {
+            let owner = match name.name.as_str() {
+                "Float" => "Double",
+                other => other,
+            };
+            format!("::{owner}__{member}")
+        }
+        TypeKind::List(e) => format!("Array__{list}({})", coder(e, decode)?),
+        TypeKind::Optional(e) => format!("Optional__{list}({})", coder(e, decode)?),
+        TypeKind::Map(k, v) if matches!(&k.kind, TypeKind::Named { name, .. } if name.name == "String") => {
+            format!("Dictionary__{list}({})", coder(v, decode)?)
+        }
+        _ => return None,
     })
 }
 
