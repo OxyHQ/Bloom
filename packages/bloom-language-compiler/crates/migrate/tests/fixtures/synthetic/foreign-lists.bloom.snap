@@ -1,0 +1,30 @@
+// A Bloom list method on a TS value Bloom could not type (B0601) types the value's binding:
+// `[String]` for `joined`, `[Foreign]` otherwise. `x || undefined`
+// of a member is JS's falsy `none`, and `Boolean(x)` of a TS value stays its truthiness where it is
+// a value (`enabled:`), not where it is tested (`if`).
+
+import { thing } from "./untyped"
+
+public func names() -> String {
+  let x = thing()
+  let picked: [String] = x.items.map { i: { name: String } in i.name }
+  picked.joined(", ")
+}
+
+public struct Rows: View {
+  let x = thing()
+  let enabled = !!x.id
+  // bloom: review: TS did this on every render while the test held; here after the render it turns true in
+
+  let rows: [Foreign] = x.rows.slice(0, 3)
+
+  var body: some View {
+    // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+    VStack {
+      Text((x.uri ? x.uri : none))
+      Text(enabled ? "on" : "off")
+      for (index, row) in rows.enumerated() { RawText("\(index) \(row.title)") }
+    }
+    .task(id: !!x.ready) { if !!x.ready { thing() } }
+  }
+}

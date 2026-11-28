@@ -401,7 +401,9 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             // elements are TS values (`[Foreign]`); `joined` takes strings (`[String]`). A `let`
             // is annotated (`let names: [String] = …`), a closure parameter too
             // (`{ (spine: [Foreign]) in`).
-            ("B0601", method) if d.message.contains("is a Bloom list's") && source[..start].ends_with('.') => {
+            ("B0601", method)
+                if d.message.contains("is a Bloom list's") && source[..start].ends_with('.') =>
+            {
                 let before = &source[..start - 1];
                 let name: String = before
                     .chars()
@@ -413,11 +415,21 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     .collect();
                 let preceded = before[..before.len() - name.len()].chars().next_back();
                 let ty = if method == "joined" { "[String]" } else { "[Foreign]" };
+                // A member chain (`x.tags.joined(",")`) has no binding to type: a member the
+                // codemod renamed is TS's own again, as `foreign_js_names` writes it.
+                let js = match method {
+                    "joined" => Some("join"),
+                    "contains" => Some("includes"),
+                    "lowercased" => Some("toLowerCase"),
+                    "uppercased" => Some("toUpperCase"),
+                    "trimmed" => Some("trim"),
+                    _ => None,
+                };
                 if name.is_empty()
                     || name.starts_with(|c: char| c.is_ascii_digit())
                     || preceded.is_some_and(|c| c == '.' || c == '?')
                 {
-                    None
+                    js.map(|js| (start, end, js.to_string()))
                 } else {
                     let scope = &source[..start];
                     let word = |at: usize, len: usize| {
@@ -435,11 +447,12 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                         )
                         .max_by_key(|(at, _)| *at);
                     bound
-                        .and_then(|(at, param)| match param {
-                            None => Some((at, at, format!(": {ty}"))),
-                            Some(()) => Some((at, at + name.len(), format!("({name}: {ty})"))),
+                        .map(|(at, param)| match param {
+                            None => (at, at, format!(": {ty}")),
+                            Some(()) => (at, at + name.len(), format!("({name}: {ty})")),
                         })
                         .filter(|(a, ..)| !edits.iter().any(|(b, ..)| b == a))
+                        .or_else(|| js.map(|js| (start, end, js.to_string())))
                 }
             }
             // `s.substring(a, b)` from literal non-negative indices: Bloom's `slice`.
@@ -1686,6 +1699,47 @@ pub fn foreign_js_names(source: &str, filename: &str, options: &bloom_lang::Opti
         out.replace_range(start..end, text);
     }
     Some(out)
+}
+
+/// `Boolean(x)`'s `!!x` as `x` where bloomc types `x` a `Bool`. Where it types `x` a TS value it
+/// could not type (`Foreign`), `!!x` stays JS's truthiness: jobs/[id]'s
+/// `enabled: Boolean(job?.employerOxyUserId)` is not the id string handed to `enabled`.
+pub fn double_negations(source: &str, filename: &str, options: &bloom_lang::Options) -> Option<String> {
+    let at = crate::truthiness::double_negations_at(source);
+    if at.is_empty() {
+        return None;
+    }
+    let checked = bloom_lang::check(source, filename, options);
+    // The widest expression starting at each offset.
+    let mut starts: HashMap<usize, (usize, &str)> = HashMap::new();
+    for (span, ty) in &checked.types {
+        let (start, end) = (span.start as usize, span.end as usize);
+        let entry = starts.entry(start).or_insert((end, ty.as_str()));
+        if end > entry.0 {
+            *entry = (end, ty.as_str());
+        }
+    }
+    let mut out = source.to_string();
+    let mut changed = false;
+    // An `if`/`while`/`guard` head tests `x`'s truthiness either way.
+    let in_head = |at: usize| {
+        let line_start = source[..at].rfind('\n').map_or(0, |i| i + 1);
+        let line_end = source[at..].find('\n').map_or(source.len(), |i| at + i);
+        let line = source[line_start..line_end].trim_start();
+        let line = line.strip_prefix("} ").unwrap_or(line);
+        let line = line.strip_prefix("else ").unwrap_or(line);
+        ["if ", "while ", "guard "].iter().any(|k| line.starts_with(k))
+            && source[at..line_end].contains(" {")
+            && !source[line_start..at].contains('{')
+            && !source[line_start..at].contains(" = ")
+    };
+    for at in at.into_iter().rev() {
+        if in_head(at) || starts.get(&(at + 2)).is_some_and(|(_, ty)| *ty == "Bool") {
+            out.replace_range(at..at + 2, "");
+            changed = true;
+        }
+    }
+    changed.then_some(out)
 }
 
 /// The start of the line of the first write `name = …` before `read`, in the closure or

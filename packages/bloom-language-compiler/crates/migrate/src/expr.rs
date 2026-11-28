@@ -311,6 +311,18 @@ impl Tr<'_> {
                 if l.operator == LogicalOperator::Coalesce && is_nothing(&l.right) {
                     return self.expr(&l.left);
                 }
+                // `x || undefined` of a name or a member chain: JS's falsy `x` is `none`
+                // (MediaGrid's `posterUri={item.uri || undefined}` hands no poster for `""`).
+                if l.operator == LogicalOperator::Or
+                    && is_nothing(&l.right)
+                    && !self.head
+                    && is_member_chain(&l.left)
+                {
+                    let test = self.test(&l.left, false);
+                    let test = strip_parens(&test).to_string();
+                    let value = self.expr(&l.left);
+                    return format!("({test} ? {value} : none)");
+                }
                 // `x || undefined`: `x`, an empty one kept (JS gave `undefined`).
                 if l.operator == LogicalOperator::Or && is_nothing(&l.right) {
                     self.review(

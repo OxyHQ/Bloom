@@ -101,8 +101,9 @@ pub fn spell(
     for (start, end, test) in &edits {
         out.replace_range(*start..*end, test);
     }
-    // `Boolean(x)` was `!!x` for bloomc to type `x`; it is now a `Bool` either way.
-    let out = drop_double_negation(&out);
+    // `Boolean(x)` was `!!x` for bloomc to type `x`: a spelled test took its `!!` with it. What
+    // is left is dropped after the respelling rounds where `x` is a `Bool`
+    // (`typed::double_negations`); on a TS value Bloom could not type it stays JS's truthiness.
     if edits.is_empty() && out == source { None } else { Some(out) }
 }
 
@@ -374,33 +375,33 @@ fn literal_union(ty: &str) -> bool {
     })
 }
 
-/// `!!x` as `x`, outside string literals (the codemod writes `!!` only for `Boolean(x)`).
-fn drop_double_negation(source: &str) -> String {
-    let mut out = String::with_capacity(source.len());
-    let mut chars = source.chars().peekable();
+/// The offsets of each `!!`, outside string literals (the codemod writes `!!` only for
+/// `Boolean(x)`).
+pub fn double_negations_at(source: &str) -> Vec<usize> {
+    let mut found = Vec::new();
+    let mut chars = source.char_indices().peekable();
     let mut in_string = false;
-    while let Some(c) = chars.next() {
+    while let Some((at, c)) = chars.next() {
         if in_string {
-            out.push(c);
             match c {
-                '\\' => out.extend(chars.next()),
+                '\\' => {
+                    chars.next();
+                }
                 '"' => in_string = false,
                 _ => {}
             }
             continue;
         }
         match c {
-            '"' => {
-                in_string = true;
-                out.push(c);
-            }
-            '!' if chars.peek() == Some(&'!') => {
+            '"' => in_string = true,
+            '!' if chars.peek().is_some_and(|(_, n)| *n == '!') => {
                 chars.next();
+                found.push(at);
             }
-            _ => out.push(c),
+            _ => {}
         }
     }
-    out
+    found
 }
 
 /// The truthiness test of `text`, of the Bloom type `ty` (its negation with `negated`).

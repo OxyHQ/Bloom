@@ -1,4 +1,4 @@
-// An optional string drawn among a text's runs draws nothing when absent, `x?.trim()` is its
+// An optional string drawn among a text's runs draws nothing when absent, `!!x?.trim()` is its
 // truthiness, and a `Record<K, V>` read destructured is a `V` (every key is present).
 
 public type Size = "sm" | "md"
