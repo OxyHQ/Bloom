@@ -570,6 +570,9 @@ pub struct Checker<'o> {
     /// local the body declares. A stateful modifier is applied only here, reading what is
     /// declared before it.
     modifier_site: Option<usize>,
+    /// TS error classes imported by name (`class PollContractError extends Error`): each one's
+    /// TS type text, and the name its class is read by (`err is PollContractError`).
+    error_classes: HashMap<String, String>,
     /// The `.modifier(X(…))` argument being checked: the one place `X(…)` is not B0421.
     modifier_arg: Option<ExprId>,
     /// Calls that may be hooks as that call's arguments (`useAccount(useRoutedName())`): they
@@ -746,6 +749,7 @@ impl<'o> Checker<'o> {
             modifier_decls: HashMap::default(),
             modifier_site: None,
             modifier_arg: None,
+            error_classes: HashMap::default(),
             hook_args: HashSet::default(),
             hook_body: None,
             unique_id_state: None,
@@ -2971,8 +2975,14 @@ impl<'o> Checker<'o> {
                             value: Some(Ty::Foreign(format!("typeof {}", local.name).into())),
                             ty: None,
                             component: None,
+                            class: false,
                         },
                     };
+                    if mapped.class
+                        && let Some(Ty::Foreign(text)) = &mapped.ty
+                    {
+                        self.error_classes.insert(text.to_string(), local.name.clone());
+                    }
                     if mapped.value.is_none() && mapped.component.is_none() && mapped.ty.is_some() {
                         self.out.type_only_imports.insert(spec.span);
                     }
@@ -3291,6 +3301,34 @@ impl<'o> Checker<'o> {
             steps += 1;
         }
         (at != local && self.out.locals[at].kind == LocalKind::State).then_some(at)
+    }
+
+    /// The name a TS error class is read by, when `ty` is one (`PollContractError`).
+    fn error_class(&self, ty: &Ty) -> Option<String> {
+        match self.resolve(ty) {
+            Ty::Foreign(text) => self.error_classes.get(&*text).cloned(),
+            _ => None,
+        }
+    }
+
+    /// What `is` / `as?` of a TS error class tests: an error, or a TS value.
+    fn class_subject(&mut self, subject: &Expr, value: &Ty, class: &str) {
+        let resolved = match self.resolve(value) {
+            Ty::Option(inner) => self.resolve(&inner),
+            other => other,
+        };
+        if !matches!(resolved, Ty::JsError | Ty::Foreign(_) | Ty::Unknown | Ty::Var(_)) {
+            self.report(
+                Diagnostic::error(
+                    "B0213",
+                    subject.span,
+                    format!("`{class}` is a TS error class, and this is {}", self.show(value)),
+                )
+                .label("not an error, nor a TS value")
+                .help("test a caught error (`catch let e`) or a TS value")
+                .spec("47-the-foreign-boundary"),
+            );
+        }
     }
 
     /// A statement no path falls out of: `return`, `throw`, `break`, `continue`, a call that
@@ -5256,6 +5294,12 @@ impl<'o> Checker<'o> {
             ExprKind::Is(subject, te) => {
                 let ty = self.resolve_type(te);
                 let value = self.expr(subject, None);
+                // `err is PollContractError` of a TS error class: JS's `instanceof`.
+                if let Some(class) = self.error_class(&ty) {
+                    self.class_subject(subject, &value, &class);
+                    self.out.is_tests.insert(expr.id, Ty::Foreign(class.into()));
+                    return Ty::Bool;
+                }
                 let tested = matches!(ty, Ty::Str | Ty::Int | Ty::Float | Ty::Bool | Ty::List(_));
                 if !tested {
                     self.report(
@@ -5309,6 +5353,12 @@ impl<'o> Checker<'o> {
                         .spec("62-control-flow-and-errors-20"),
                     );
                     return target;
+                }
+                // `err as? PollContractError` of a TS error class: the error when it is one.
+                if let Some(class) = self.error_class(&target) {
+                    self.class_subject(subject, &value, &class);
+                    self.out.is_tests.insert(expr.id, Ty::Foreign(class.into()));
+                    return Ty::Option(Box::new(target));
                 }
                 match self.cast_fn(&target) {
                     Some((func, f)) => {

@@ -1,0 +1,4 @@
+// A TS error class tests an error or a TS value, not a Bloom value.
+import { PollContractError } from "@/poll"
+
+public func wrong(_ n: Int) -> Bool { n is PollContractError }

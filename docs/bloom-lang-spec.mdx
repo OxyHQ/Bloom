@@ -510,7 +510,10 @@ returns says nothing of its data; a binding module gives it a generic signature
 (`public func useQuery<T>(_ options: QueryOptions<T>) -> QueryResult<T>` with `queryFn: () async
 -> T`), and `T` is then the `queryFn` closure's result. A TS
 class that extends nothing (`ViewModifier`) is a value
-and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`.
+and a type, both `Foreign`: `look: ViewModifier? = none` then `.modifier(look ?? card)`. So is an
+error class, one whose base's name ends in `Error` (`class PollContractError extends Error`), never
+a component: `err is PollContractError` and `err as? PollContractError` of a caught error or a TS
+value are JS's `instanceof` (Swift's `e is C`).
 
 `x is T` tests a TS value of no Bloom type (`unknown`, a union) at run time, for the types JS
 can test: `String`, `Int` (an integer number), `Float`, `Bool` and `[T]` (`Array.isArray`; its

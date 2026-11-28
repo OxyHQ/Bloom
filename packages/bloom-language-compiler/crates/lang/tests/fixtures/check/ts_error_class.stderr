@@ -1,0 +1,8 @@
+error[B0213]: `PollContractError` is a TS error class, and this is `Int`
+ --> check/ts_error_class.bloom:4:39
+  |
+4 | public func wrong(_ n: Int) -> Bool { n is PollContractError }
+  |                                       ^ not an error, nor a TS value
+  |
+help: test a caught error (`catch let e`) or a TS value
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#47-the-foreign-boundary
