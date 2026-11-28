@@ -1,0 +1,16 @@
+screen Home {
+  body {
+    Text("home")
+  }
+}
+
+layout Tabs {
+  body {
+    Slot()
+  }
+}
+
+fn save(value: Int) -> Promise<Unit> {
+  defer { log("saved") }
+  task { await store(value, false) }
+}

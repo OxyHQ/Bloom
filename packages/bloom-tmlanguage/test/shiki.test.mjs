@@ -1,12 +1,13 @@
 // node --test test/: the registration as Shiki loads it, on both of Shiki's regex engines
 // (Oniguruma's Wasm build, and the JavaScript one that pages without Wasm use), over every
-// ```bloom and 2.0 ```swift block of the language spec.
+// ```bloom and 2.0 ```swift block of the language spec, and the TextMate grammar's scope fixtures.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 import { createHighlighter } from 'shiki';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
+import { failuresOf, fixtureNames, readFixture } from '../../bloom-vscode/test/scope-fixtures.mjs';
 import bloom from '../index.js';
 
 const root = new URL('..', import.meta.url).pathname;
@@ -63,5 +64,44 @@ for (const [engineName, engine] of [
     assert.match(html, /class="shiki shiki-themes github-light github-dark"/);
     assert.match(html, /<span style="[^"]*">@State<\/span>/);
     highlighter.dispose();
+  });
+}
+
+// The TextMate grammar's scope fixtures (packages/bloom-vscode/test/fixtures), asserted through
+// Shiki as they are through vscode-textmate: a regex the JavaScript engine reads differently from
+// Oniguruma fails here.
+for (const [engineName, engine] of [
+  ['Oniguruma', undefined],
+  ['JavaScript', createJavaScriptRegexEngine()],
+]) {
+  test(`Shiki (${engineName} engine) gives every scope the fixtures assert`, async () => {
+    const highlighter = await createHighlighter({
+      themes: ['github-dark'],
+      langs: [bloom],
+      ...(engine ? { engine } : {}),
+    });
+    const failures = [];
+    for (const name of fixtureNames()) {
+      const fixture = readFixture(name);
+      const { tokens } = highlighter.codeToTokens(
+        fixture.code.map((line) => line.text).join('\n'),
+        {
+          lang: 'bloom',
+          theme: 'github-dark',
+          includeExplanation: true,
+        },
+      );
+      const columns = tokens.map((line, index) => {
+        const scopes = [];
+        for (const token of line)
+          for (const part of token.explanation)
+            for (const _ of part.content) scopes.push(part.scopes.map((s) => s.scopeName));
+        assert.equal(scopes.length, fixture.code[index].text.length, `${name}: line ${index + 1}`);
+        return scopes;
+      });
+      failures.push(...failuresOf(name, fixture, columns));
+    }
+    highlighter.dispose();
+    assert.deepEqual(failures, []);
   });
 }

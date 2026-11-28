@@ -1,11 +1,6 @@
 // node --test test/: the TextMate grammar, run through the engine VS Code uses
 // (vscode-textmate on the Oniguruma Wasm build), against the scope assertions
-// written into the fixtures.
-//
-// An assertion line is a `//` comment whose first mark is `^` or `<-`:
-//   `//   ^^^ scope.a scope.b`  every `^` column of the source line above has both scopes;
-//   `// <--- scope`            columns 0 to 2 (one per `-`) have it.
-// Assertion lines are not tokenized; the grammar state runs on across them.
+// written into the fixtures (their form: scope-fixtures.mjs).
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -13,10 +8,18 @@ import { join } from 'node:path';
 import test from 'node:test';
 import oniguruma from 'vscode-oniguruma';
 import textmate from 'vscode-textmate';
+import { ALL_KEYWORDS, CONTEXTUAL_KEYWORDS, KEYWORDS as LEXER_KEYWORDS } from './keywords.mjs';
+import {
+  FIXTURES,
+  failuresOf,
+  fixtureNames,
+  KEYWORD_SCOPE,
+  readFixture,
+} from './scope-fixtures.mjs';
 
 const require = createRequire(import.meta.url);
 const root = new URL('..', import.meta.url).pathname;
-const fixtures = join(root, 'test/fixtures');
+const fixtures = FIXTURES;
 
 const wasm = readFileSync(require.resolve('vscode-oniguruma/release/onig.wasm'));
 await oniguruma.loadWASM(wasm.buffer.slice(wasm.byteOffset, wasm.byteOffset + wasm.byteLength));
@@ -35,60 +38,47 @@ const registry = new textmate.Registry({
 });
 const grammar = await registry.loadGrammar('source.bloom');
 
-const ASSERTION = /^\s*\/\/\s*(?=\^|<-)/;
-
-/** The scopes at each column of a line, and the state after it. */
-function scopesOf(line, state) {
-  const { tokens, ruleStack } = grammar.tokenizeLine(line, state);
-  const columns = [];
-  for (const token of tokens)
-    for (let column = token.startIndex; column < token.endIndex; column++)
-      columns[column] = token.scopes;
-  return { columns, state: ruleStack };
-}
-
-/** The columns an assertion line marks, and the scopes it asserts. */
-function parseAssertion(line) {
-  const start = line.indexOf('//') + 2;
-  const rest = line.slice(start);
-  const arrow = /^\s*<(-+)\s+(.*)$/.exec(rest);
-  if (arrow)
-    return { columns: [...arrow[1]].map((_, i) => i), scopes: arrow[2].trim().split(/\s+/) };
-  const columns = [];
-  let index = start;
-  while (index < line.length && /[\s^]/.test(line[index])) {
-    if (line[index] === '^') columns.push(index);
-    index++;
-  }
-  return { columns, scopes: line.slice(index).trim().split(/\s+/) };
-}
-
-for (const name of readdirSync(fixtures).filter((file) => file.endsWith('.bloom'))) {
-  test(`scopes in ${name}`, () => {
-    const lines = readFileSync(join(fixtures, name), 'utf8').split('\n');
-    let state = textmate.INITIAL;
-    let source = null;
-    const failures = [];
-    lines.forEach((line, index) => {
-      if (source && ASSERTION.test(line)) {
-        const { columns, scopes } = parseAssertion(line);
-        for (const column of columns)
-          for (const scope of scopes) {
-            const at = source.columns[column] ?? [];
-            if (!at.includes(scope))
-              failures.push(
-                `${name}:${source.line}:${column + 1} ${JSON.stringify(source.text.slice(column, column + 12))} lacks ${scope}; has ${at.slice(1).join(' ') || '(nothing)'}`,
-              );
-          }
-        return;
-      }
-      const result = scopesOf(line, state);
-      state = result.state;
-      source = { columns: result.columns, text: line, line: index + 1 };
-    });
-    assert.deepEqual(failures, []);
+/** The scopes at each column of each of `lines`, tokenized in order from the initial state. */
+function columnsOf(lines) {
+  let state = textmate.INITIAL;
+  return lines.map((line) => {
+    const { tokens, ruleStack } = grammar.tokenizeLine(line, state);
+    state = ruleStack;
+    const columns = [];
+    for (const token of tokens)
+      for (let column = token.startIndex; column < token.endIndex; column++)
+        columns[column] = token.scopes;
+    return columns;
   });
 }
+
+for (const name of fixtureNames()) {
+  test(`scopes in ${name}`, () => {
+    const fixture = readFixture(name);
+    const columns = columnsOf(fixture.code.map((line) => line.text));
+    assert.deepEqual(failuresOf(name, fixture, columns), []);
+  });
+}
+
+test('every keyword and 2.0 contextual keyword of the lexer is marked in the fixtures', () => {
+  const marked = new Set();
+  for (const name of fixtureNames()) {
+    const { code } = readFixture(name);
+    let state = textmate.INITIAL;
+    for (const { text } of code) {
+      const { tokens, ruleStack } = grammar.tokenizeLine(text, state);
+      state = ruleStack;
+      for (const token of tokens)
+        if (token.scopes.some((scope) => KEYWORD_SCOPE.test(scope)))
+          for (const word of text.slice(token.startIndex, token.endIndex).match(/\w+/g) ?? [])
+            marked.add(word);
+    }
+  }
+  assert.deepEqual(
+    ALL_KEYWORDS.filter((word) => !marked.has(word)),
+    [],
+  );
+});
 
 test('every repository rule the grammar names exists', () => {
   const raw = JSON.parse(readFileSync(join(root, 'syntaxes/bloom.tmLanguage.json'), 'utf8'));
@@ -116,17 +106,14 @@ test('every fixture closes every rule it opens', () => {
   }
 });
 
-// Words the lexer reads as keywords (crates/lang/src/lexer.rs `KEYWORDS`) and the parser's
-// 2.0 contextual ones (crates/lang/src/parser.rs): none may be left as plain text. (`actor` is
-// one only before a type's name, and the standard library names values `actor`.)
-const KEYWORDS = new Set(
-  (
-    'as async await body case default defer else enum false fn for from if import in layout let ' +
-    'match none pub return screen struct task true type var view while ' +
-    'func class protocol extension static final public private internal fileprivate ' +
-    'mutating init switch guard do catch throw try throws rethrows where some any self Self extern'
-  ).split(' '),
-);
+// Words the lexer reads as keywords (`bloom_lang::KEYWORDS`) and the 2.0 contextual ones
+// (`bloom_lang::CONTEXTUAL_KEYWORDS`): none may be left as plain text. (`actor` is one only before
+// a type's name, and the standard library names values `actor`.)
+const KEYWORDS = new Set([
+  ...LEXER_KEYWORDS,
+  ...CONTEXTUAL_KEYWORDS.filter((word) => word !== 'actor'),
+  ...'mutating where Self extern'.split(' '),
+]);
 const repo = join(root, '../..');
 
 /** The problems of one piece of Bloom: rules left open, illegal text, unscoped keywords. */

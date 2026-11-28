@@ -7,6 +7,7 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
+import { ALL_KEYWORDS } from '../../bloom-vscode/test/keywords.mjs';
 
 const require = createRequire(import.meta.url);
 const root = new URL('..', import.meta.url).pathname;
@@ -48,6 +49,23 @@ for (const name of readdirSync(cases).filter((file) => file.endsWith('.test'))) 
     assert.deepEqual(actual, JSON.parse(expected));
   });
 }
+
+test('every keyword and 2.0 contextual keyword of the lexer is marked in the token streams', () => {
+  const KEYWORD_TOKENS = new Set(['keyword', 'boolean', 'nil', 'self-keyword']);
+  const marked = new Set();
+  /** The words of every keyword-like token in `stream`, nested ones too. */
+  const visit = (stream) => {
+    for (const [type, content] of stream.filter(Array.isArray))
+      if (typeof content !== 'string') visit(content);
+      else if (KEYWORD_TOKENS.has(type)) for (const word of content.match(/\w+/g)) marked.add(word);
+  };
+  for (const name of readdirSync(cases).filter((file) => file.endsWith('.test')))
+    visit(JSON.parse(readFileSync(join(cases, name), 'utf8').split(SEPARATOR)[1]));
+  assert.deepEqual(
+    ALL_KEYWORDS.filter((word) => !marked.has(word)),
+    [],
+  );
+});
 
 test("the language spec's ```bloom and 2.0 ```swift examples tokenize, keywords marked", () => {
   const spec = readFileSync(join(root, '../../docs/bloom-lang-spec.mdx'), 'utf8');

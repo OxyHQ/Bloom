@@ -137,7 +137,7 @@ func check(code: Int) throws(APIError) -> Int {
   default:
 //^^^^^^^ keyword.control.default.bloom
     break
-//  ^^^^^ keyword.control.bloom
+//  ^^^^^ keyword.control.transfer.bloom
   }
   if code >= 500 { throw APIError.status(code: code) }
 //                 ^^^^^ keyword.control.exception.bloom

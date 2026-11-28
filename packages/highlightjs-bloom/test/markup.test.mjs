@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
 import hljs from 'highlight.js/lib/core';
+import { ALL_KEYWORDS } from '../../bloom-vscode/test/keywords.mjs';
 import bloom from '../src/languages/bloom.js';
 
 const require = createRequire(import.meta.url);
@@ -26,6 +27,24 @@ for (const name of readdirSync(markup).filter(
     assert.equal(actual, readFileSync(expectFile, 'utf8'));
   });
 }
+
+test('every keyword and 2.0 contextual keyword of the lexer is marked in the markup tests', () => {
+  const expected = readdirSync(markup)
+    .filter((f) => f.endsWith('.expect.txt'))
+    .map((f) => readFileSync(join(markup, f), 'utf8'))
+    .join('\n');
+  const marked = new Set(
+    [
+      ...expected.matchAll(
+        /<span class="hljs-(?:keyword|literal|variable language_)">([A-Za-z_]+)(?:\([a-z]+\))?<\/span>/g,
+      ),
+    ].map((m) => m[1]),
+  );
+  assert.deepEqual(
+    ALL_KEYWORDS.filter((word) => !marked.has(word)),
+    [],
+  );
+});
 
 test("the language spec's ```bloom and 2.0 ```swift examples highlight, keywords marked", () => {
   const spec = readFileSync(join(root, '../../docs/bloom-lang-spec.mdx'), 'utf8');

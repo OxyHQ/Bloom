@@ -98,11 +98,13 @@ export default function bloom(hljs) {
       'Option',
       'Partial',
       'Promise',
+      'Regex',
       'Result',
       'Sendable',
       'String',
       'Unit',
       'View',
+      'ViewModifier',
       'Void',
     ],
     'variable.language': ['self', 'Self'],
@@ -193,6 +195,20 @@ export default function bloom(hljs) {
     { scope: 'keyword', match: /\b(?:try|as)[?!]/ },
   ];
 
+  // `outer: for row in grid {`, and the label `break outer` and `continue outer` name.
+  const LOOP_LABEL = {
+    scope: 'symbol',
+    match: /(?<![.\w$])[a-z_][A-Za-z0-9_]*(?=\s*:\s*(?:for|while|repeat)\b)/,
+  };
+  const TRANSFER = {
+    match: [
+      /\b(?:break|continue)/,
+      /[ \t]+/,
+      /(?!(?:case|default|else|return|if|for|while|let|var)\b)[a-z_][A-Za-z0-9_]*\b/,
+    ],
+    scope: { 1: 'keyword', 3: 'symbol' },
+  };
+
   const LABEL = {
     // `label:` in an argument list, a parameter or a field: never a keyword there
     // (`type: "error"`), except a switch's `default:`.
@@ -232,7 +248,7 @@ export default function bloom(hljs) {
   };
   const OPERATOR = {
     scope: 'operator',
-    match: /=>|->|\.\.<|\.\.\.|\.\.|\?\?|[!=<>]=|&&|\|\||[-+*/%]=?|[!?&|<>=]/,
+    match: /=>|->|\.\.<|\.\.\.|\.\.|\?\?|[!=]==|[!=<>]=|&&|\|\||[-+*/%]=?|[!?&|<>=]/,
     relevance: 0,
   };
 
@@ -243,6 +259,8 @@ export default function bloom(hljs) {
     MACRO,
     KEY_PATH,
     ...DECLARATIONS,
+    TRANSFER,
+    LOOP_LABEL,
     LABEL,
     NUMBER,
     CLOSURE_ARGUMENT,

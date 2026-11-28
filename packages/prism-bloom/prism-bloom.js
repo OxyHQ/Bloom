@@ -64,6 +64,20 @@
       lookbehind: true,
       alias: 'function',
     },
+    // A loop's label: `outer: for row in grid {`, and the one `break outer` and `continue outer` name.
+    label: [
+      {
+        pattern: /(^|[^.\w$])[a-z_]\w*(?=\s*:\s*(?:for|while|repeat)\b)/,
+        lookbehind: true,
+        alias: 'symbol',
+      },
+      {
+        pattern:
+          /(\b(?:break|continue)[ \t]+)(?!(?:case|default|else|return|if|for|while|let|var)\b)[a-z_]\w*/,
+        lookbehind: true,
+        alias: 'symbol',
+      },
+    ],
     // `label:` in an argument list, a parameter or a field is never a keyword (`type: "error"`),
     // except a switch's `default:`.
     'argument-label': { pattern: /(^|[^.\w$])(?!default\b)[a-z_]\w*(?=:(?!:))/, lookbehind: true },
@@ -76,6 +90,9 @@
         lookbehind: true,
       },
       /\b(?:open|actor)(?=\s+(?:public|private|static|final|class|actor|func|var|let|init|[A-Z]\w*)\b)/,
+      // `actor Ledger`: the class-name token has taken the name, so the declaration's `actor` ends
+      // what is left before it.
+      /\bactor(?=\s+$)/,
       /\b(?:get|set)\b(?=\s*(?:set\s*)?\})/,
       /\bextern\s+(?:module|native)\b/,
       /\b(?:any|as|async|await|body|break|case|catch|class|continue|default|defer|do|else|enum|extension|extern|fallthrough|fileprivate|final|fn|for|from|func|guard|if|import|in|init|internal|is|layout|let|match|mutating|nonisolated|private|protocol|pub|public|repeat|rethrows|return|screen|some|static|struct|switch|task|throw|throws|try|type|var|view|where|while)\b/,
@@ -90,7 +107,7 @@
       /\b(?:0x[0-9A-Fa-f](?:_?[0-9A-Fa-f])*|[0-9](?:_?[0-9])*(?:\.[0-9](?:_?[0-9])*)?(?:[eE][+-]?[0-9]+)?)\b/,
     'class-name-reference': { pattern: /\b[A-Z]\w*/, alias: 'class-name' },
     function: /\b[a-z_]\w*(?=\s*\()/,
-    operator: /=>|->|\.\.<|\.\.\.|\.\.|\?\?|[!=<>]=|&&|\|\||[-+*/%]=?|[!?&|<>=\\]/,
+    operator: /=>|->|\.\.<|\.\.\.|\.\.|\?\?|[!=]==|[!=<>]=|&&|\|\||[-+*/%]=?|[!?&|<>=\\]/,
     punctuation: /[{}[\]();,.:]/,
   };
   interpolation.inside.rest = Prism.languages.bloom;

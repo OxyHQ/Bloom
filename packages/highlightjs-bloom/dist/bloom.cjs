@@ -112,11 +112,13 @@ var hljsGrammar = (() => {
         "Option",
         "Partial",
         "Promise",
+        "Regex",
         "Result",
         "Sendable",
         "String",
         "Unit",
         "View",
+        "ViewModifier",
         "Void"
       ],
       "variable.language": ["self", "Self"]
@@ -200,6 +202,18 @@ var hljsGrammar = (() => {
       // `try?`, `try!`, `as?`, `as!`.
       { scope: "keyword", match: /\b(?:try|as)[?!]/ }
     ];
+    const LOOP_LABEL = {
+      scope: "symbol",
+      match: /(?<![.\w$])[a-z_][A-Za-z0-9_]*(?=\s*:\s*(?:for|while|repeat)\b)/
+    };
+    const TRANSFER = {
+      match: [
+        /\b(?:break|continue)/,
+        /[ \t]+/,
+        /(?!(?:case|default|else|return|if|for|while|let|var)\b)[a-z_][A-Za-z0-9_]*\b/
+      ],
+      scope: { 1: "keyword", 3: "symbol" }
+    };
     const LABEL = {
       // `label:` in an argument list, a parameter or a field: never a keyword there
       // (`type: "error"`), except a switch's `default:`.
@@ -237,7 +251,7 @@ var hljsGrammar = (() => {
     };
     const OPERATOR = {
       scope: "operator",
-      match: /=>|->|\.\.<|\.\.\.|\.\.|\?\?|[!=<>]=|&&|\|\||[-+*/%]=?|[!?&|<>=]/,
+      match: /=>|->|\.\.<|\.\.\.|\.\.|\?\?|[!=]==|[!=<>]=|&&|\|\||[-+*/%]=?|[!?&|<>=]/,
       relevance: 0
     };
     const CODE = [
@@ -247,6 +261,8 @@ var hljsGrammar = (() => {
       MACRO,
       KEY_PATH,
       ...DECLARATIONS,
+      TRANSFER,
+      LOOP_LABEL,
       LABEL,
       NUMBER,
       CLOSURE_ARGUMENT,

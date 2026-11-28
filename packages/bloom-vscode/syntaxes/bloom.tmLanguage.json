@@ -15,6 +15,7 @@
         { "include": "#key-path" },
         { "include": "#declarations" },
         { "include": "#case-arm" },
+        { "include": "#loop-label" },
         { "include": "#parameter-label" },
         { "include": "#named-argument" },
         { "include": "#accessors" },
@@ -253,6 +254,14 @@
         }
       ]
     },
+    "loop-label": {
+      "comment": "A loop's label, which `break outer` and `continue outer` name: `outer: for row in grid {`.",
+      "match": "(?<![.\\w$])([a-z_][A-Za-z0-9_]*)\\s*(:)(?=\\s*(?:for|while|repeat)\\b)",
+      "captures": {
+        "1": { "name": "entity.name.label.loop.bloom" },
+        "2": { "name": "punctuation.separator.colon.bloom" }
+      }
+    },
     "parameter-label": {
       "comment": "A `func` parameter with an argument label: `(_ xs: [T], of x: T)`.",
       "match": "(?<=[(,])\\s*(?!(?:let|var|case|in|return|await|try|throw|some|any|inout)\\b)(?:(_)|([a-z_][A-Za-z0-9_]*))\\s+([a-z_][A-Za-z0-9_]*)(:)(?!:)",
@@ -300,8 +309,16 @@
         { "name": "keyword.operator.cast.bloom", "match": "\\bas[?!]" },
         { "name": "keyword.operator.type.is.bloom", "match": "\\bis\\b(?=\\s+[A-Z\\[(])" },
         {
+          "comment": "`break` and `continue`, and the loop label they may name: `continue outer`.",
+          "match": "\\b(break|continue)\\b(?:[ \\t]+(?!(?:case|default|else|return|if|for|while|let|var)\\b)([a-z_][A-Za-z0-9_]*)\\b)?",
+          "captures": {
+            "1": { "name": "keyword.control.transfer.bloom" },
+            "2": { "name": "entity.name.label.loop.bloom" }
+          }
+        },
+        {
           "name": "keyword.control.bloom",
-          "match": "\\b(if|else|guard|switch|match|case|where|for|in|while|repeat|break|continue|fallthrough|return|await|defer|task)\\b"
+          "match": "\\b(if|else|guard|switch|match|case|where|for|in|while|repeat|fallthrough|return|await|defer|task)\\b"
         },
         { "name": "keyword.control.import.bloom", "match": "\\b(import|from)\\b" },
         { "name": "keyword.control.as.bloom", "match": "\\bas\\b" },
@@ -432,11 +449,11 @@
       "patterns": [
         {
           "name": "support.type.primitive.bloom",
-          "match": "\\b(Int|Float|Double|Bool|String|Unit|Void|Never|Any|View|Binding|Result|Option|Partial|Foreign|Children|Promise|Error)\\b"
+          "match": "\\b(Int|Float|Double|Bool|String|Unit|Void|Never|Any|View|Binding|Result|Option|Partial|Foreign|Children|Promise|Error|Regex)\\b"
         },
         {
           "name": "support.type.protocol.bloom",
-          "match": "\\b(Equatable|Hashable|Comparable|Identifiable|Codable|Decodable|Encodable|Sendable|CaseIterable)\\b"
+          "match": "\\b(Equatable|Hashable|Comparable|Identifiable|Codable|Decodable|Encodable|Sendable|CaseIterable|ViewModifier)\\b"
         },
         { "name": "entity.name.type.bloom", "match": "\\b[A-Z][A-Za-z0-9_]*\\b" }
       ]
@@ -457,6 +474,11 @@
           "match": "(?<=[A-Za-z0-9_)\\]])!(?!=)"
         },
         { "name": "keyword.operator.logical.bloom", "match": "&&|\\|\\||!(?!=)" },
+        {
+          "comment": "Reference identity: `a === b`, `a !== b`.",
+          "name": "keyword.operator.comparison.identity.bloom",
+          "match": "===|!=="
+        },
         { "name": "keyword.operator.comparison.bloom", "match": "==|!=|<=|>=|<|>" },
         { "name": "keyword.operator.assignment.compound.bloom", "match": "\\+=|-=|\\*=" },
         { "name": "keyword.operator.assignment.bloom", "match": "=" },
@@ -495,7 +517,36 @@
       "end": "\\}",
       "beginCaptures": { "0": { "name": "punctuation.section.block.begin.bloom" } },
       "endCaptures": { "0": { "name": "punctuation.section.block.end.bloom" } },
-      "patterns": [{ "include": "#closure-params" }, { "include": "#code" }]
+      "patterns": [
+        { "include": "#closure-signature" },
+        { "include": "#closure-params" },
+        { "include": "#code" }
+      ]
+    },
+    "closure-signature": {
+      "comment": "A closure's signature in parentheses: `{ () -> [Row] in`, `{ (a: Int) -> Int in`, `{ (a, b) async throws -> T in`.",
+      "name": "meta.closure.signature.bloom",
+      "begin": "\\G\\s*(\\()(?=(?:[^()]|\\((?:[^()]|\\([^()]*\\))*\\))*\\)\\s*(?:(?:async\\s+)?(?:throws\\s+)?->\\s*[^{}]+?\\s+)?in\\b)",
+      "end": "\\b(in)\\b",
+      "beginCaptures": { "1": { "name": "punctuation.section.parameters.begin.bloom" } },
+      "endCaptures": { "1": { "name": "keyword.control.in.bloom" } },
+      "patterns": [
+        {
+          "comment": "A parameter's name, first in the list or after a comma.",
+          "match": "(?<=[(,])\\s*(_|[a-z_][A-Za-z0-9_]*)\\b(?!\\s*[(.])",
+          "captures": { "1": { "name": "variable.parameter.closure.bloom" } }
+        },
+        { "include": "#comments" },
+        { "include": "#keywords" },
+        { "include": "#constants" },
+        { "include": "#generic-arguments" },
+        { "include": "#types" },
+        { "include": "#operators" },
+        { "include": "#punctuation" },
+        { "include": "#parens" },
+        { "include": "#brackets" },
+        { "name": "punctuation.section.parameters.end.bloom", "match": "\\)" }
+      ]
     },
     "closure-params": {
       "comment": "`{ old, new in`, `{ file: File? in`, `{ (a, b) in` at the start of a closure.",

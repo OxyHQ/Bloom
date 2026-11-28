@@ -1,0 +1,16 @@
+<span class="hljs-keyword">screen</span> <span class="hljs-title class_">Home</span> {
+  <span class="hljs-keyword">body</span> {
+    <span class="hljs-type">Text</span>(<span class="hljs-string">&quot;home&quot;</span>)
+  }
+}
+
+<span class="hljs-keyword">layout</span> <span class="hljs-title class_">Tabs</span> {
+  <span class="hljs-keyword">body</span> {
+    <span class="hljs-type">Slot</span>()
+  }
+}
+
+<span class="hljs-keyword">fn</span> <span class="hljs-title function_">save</span>(value: <span class="hljs-type">Int</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Promise</span><span class="hljs-operator">&lt;</span><span class="hljs-type">Unit</span><span class="hljs-operator">&gt;</span> {
+  <span class="hljs-keyword">defer</span> { <span class="hljs-title function_ invoke__">log</span>(<span class="hljs-string">&quot;saved&quot;</span>) }
+  <span class="hljs-keyword">task</span> { <span class="hljs-keyword">await</span> <span class="hljs-title function_ invoke__">store</span>(value, <span class="hljs-literal">false</span>) }
+}

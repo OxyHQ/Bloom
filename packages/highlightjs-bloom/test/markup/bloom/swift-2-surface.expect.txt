@@ -1,0 +1,103 @@
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">protocol</span> <span class="hljs-title class_">Named</span> {
+  <span class="hljs-keyword">var</span> name: <span class="hljs-type">String</span> { <span class="hljs-keyword">get</span> }
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">protocol</span> <span class="hljs-title class_">Counted</span> {
+  <span class="hljs-keyword">var</span> count: <span class="hljs-type">Int</span> { <span class="hljs-keyword">get</span> }
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">NamedCounted</span> <span class="hljs-operator">=</span> <span class="hljs-type">Named</span> <span class="hljs-operator">&amp;</span> <span class="hljs-type">Counted</span>
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">describe</span><span class="hljs-operator">&lt;</span><span class="hljs-type">T</span><span class="hljs-operator">&gt;</span>(_ x: <span class="hljs-type">T</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">String</span> <span class="hljs-keyword">where</span> <span class="hljs-type">T</span>: <span class="hljs-type">Named</span> <span class="hljs-operator">&amp;</span> <span class="hljs-type">Counted</span> {
+  <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;<span class="hljs-subst">\(x.name)</span>: <span class="hljs-subst">\(x.count)</span>&quot;</span>
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Card</span>: <span class="hljs-type">ViewModifier</span> {
+  <span class="hljs-keyword">var</span> padded: <span class="hljs-type">Bool</span> <span class="hljs-operator">=</span> <span class="hljs-literal">true</span>
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">body</span>(content: <span class="hljs-type">Content</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-keyword">some</span> <span class="hljs-type">View</span> {
+    content.<span class="hljs-title function_ invoke__">padding</span>(<span class="hljs-symbol">.md</span>)
+  }
+}
+
+<span class="hljs-meta">@Transparent</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">UserID</span> {
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">let</span> raw: <span class="hljs-type">String</span>
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">fail</span>(_ message: <span class="hljs-type">String</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Never</span> {
+  <span class="hljs-title function_ invoke__">fatal</span>(message)
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">useCounter</span>(start: <span class="hljs-type">Int</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span> {
+  <span class="hljs-meta">@State</span> <span class="hljs-keyword">var</span> n <span class="hljs-operator">=</span> start
+  <span class="hljs-keyword">return</span> n
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">firstNegative</span>(_ grid: [[<span class="hljs-type">Int</span>]]) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span><span class="hljs-operator">?</span> {
+  <span class="hljs-keyword">var</span> found: <span class="hljs-type">Int</span><span class="hljs-operator">?</span> <span class="hljs-operator">=</span> <span class="hljs-literal">none</span>
+  <span class="hljs-symbol">outer</span>: <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> grid {
+    <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> row {
+      <span class="hljs-keyword">if</span> x <span class="hljs-operator">&gt;</span> <span class="hljs-number">9</span> { <span class="hljs-keyword">continue</span> <span class="hljs-symbol">outer</span> }
+      <span class="hljs-keyword">if</span> x <span class="hljs-operator">&lt;</span> <span class="hljs-number">0</span> {
+        found <span class="hljs-operator">=</span> x
+        <span class="hljs-keyword">break</span> <span class="hljs-symbol">outer</span>
+      }
+    }
+  }
+  <span class="hljs-keyword">while</span> <span class="hljs-literal">true</span> { <span class="hljs-keyword">break</span> }
+  <span class="hljs-keyword">return</span> found
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Session</span> {
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">init</span>() {}
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">same</span>(_ a: <span class="hljs-type">Session</span>, _ b: <span class="hljs-type">Session</span><span class="hljs-operator">?</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Bool</span> {
+  <span class="hljs-keyword">return</span> a <span class="hljs-operator">===</span> b <span class="hljs-operator">||</span> a <span class="hljs-operator">!==</span> b
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">isDigits</span>(_ s: <span class="hljs-type">String</span>) <span class="hljs-keyword">throws</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Bool</span> {
+  <span class="hljs-keyword">let</span> digits <span class="hljs-operator">=</span> <span class="hljs-keyword">try</span> <span class="hljs-type">Regex</span>(<span class="hljs-string">&quot;^<span class="hljs-char escape_">\\</span>d+$&quot;</span>)
+  <span class="hljs-keyword">return</span> s.<span class="hljs-title function_ invoke__">wholeMatch</span>(of: digits) <span class="hljs-operator">!=</span> <span class="hljs-literal">none</span>
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">closures</span>() <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span> {
+  <span class="hljs-keyword">let</span> rows <span class="hljs-operator">=</span> { () <span class="hljs-operator">-&gt;</span> [<span class="hljs-type">Int</span>] <span class="hljs-keyword">in</span> [] }
+  <span class="hljs-keyword">let</span> twice <span class="hljs-operator">=</span> { (a: <span class="hljs-type">Int</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span> <span class="hljs-keyword">in</span> a <span class="hljs-operator">*</span> <span class="hljs-number">2</span> }
+  <span class="hljs-keyword">return</span> <span class="hljs-title function_ invoke__">twice</span>(<span class="hljs-title function_ invoke__">rows</span>().count)
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">enum</span> <span class="hljs-title class_">StoreError</span>: <span class="hljs-type">Error</span> {
+  <span class="hljs-keyword">case</span> closed
+}
+
+<span class="hljs-keyword">actor</span> <span class="hljs-title class_">Ledger</span> {
+  <span class="hljs-keyword">fileprivate</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">var</span> opened <span class="hljs-operator">=</span> <span class="hljs-number">0</span>
+  <span class="hljs-keyword">internal</span> <span class="hljs-keyword">private(set)</span> <span class="hljs-keyword">var</span> total <span class="hljs-operator">=</span> <span class="hljs-number">0</span>
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">add</span>(_ n: <span class="hljs-type">Int</span>) {
+    <span class="hljs-variable language_">self</span>.total <span class="hljs-operator">+=</span> n
+  }
+}
+
+<span class="hljs-keyword">extension</span> <span class="hljs-title class_">Session</span>: <span class="hljs-type">Named</span> {
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">var</span> name: <span class="hljs-type">String</span> { <span class="hljs-string">&quot;session&quot;</span> }
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">run</span>(_ f: () <span class="hljs-keyword">throws</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span>) <span class="hljs-keyword">rethrows</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span> {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">try</span> <span class="hljs-title function_ invoke__">f</span>()
+}
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">label</span>(_ x: <span class="hljs-keyword">any</span> <span class="hljs-type">Named</span>, _ n: <span class="hljs-type">Int</span>) <span class="hljs-keyword">throws</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-type">String</span> {
+  <span class="hljs-keyword">guard</span> n <span class="hljs-operator">&gt;=</span> <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> { <span class="hljs-keyword">throw</span> <span class="hljs-type">StoreError</span>.closed }
+  <span class="hljs-keyword">switch</span> n {
+  <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>:
+    <span class="hljs-keyword">return</span> x.name
+  <span class="hljs-keyword">default</span>:
+    <span class="hljs-keyword">break</span>
+  }
+  <span class="hljs-keyword">do</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;<span class="hljs-subst">\(<span class="hljs-keyword">try</span> run { n })</span>&quot;</span>
+  } <span class="hljs-keyword">catch</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;failed&quot;</span>
+  }
+}
