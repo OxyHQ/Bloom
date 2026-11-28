@@ -241,7 +241,18 @@ pub(crate) fn rewrite_importers(
 ) -> Result<Vec<String>, String> {
     let stems: Vec<PathBuf> =
         migrated.iter().map(|(p, _)| normalize(&root.join(p.with_extension("")))).collect();
-    let mut notes = Vec::new();
+    // A route's default export is a `Screen`: a component (`screen(…)`), drawn as `<X />`.
+    let screens: Vec<bool> = migrated
+        .iter()
+        .map(|(p, name)| {
+            std::fs::read_to_string(root.join(p.with_extension("bloom"))).is_ok_and(|bloom| match name {
+                Some(name) => bloom.contains(&format!("struct {name}: Screen")),
+                // A route keeps its default export: its screen.
+                None => bloom.contains(": Screen {"),
+            })
+        })
+        .collect();
+    let mut notes = rewrite_bloom_importers(root, migrated, &stems)?;
     for file in modules(&[root.to_path_buf()], true)? {
         let Ok(source) = std::fs::read_to_string(&file) else { continue };
         let dir = file.parent().unwrap_or(root);
@@ -293,24 +304,47 @@ pub(crate) fn rewrite_importers(
                 out.push_str(bare);
                 out.push_str(".bloom");
                 changed = true;
-                // `jest.mock(spec, () => ({ default: … }))` mocks the export by its name.
-                if let Some(name) = name
-                    && head.ends_with("jest.mock(")
-                {
+                if head.ends_with("jest.mock(") {
                     let after = &rest[i + 1 + len + 1..];
-                    if let Some(end) = call_end(after)
-                        && let Some(at) = after[..end].find("default:")
-                    {
+                    if let Some(end) = call_end(after) {
                         let mut call = after[..end].to_string();
-                        call.replace_range(at..at + "default:".len(), &format!("{name}:"));
-                        out.push(quote);
-                        out.push_str(&call);
-                        rest = &after[end..];
-                        continue;
+                        // `jest.mock(spec, () => ({ default: … }))` mocks the export by its name.
+                        if let Some(name) = name
+                            && let Some(at) = call.find("default:")
+                        {
+                            call.replace_range(at..at + "default:".len(), &format!("{name}:"));
+                        }
+                        let views =
+                            exported_views(&root.join(migrated[index].0.with_extension("d.bloom.ts")));
+                        let mocked = mock_views(&call, &views);
+                        if mocked.is_some() || call != after[..end] {
+                            out.push(quote);
+                            out.push_str(&mocked.unwrap_or(call));
+                            rest = &after[end..];
+                            continue;
+                        }
                     }
                 }
                 let statement = &head[head.rfind("import").unwrap_or(head.len())..];
-                drawn.extend(imported_names(statement));
+                let mut names = imported_names(statement);
+                if screens[index] {
+                    let local = match name {
+                        Some(name) => statement
+                            .split(['{', '}', ','])
+                            .map(str::trim)
+                            .find_map(|part| part.strip_prefix(&format!("{name} as ")))
+                            .map_or(name, str::trim)
+                            .to_string(),
+                        // `import X from`: the default import's own name.
+                        None => statement
+                            .strip_prefix("import")
+                            .map(|c| c.trim().trim_end_matches("from").trim())
+                            .map(|c| c.split([',', '{']).next().unwrap_or("").trim().to_string())
+                            .unwrap_or_default(),
+                    };
+                    names.retain(|n| *n != local);
+                }
+                drawn.extend(names);
             } else {
                 out.push_str(spec);
             }
@@ -340,6 +374,126 @@ pub(crate) fn rewrite_importers(
                     ));
                 }
             }
+        }
+    }
+    Ok(notes)
+}
+
+/// The views a migrated module exports, from its declarations
+/// (`export declare const X: (props: P) => ComposedView`).
+fn exported_views(dts: &Path) -> Vec<String> {
+    let Ok(text) = std::fs::read_to_string(dts) else { return Vec::new() };
+    text.lines()
+        .filter_map(|line| {
+            let rest = line.strip_prefix("export declare const ")?;
+            let (name, ty) = rest.split_once(": ")?;
+            (ty.contains("=> ComposedView") || ty.contains("=> ViewNode")).then(|| name.to_string())
+        })
+        .collect()
+}
+
+/// `jest.mock(spec, factory)` of a migrated module whose views the factory mocks as React
+/// components (`X: (props) => <Text …/>`, `X: 'X'`): each such view's mock is the component drawn
+/// as the view's node (`Embed`), since a TS importer now calls the view (`toElement(X({ … }))`).
+/// `call` is the text after the specifier (`, () => …`); none when it mocks no view.
+fn mock_views(call: &str, views: &[String]) -> Option<String> {
+    let factory = call.trim_start().strip_prefix(',')?.trim();
+    let factory = factory.strip_suffix(',').unwrap_or(factory).trim_end();
+    let mocked: Vec<&String> = views
+        .iter()
+        .filter(|v| {
+            call.match_indices(v.as_str()).any(|(i, _)| {
+                let before = call[..i].chars().next_back();
+                let after = call[i + v.len()..].trim_start();
+                !before.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '.')
+                    && (after.starts_with(':') || after.starts_with('(') || after.starts_with(','))
+            })
+        })
+        .collect();
+    if factory.is_empty() || mocked.is_empty() {
+        return None;
+    }
+    let fields: Vec<String> = mocked.iter().map(|v| format!("{v}: asView(mod.{v})")).collect();
+    let names: Vec<String> = mocked.iter().map(|v| format!("`{v}`")).collect();
+    Some(format!(
+        ", () => {{\n  // {}: the migrated module's view(s); each mocked component is drawn as the view's node.\n  const mod = ({factory})() as Record<string, unknown>;\n  const {{ Embed }} = jest.requireActual<typeof import('@oxy.so/bloom-language')>('@oxy.so/bloom-language');\n  const {{ createElement }} = jest.requireActual<typeof import('react')>('react');\n  const asView = (c: unknown) =>\n    typeof c === 'function' || typeof c === 'string'\n      ? (props: object) => Embed(createElement(c as never, props))\n      : c;\n  return {{ ...mod, {} }};\n}}",
+        names.join(", "),
+        fields.join(", ")
+    ))
+}
+
+/// `.bloom` modules that import a migrated file's default export (`import { default as X }
+/// from "./X"`, as 0.x modules and earlier migrations wrote it) take it by its 2.0 name.
+fn rewrite_bloom_importers(
+    root: &Path,
+    migrated: &[(PathBuf, Option<String>)],
+    stems: &[PathBuf],
+) -> Result<Vec<String>, String> {
+    fn walk(dir: &Path, out: &mut Vec<PathBuf>) -> std::io::Result<()> {
+        for entry in std::fs::read_dir(dir)? {
+            let entry = entry?;
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if entry.file_type()?.is_dir() {
+                if !name.starts_with('.') && name != "node_modules" {
+                    walk(&entry.path(), out)?;
+                }
+            } else if name.ends_with(".bloom") {
+                out.push(entry.path());
+            }
+        }
+        Ok(())
+    }
+    let mut files = Vec::new();
+    walk(root, &mut files).map_err(|e| format!("{}: {e}", root.display()))?;
+    let mut notes = Vec::new();
+    for file in files {
+        let Ok(source) = std::fs::read_to_string(&file) else { continue };
+        let dir = file.parent().unwrap_or(root);
+        let mut changed = false;
+        let lines: Vec<String> = source
+            .split_inclusive('\n')
+            .map(|line| {
+                let Some(rest) = line.strip_prefix("import {") else { return line.to_string() };
+                let Some((clause, spec)) = rest.split_once("} from \"") else { return line.to_string() };
+                let Some(spec) = spec.split('"').next() else { return line.to_string() };
+                if !clause.contains("default as ") {
+                    return line.to_string();
+                }
+                let bare = spec.strip_suffix(".bloom").unwrap_or(spec);
+                let target = if bare.starts_with('.') {
+                    normalize(&dir.join(bare))
+                } else if let Some(s) = bare.strip_prefix("@/") {
+                    normalize(&root.join(s))
+                } else {
+                    return line.to_string();
+                };
+                let Some(index) = stems.iter().position(|s| s == &target) else { return line.to_string() };
+                let Some(name) = migrated[index].1.as_deref() else { return line.to_string() };
+                let parts: Vec<String> = clause
+                    .split(',')
+                    .map(str::trim)
+                    .filter(|p| !p.is_empty())
+                    .map(|part| match part.strip_prefix("default as ") {
+                        Some(local) if local.trim() == name => name.to_string(),
+                        Some(local) => format!("{name} as {}", local.trim()),
+                        None => part.to_string(),
+                    })
+                    .collect();
+                let rewritten = format!(
+                    "import {{ {} }} from \"{spec}\"{}",
+                    parts.join(", "),
+                    &rest[rest.find(&format!("\"{spec}\"")).map_or(rest.len(), |i| i + spec.len() + 2)..]
+                );
+                if rewritten != line {
+                    changed = true;
+                }
+                rewritten
+            })
+            .collect();
+        if changed {
+            std::fs::write(&file, lines.concat()).map_err(|e| format!("{}: {e}", file.display()))?;
+            let shown = file.strip_prefix(root).unwrap_or(&file).display().to_string();
+            notes.push(format!("{shown}: imports the migrated default export(s) by name"));
         }
     }
     Ok(notes)
