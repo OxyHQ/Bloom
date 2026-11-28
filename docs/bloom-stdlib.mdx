@@ -194,11 +194,18 @@ Stops the program: a state the code holds impossible was reached.
 Bloom (math): constants and functions over `Double` and `Int`.
 
 `abs`, `min`, `max`, `round`, `floor`, `ceil` and the `Int`/`Double` members
-(`rounded()`, `clamped(…)`, …) are the compiler's; these complete them.
+(`rounded()`, `clamped(…)`, …) are the compiler's; these complete them, with Foundation's
+names and meaning. Each is the same double on every backend: TypeScript computes it with
+V8's fdlibm port (`Math.cbrt`, …), Kotlin with the JVM's `StrictMath` (fdlibm), and Swift
+with the same algorithms (not Darwin's libm, which differs in the last bit).
 
 ### `func sqrt(_ x: Double) -> Double`
 
 The square root of `x`.
+
+### `func cbrt(_ x: Double) -> Double`
+
+The cube root of `x` (negative for a negative `x`, unlike `pow(x, 1.0 / 3.0)`).
 
 ### `func pow(_ x: Double, _ y: Double) -> Double`
 
@@ -232,6 +239,18 @@ The cosine of `x` (radians).
 
 The tangent of `x` (radians).
 
+### `func asin(_ x: Double) -> Double`
+
+The arc sine of `x` (radians, in -π/2...π/2; NaN outside -1...1).
+
+### `func acos(_ x: Double) -> Double`
+
+The arc cosine of `x` (radians, in 0...π; NaN outside -1...1).
+
+### `func atan(_ x: Double) -> Double`
+
+The arc tangent of `x` (radians, in -π/2...π/2).
+
 ### `func atan2(_ y: Double, _ x: Double) -> Double`
 
 The angle of the point (`x`, `y`) from the x axis (radians).
@@ -240,8 +259,53 @@ The angle of the point (`x`, `y`) from the x axis (radians).
 
 The length of the vector (`a`, `b`).
 
+### `func sinh(_ x: Double) -> Double`
+
+The hyperbolic sine of `x`.
+
+### `func cosh(_ x: Double) -> Double`
+
+The hyperbolic cosine of `x`.
+
+### `func tanh(_ x: Double) -> Double`
+
+The hyperbolic tangent of `x`.
+
+### `func asinh(_ x: Double) -> Double`
+
+The inverse hyperbolic sine of `x`.
+
+### `func acosh(_ x: Double) -> Double`
+
+The inverse hyperbolic cosine of `x` (NaN below 1).
+
+### `func atanh(_ x: Double) -> Double`
+
+The inverse hyperbolic tangent of `x` (NaN outside -1...1).
+
+### `func exp2(_ x: Double) -> Double`
+
+2 to the power `x`.
+
+### `func expm1(_ x: Double) -> Double`
+
+`exp(x) - 1`, exact for an `x` near 0.
+
+### `func log1p(_ x: Double) -> Double`
+
+`log(1 + x)`, exact for an `x` near 0.
+
+### `func trunc(_ x: Double) -> Double`
+
+`x` without its fraction, toward zero (`trunc(-2.7)` is `-2.0`).
+
+### `func fmod(_ x: Double, _ y: Double) -> Double`
+
+The remainder of `x / y` with `x`'s sign (C's `fmod`, Swift's `truncatingRemainder`).
+
 ### `extension Double`
 
+- `func truncatingRemainder(dividingBy other: Double) -> Double`: The remainder of dividing by `other`, with this value's sign (Swift's `%` on `Double`).
 - `static let pi: Double`: π.
 - `static let e: Double`: Euler's number.
 - `static let infinity: Double`: Positive infinity (JS's `Infinity`): greater than every finite value.
