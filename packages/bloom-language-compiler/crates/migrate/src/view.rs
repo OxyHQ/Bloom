@@ -1062,6 +1062,15 @@ impl Tr<'_> {
             .as_ref()
             .map(|t| format!(": {}", self.ty(&t.type_annotation)))
             .unwrap_or_default();
+        // `const xs = ys as readonly T[]` (TS widening a list's element type): the binding is
+        // annotated `[T]`, which is what the cast said.
+        if ty.is_empty()
+            && matches!(d.id, BindingPattern::BindingIdentifier(_))
+            && let Expression::TSAsExpression(a) = init.without_parentheses()
+            && named_list_type(&a.type_annotation)
+        {
+            ty = format!(": {}", self.ty(&a.type_annotation));
+        }
         // `const x = f<T>(…)`: the type argument types the binding (`let x: T = f(…)`).
         if ty.is_empty()
             && let Expression::CallExpression(call) = init.without_parentheses()
@@ -2994,6 +3003,18 @@ fn collect_returns<'b, 'a>(
 }
 
 /// An arrow's statements (none when its body is an expression).
+/// `T[]` or `readonly T[]` of a named, non-generic `T`.
+fn named_list_type(ty: &TSType) -> bool {
+    let array = match ty {
+        TSType::TSTypeOperatorType(op) if op.operator == oxc_ast::ast::TSTypeOperatorOperator::Readonly => {
+            &op.type_annotation
+        }
+        other => other,
+    };
+    matches!(array, TSType::TSArrayType(a)
+        if matches!(&a.element_type, TSType::TSTypeReference(r) if r.type_arguments.is_none()))
+}
+
 pub fn arrow_statements<'b, 'a>(arrow: &'b ArrowFunctionExpression<'a>) -> &'b [Statement<'a>] {
     arrow.get_function_body().map_or(&[], |b| &b.statements)
 }

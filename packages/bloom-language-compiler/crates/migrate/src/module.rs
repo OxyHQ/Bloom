@@ -211,6 +211,8 @@ pub struct Tr<'s> {
     /// Module constants an expression inside a function needs (`(['a', 'b'] as const).map(…)`):
     /// written above the item being translated, in order (`Tr::hoist_const_list`).
     pub hoisted: Vec<(String, String)>,
+    /// Every name [`Tr::hoisted`] has given in the module (it is emptied item by item).
+    pub hoisted_names: HashSet<String>,
     /// `actions(…)`/`menu(…)` constants written as `MenuActions`/`MenuContent` structs: a
     /// call of one takes labelled arguments, as a view's does.
     pub menu_structs: HashSet<String>,
@@ -420,6 +422,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         pending_equal: None,
         module_init: None,
         hoisted: Vec::new(),
+        hoisted_names: HashSet::new(),
         menu_structs: HashSet::new(),
         in_menu: false,
         menu_fields: HashMap::new(),
@@ -1968,7 +1971,12 @@ impl<'s> Tr<'s> {
         vis: &'static str,
         body: &[Statement],
     ) -> String {
-        let outer = self.module_init.replace(init.without_parentheses().span());
+        // `[…] as const satisfies readonly T[]`: the `as const` is the constant's own.
+        let own = match init.without_parentheses() {
+            Expression::TSSatisfiesExpression(s) => s.expression.without_parentheses().span(),
+            other => other.span(),
+        };
+        let outer = self.module_init.replace(own);
         let out = self.constant_item(name, annotation, init, vis, body);
         self.module_init = outer;
         out
@@ -1996,10 +2004,14 @@ impl<'s> Tr<'s> {
         }
         let mut name = base.clone();
         let mut n = 2;
-        while self.src.contains(name.as_str()) || self.hoisted.iter().any(|(h, _)| *h == name) {
+        while self.src.contains(name.as_str())
+            || self.hoisted.iter().any(|(h, _)| *h == name)
+            || self.hoisted_names.contains(&name)
+        {
             name = format!("{base}_{n}");
             n += 1;
         }
+        self.hoisted_names.insert(name.clone());
         self.hoisted.push((name.clone(), text));
         self.used.insert(name.clone());
         name
