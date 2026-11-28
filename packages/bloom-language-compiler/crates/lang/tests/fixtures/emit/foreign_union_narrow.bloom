@@ -1,0 +1,17 @@
+// A TS union kept as it is (`width?: number | '100%'`) narrows by `==` on its literals, as TS
+// narrows it: where `width == "100%"` fails it is `Float?`, which a frame's side takes (Swift's
+// `frame(width: CGFloat?)`); each branch of the conditional is a token or points.
+public struct Card: View {
+  var width: Foreign<"number | '100%'">? = none
+  var height: Float = 260
+  var mode: Foreign<"'compact' | 'wide' | 'full'"> = "wide"
+
+  var body: some View {
+    Text(mode == "full" ? "full" : mode)
+      .frame(width: width == "100%" ? "full" : width, height: height)
+  }
+}
+
+public func label(_ size: Foreign<"number | 'auto'">) -> String {
+  size == "auto" ? "auto" : "\(size)px"
+}
