@@ -149,6 +149,30 @@ struct Emitter<'a> {
     /// The module being emitted is a Compose island: its view of the same name gets the entry
     /// the island host calls (`island_entry`).
     island: Option<&'a str>,
+    /// Copy-on-write (the checker's `copy_on_write`): the `var`s that own their array or
+    /// dictionary (a `MutableList`/`MutableMap`, written in place) and the reads that copy one.
+    cow: bloom_lang::backend::Cow,
+    /// The current function's `inout` parameters, by their names' spans: each an `InOut` box, read
+    /// and written as `.value`.
+    inout_params: std::collections::HashSet<Span>,
+    /// `&place` arguments of the call being emitted: the `InOut` box each one passes.
+    inout_boxes: HashMap<bloom_lang::backend::ExprId, String>,
+    /// The assignment being emitted writes through this `inout` parameter's box: its bare name as
+    /// the target (which the checker resolves by the assignment, not by `names`) is `name.value`.
+    boxed_target: Option<String>,
+    /// In a value type's `init` (a factory, `T__init_label…`): how it makes `self`.
+    init_mode: Option<InitMode>,
+}
+
+/// How an `init` of a struct, an enum or a built-in type makes its value (Swift's definite
+/// initialization): `self` set whole (`var self: T`), or one local per stored field, constructed
+/// at each `return`.
+#[derive(Clone)]
+struct InitMode {
+    owner: String,
+    whole: bool,
+    /// The stored fields, in the constructor's order.
+    fields: Vec<String>,
 }
 
 /// A view expression unwound: the node or view call at its base, and the modifiers on it
@@ -302,6 +326,276 @@ impl<'a> Emitter<'a> {
             codecs: HashMap::new(),
             hoisted: String::new(),
             island: None,
+            cow: bloom_lang::backend::copy_on_write(&file.lowered, &file.checked),
+            inout_params: Default::default(),
+            inout_boxes: HashMap::new(),
+            boxed_target: None,
+            init_mode: None,
+        }
+    }
+
+    /// The value an `init` gives at a `return` (or its end).
+    fn init_result(&self) -> String {
+        let Some(mode) = &self.init_mode else { unreachable!("in an init") };
+        if mode.whole {
+            "self".into()
+        } else {
+            let args: Vec<String> = mode.fields.iter().map(|f| format!("{} = {}", kw(f), kw(f))).collect();
+            format!("{}({})", mode.owner, args.join(", "))
+        }
+    }
+
+    /// An `init` of a struct, an enum or a built-in type (Swift's): a factory named as the checker
+    /// lowers it (`Temperature$$init$fahrenheit`, Kotlin's `Temperature__init_fahrenheit`), which
+    /// makes the value as Swift's definite initialization does. An `init?` gives `T?`.
+    fn init_func(&mut self, owner: &str, f: &FnDecl, vis: &str, indent: usize) -> String {
+        let labels: Vec<String> =
+            f.params.iter().map(|p| crate::param_info(p, true).label.unwrap_or_else(|| "_".into())).collect();
+        let name = static_name(&crate::init_name(owner, labels.iter().map(|l| Some(l.as_str()))));
+        let ret = if f.ret.is_some() { format!("{owner}?") } else { owner.to_string() };
+        let def = self.file.checked.defs.iter().find(|d| d.name == owner && d.class.is_none()).cloned();
+        let fields: Vec<bloom_lang::backend::FieldDef> = def.map(|d| d.fields().to_vec()).unwrap_or_default();
+        let mut whole = fields.is_empty();
+        for stmt in &f.body.stmts {
+            bloom_lang::analysis::walk_stmt(stmt, &mut |node| {
+                if let bloom_lang::analysis::Node::Stmt(Stmt { kind: StmtKind::Assign(a), .. }) = node
+                    && matches!(&a.target.kind, ExprKind::Name(n) if n == "self")
+                {
+                    whole = true;
+                }
+            });
+        }
+        // The owner's stored fields as its declaration writes them (their types and defaults).
+        let declared: Vec<(String, Option<TypeExpr>, Option<Expr>)> = self
+            .file
+            .ast
+            .items
+            .iter()
+            .find_map(|i| match &i.kind {
+                ItemKind::Struct(st) if st.name.name == owner => Some(
+                    st.fields
+                        .iter()
+                        .map(|f| (f.name.name.clone(), Some(f.ty.clone()), f.default.clone()))
+                        .collect(),
+                ),
+                _ => None,
+            })
+            .unwrap_or_default();
+        let p = pad(indent + 1);
+        let mut head = String::new();
+        if whole {
+            let _ = writeln!(head, "{p}var self: {owner}");
+        } else {
+            for field in &fields {
+                let written = declared.iter().find(|(n, _, _)| *n == field.name);
+                let ty = match written.and_then(|(_, t, _)| t.as_ref()) {
+                    Some(t) => self.ty(t),
+                    None => self.kty(&field.ty).unwrap_or_else(|| "Any?".into()),
+                };
+                let default = match (written.and_then(|(_, _, v)| v.as_ref()), &field.default) {
+                    (Some(v), _) => format!(" = {}", self.expr(v)),
+                    (None, bloom_lang::backend::FieldDefault::Literal(text)) => format!(" = {text}"),
+                    _ => String::new(),
+                };
+                let _ = writeln!(head, "{p}var {}: {ty}{default}", kw(&field.name));
+            }
+        }
+        let params = self.params(&f.params, true);
+        let saved = self.init_mode.replace(InitMode {
+            owner: owner.to_string(),
+            whole,
+            fields: fields.iter().map(|f| f.name.clone()).collect(),
+        });
+        self.locals.push(HashMap::new());
+        let mut body = self.rebinds(&f.params, true, indent + 1);
+        body.push_str(&head);
+        body.push_str(&self.block(&f.body.stmts, indent + 1, Mode::Unit));
+        let _ = writeln!(body, "{p}return {}", self.init_result());
+        self.locals.pop();
+        self.init_mode = saved;
+        let q = pad(indent);
+        format!("{q}{vis}fun {name}({params}): {ret} {{\n{body}{q}}}\n")
+    }
+
+    /// Whether `local` is an `inout` parameter of the function being emitted.
+    fn local_is_inout(&self, local: bloom_lang::backend::LocalId) -> bool {
+        self.file.checked.locals.get(local).is_some_and(|l| self.inout_params.contains(&l.span))
+    }
+
+    /// The local a name resolves to, by the checker.
+    fn local_of(&self, e: &Expr) -> Option<bloom_lang::backend::LocalId> {
+        match (&e.kind, self.file.checked.names.get(&e.id)) {
+            (ExprKind::Name(_), Some(bloom_lang::backend::NameRes::Local(l))) => Some(*l),
+            _ => None,
+        }
+    }
+
+    /// Whether `e` names a `var` that owns its array or dictionary (a `MutableList`/`MutableMap`),
+    /// an `inout` one among them.
+    fn is_owned(&self, e: &Expr) -> bool {
+        self.local_of(e).is_some_and(|l| self.cow.owned.contains(&l))
+    }
+
+    /// Whether `e` names an `inout` parameter of the function being emitted (an `InOut` box).
+    fn is_inout_param(&self, e: &Expr) -> bool {
+        self.local_of(e)
+            .and_then(|l| self.file.checked.locals.get(l))
+            .is_some_and(|l| self.inout_params.contains(&l.span))
+    }
+
+    /// The owned `var` declared at `span`, if the declaration there is one.
+    fn owned_decl(&self, span: Span) -> Option<bloom_lang::backend::LocalId> {
+        self.file
+            .checked
+            .locals
+            .iter()
+            .enumerate()
+            .find(|(id, l)| l.span == span && self.cow.owned.contains(id))
+            .map(|(id, _)| id)
+    }
+
+    /// `value` as a fresh `MutableList`/`MutableMap` an owned `var` holds: a literal is built
+    /// mutable, `Array(repeating:count:)` already is, anything else is copied.
+    fn mutable_value(&mut self, value: &Expr) -> String {
+        match &value.kind {
+            ExprKind::List(items) if !items.iter().any(|i| matches!(i.kind, ExprKind::Spread(_))) => {
+                if items.is_empty() {
+                    match self.ty_of(value).and_then(|t| self.kty(t)) {
+                        Some(t) if t.starts_with("List<") => {
+                            format!("mutableListOf<{}>()", &t[5..t.len() - 1])
+                        }
+                        _ => "mutableListOf()".into(),
+                    }
+                } else {
+                    let items: Vec<String> = items.iter().map(|i| self.expr(i)).collect();
+                    format!("mutableListOf({})", items.join(", "))
+                }
+            }
+            ExprKind::Map(entries) => {
+                if entries.is_empty() {
+                    match self.ty_of(value).and_then(|t| self.kty(t)) {
+                        Some(t) if t.starts_with("Map<") => format!("mutableMapOf<{}>()", &t[4..t.len() - 1]),
+                        _ => "mutableMapOf()".into(),
+                    }
+                } else {
+                    let items: Vec<String> = entries
+                        .iter()
+                        .map(|(k, v)| format!("{} to {}", self.expr(k), self.expr(v)))
+                        .collect();
+                    format!("mutableMapOf({})", items.join(", "))
+                }
+            }
+            ExprKind::Call(_)
+                if matches!(
+                    self.file.checked.calls.get(&value.id),
+                    Some(bloom_lang::backend::CallRes::ArrayRepeating)
+                ) =>
+            {
+                self.expr(value)
+            }
+            _ => {
+                // An owned name is copied once, here, not read as a copy and copied again.
+                let v = if self.is_owned(value) { self.place_read(value) } else { self.expr(value) };
+                if matches!(self.ty_of(value), Some(Ty::Map(_) | Ty::JsMap(..))) {
+                    format!("{v}.toMutableMap()")
+                } else {
+                    format!("{v}.toMutableList()")
+                }
+            }
+        }
+    }
+
+    /// An owned or `inout` name read in place (its storage itself, never a copy).
+    fn place_read(&self, e: &Expr) -> String {
+        let ExprKind::Name(n) = &e.kind else { unreachable!("a name") };
+        let name = kw(&n.replace('$', "p"));
+        if self.is_inout_param(e) { format!("{name}.value") } else { name }
+    }
+
+    /// Swift's mutating members (`CallRes::Mutating`): on an owned `var` the runtime's in-place
+    /// member (`xs.bloomAppend(v)`); on any other place (a struct's field, a `@State`, a
+    /// non-owned `var`, an element) a copy is changed and written back.
+    fn mutating(&mut self, object: &Expr, name: &str, call: &Call) -> String {
+        let plain = Call {
+            args: call.args.iter().map(|a| Arg { label: None, ..a.clone() }).collect(),
+            ..call.clone()
+        };
+        let args = self.args_by(None, &plain).join(", ");
+        let member = format!("bloom{}", upper_first(name));
+        if self.is_owned(object) {
+            return format!("{}.{member}({args})", self.place_read(object));
+        }
+        self.fresh += 1;
+        let n = self.fresh;
+        let copy = if matches!(self.ty_of(object), Some(Ty::Map(_) | Ty::JsMap(..))) {
+            "toMutableMap"
+        } else {
+            "toMutableList"
+        };
+        let current = self.expr(object);
+        let m = format!("inPlace{n}");
+        let write = self.write_back(object, m.clone());
+        let gives = matches!(
+            name,
+            "removeAt" | "removeFirst" | "removeLast" | "popLast" | "removeValue" | "updateValue"
+        );
+        if gives {
+            format!("run {{ val {m} = {current}.{copy}(); val r{n} = {m}.{member}({args}); {write}; r{n} }}")
+        } else {
+            format!("run {{ val {m} = {current}.{copy}(); {m}.{member}({args}); {write} }}")
+        }
+    }
+
+    /// The statement that writes `value` to the place `target` (a binding prop's through `set`).
+    fn write_back(&mut self, target: &Expr, value: String) -> String {
+        let root = Self::place_root(target).map(String::from);
+        let (place, rebuilt) = self.place(target, value);
+        match root {
+            Some(n) if self.binding_props.contains(&n) => format!("{}.set({rebuilt})", kw(&n)),
+            _ => format!("{place} = {rebuilt}"),
+        }
+    }
+
+    /// A call with `&place` arguments: each place in an `InOut` box (an owned `var` its own
+    /// storage, an `inout` parameter its own box), the call, then each box written back.
+    fn inout_call(&mut self, e: &Expr, call: &Call) -> String {
+        let mut pre = Vec::new();
+        let mut post = Vec::new();
+        for a in &call.args {
+            let ExprKind::InOut(place) = &a.value.kind else { continue };
+            if self.is_inout_param(place) {
+                let ExprKind::Name(n) = &place.kind else { unreachable!("a name") };
+                self.inout_boxes.insert(a.value.id, kw(n));
+                continue;
+            }
+            self.fresh += 1;
+            let r = format!("inOut{}", self.fresh);
+            let init = if self.is_owned(place) {
+                self.place_read(place)
+            } else {
+                let v = self.expr(place);
+                match self.ty_of(place) {
+                    Some(Ty::List(_)) => format!("{v}.toMutableList()"),
+                    Some(Ty::Map(_) | Ty::JsMap(..)) => format!("{v}.toMutableMap()"),
+                    _ => v,
+                }
+            };
+            pre.push(format!("val {r} = InOut({init})"));
+            post.push(self.write_back(place, format!("{r}.value")));
+            self.inout_boxes.insert(a.value.id, r);
+        }
+        let text = self.call(e, call);
+        if pre.is_empty() && post.is_empty() {
+            return text;
+        }
+        let pre = pre.join("; ");
+        let post = post.join("; ");
+        if matches!(self.ty_of(e), None | Some(Ty::Unit)) {
+            format!("run {{ {pre}; {text}; {post} }}")
+        } else {
+            self.fresh += 1;
+            let res = format!("res{}", self.fresh);
+            format!("run {{ {pre}; val {res} = {text}; {post}; {res} }}")
         }
     }
 
@@ -714,7 +1008,15 @@ impl<'a> Emitter<'a> {
     fn class_body(&mut self, ty: &str, members: &[TypeMember], indent: usize) -> String {
         let mut body = String::new();
         for m in members {
-            if m.modifiers.is_static {
+            if let TypeMemberKind::Func(f) = &m.kind
+                && f.name.name == "init"
+                && !self.decls.classes.contains(ty)
+            {
+                let vis = Self::visibility(m.visibility);
+                let generics = self.owner_generics.clone();
+                let text = with_type_params(self.init_func(ty, f, vis, 0), &generics);
+                self.hoisted.push_str(&text);
+            } else if m.modifiers.is_static {
                 let generics = self.owner_generics.clone();
                 let text = self.static_member(ty, m, &generics);
                 self.hoisted.push_str(&text);
@@ -1049,21 +1351,7 @@ impl<'a> Emitter<'a> {
             && f.name.name == "init"
             && !self.decls.declared.contains(ty)
         {
-            let mut f = f.clone();
-            let labels: Vec<Option<String>> = f
-                .params
-                .iter()
-                .map(|p| Some(crate::param_info(p, true).label.unwrap_or_else(|| "_".into())))
-                .collect();
-            f.name.name = crate::init_name(ty, labels.iter().map(|l| l.as_deref()));
-            f.ret = Some(TypeExpr {
-                kind: TypeKind::Named {
-                    name: Ident { name: ty.to_string(), span: f.span },
-                    args: Vec::new(),
-                },
-                span: f.span,
-            });
-            let text = self.func(vis, &f, None, 0);
+            let text = self.init_func(&receiver, f, vis, 0);
             return with_type_params(text, &params.iter().map(|p| p.to_string()).collect::<Vec<_>>());
         }
         // A static member of any type is a top-level declaration (`String__decode`).
@@ -1185,6 +1473,8 @@ impl<'a> Emitter<'a> {
             // for it is bound below when they differ.
             let name = info.label.clone().unwrap_or_else(|| p.name.name.clone());
             let ty = self.ty(&p.ty);
+            // `inout`: the caller's place in a box; an array or a dictionary is written in place.
+            let ty = if p.inout { format!("InOut<{}>", mutable_ty(&ty)) } else { ty };
             let default = match &p.default {
                 Some(d) => format!(" = {}", self.expr(d)),
                 None => String::new(),
@@ -1248,8 +1538,13 @@ impl<'a> Emitter<'a> {
         } else {
             Mode::Unit
         };
+        let saved_inouts = std::mem::replace(
+            &mut self.inout_params,
+            f.params.iter().filter(|p| p.inout).map(|p| p.name.span).collect(),
+        );
         let mut body = self.rebinds(&f.params, f.func, indent + 1);
         body.push_str(&self.block(&f.body.stmts, indent + 1, mode));
+        self.inout_params = saved_inouts;
         self.locals.pop();
         self.codecs = saved_codecs;
         let p = pad(indent);
@@ -1507,12 +1802,54 @@ impl<'a> Emitter<'a> {
                 let value = self.expr(&v.value);
                 format!("{p}var {} by remember {{ mutableStateOf{ty}({value}) }}\n", kw(&v.name.name))
             }
+            // A `var` that writes its array or dictionary in place: its own mutable storage.
+            StmtKind::Var(v) if let Some(local) = self.owned_decl(v.name.span) => {
+                let ty = match &v.ty {
+                    Some(t) => Some(self.ty(t)),
+                    None => {
+                        let ty = self.file.checked.locals[local].ty.clone();
+                        self.kty(&ty)
+                    }
+                };
+                let ty = ty.map(|t| format!(": {}", mutable_ty(&t))).unwrap_or_default();
+                let value = self.mutable_value(&v.value);
+                format!("{p}var {}{ty} = {value}\n", kw(&v.name.name))
+            }
             StmtKind::Var(v) => {
                 let ty = v.ty.as_ref().map(|t| format!(": {}", self.ty(t))).unwrap_or_default();
                 let value = self.expr(&v.value);
                 format!("{p}var {}{ty} = {value}\n", kw(&v.name.name))
             }
+            // An owned `var` set (a fresh copy) or appended to (`xs += ys`, in place).
+            StmtKind::Assign(a)
+                if let Some(bloom_lang::backend::AssignRes::Var { local, fields }) =
+                    self.file.checked.assigns.get(&a.span)
+                    && fields.is_empty()
+                    && self.cow.owned.contains(local)
+                    && matches!(a.op, AssignOp::Set | AssignOp::Add) =>
+            {
+                let target = match &a.target.kind {
+                    ExprKind::Name(n) if self.local_is_inout(*local) => format!("{}.value", kw(n)),
+                    _ => self.place_read(&a.target),
+                };
+                if a.op == AssignOp::Set {
+                    let value = self.mutable_value(&a.value);
+                    format!("{p}{target} = {value}\n")
+                } else {
+                    let value = self.expr(&a.value);
+                    format!("{p}{target}.addAll({value})\n")
+                }
+            }
             StmtKind::Assign(a) => {
+                let saved = self.boxed_target.take();
+                if let Some(
+                    bloom_lang::backend::AssignRes::Var { local, .. }
+                    | bloom_lang::backend::AssignRes::Place { local, .. },
+                ) = self.file.checked.assigns.get(&a.span)
+                    && self.local_is_inout(*local)
+                {
+                    self.boxed_target = Self::place_root(&a.target).map(String::from);
+                }
                 let value = self.expr(&a.value);
                 // `x op= v` reads the place first: `x = x op v`, so a value's copy is rebuilt.
                 let value = match a.op {
@@ -1521,10 +1858,17 @@ impl<'a> Emitter<'a> {
                 };
                 let root = Self::place_root(&a.target);
                 let (place, rebuilt) = self.place(&a.target, value);
-                match root {
+                let text = match root {
                     Some(n) if self.binding_props.contains(n) => format!("{p}{}.set({rebuilt})\n", kw(n)),
                     _ => format!("{p}{place} = {rebuilt}\n"),
-                }
+                };
+                self.boxed_target = saved;
+                text
+            }
+            // In an `init`: `return none` fails (an `init?`), a bare `return` gives the value.
+            StmtKind::Return(Some(_)) if self.init_mode.is_some() => format!("{p}return null\n"),
+            StmtKind::Return(None) if self.init_mode.is_some() => {
+                format!("{p}return {}\n", self.init_result())
             }
             StmtKind::Return(Some(e)) => {
                 let label = self.return_label.as_ref().map(|l| format!("@{l}")).unwrap_or_default();
@@ -1690,6 +2034,27 @@ impl<'a> Emitter<'a> {
     /// a list of structs is `posts = posts.replacing(i, posts[i].copy(likes = v))`: each
     /// struct on the way is copied with its field changed, each list or dictionary replaced.
     fn place(&mut self, target: &Expr, value: String) -> (String, String) {
+        if let Some(mode) = self.init_mode.clone() {
+            match &target.kind {
+                // `self = v`, `self.x = v` and `x = v` in an `init`.
+                ExprKind::Name(n) if n == "self" && mode.whole => return ("self".into(), value),
+                ExprKind::Field(base, field)
+                    if matches!(&base.kind, ExprKind::Name(n) if n == "self")
+                        && !mode.whole
+                        && mode.fields.contains(&field.name) =>
+                {
+                    return (kw(&field.name), value);
+                }
+                ExprKind::Name(n) if !self.is_local(target) && mode.fields.contains(n) => {
+                    return if mode.whole {
+                        ("self".into(), format!("self.copy({} = {value})", kw(n)))
+                    } else {
+                        (kw(n), value)
+                    };
+                }
+                _ => {}
+            }
+        }
         match &target.kind {
             ExprKind::Field(base, field) if !self.is_reference(base) => {
                 let b = self.expr(base);
@@ -1698,6 +2063,10 @@ impl<'a> Emitter<'a> {
             ExprKind::Index(base, index) => {
                 let b = self.expr(base);
                 let i = self.expr(index);
+                // An owned `var`'s element: written in place (`MutableList.set`, `MutableMap.set`).
+                if self.is_owned(base) {
+                    return (format!("{b}[{i}]"), value);
+                }
                 let rebuilt = match self.ty_of(base) {
                     Some(Ty::Map(_) | Ty::JsMap(..)) => format!("{b} + ({i} to {value})"),
                     // A local whose type the checker keeps by its declaration, not this span:
@@ -2587,11 +2956,36 @@ impl<'a> Emitter<'a> {
                 format!("{}.{}", token_set_class(&set.name), token_name(t))
             }
             ExprKind::Str { parts, .. } => self.string(parts),
+            ExprKind::Name(n) if n == "self" && self.init_mode.is_some() => self.init_result(),
+            // A stored field by its bare name in an `init` that sets `self` whole.
+            ExprKind::Name(n)
+                if !self.is_local(e)
+                    && self.init_mode.as_ref().is_some_and(|m| m.whole && m.fields.contains(n)) =>
+            {
+                format!("self.{}", kw(n))
+            }
             ExprKind::Name(n) if n == "self" => "this".into(),
             ExprKind::Name(n) if n == "$0" && self.shorthand_it => "it".into(),
             ExprKind::Name(n) if self.binding_props.contains(n) => format!("{}.value", kw(n)),
             // A lowered static (`String$$decode` in derived code): a function as a value is a
             // reference, a `let` its value.
+            // An owned `var` (or an `inout` parameter's box): read in place, or copied where the
+            // read escapes (copy-on-write).
+            ExprKind::Name(n) if !self.is_local(e) && self.boxed_target.as_deref() == Some(n.as_str()) => {
+                format!("{}.value", kw(n))
+            }
+            ExprKind::Name(_) if self.is_owned(e) || self.is_inout_param(e) => {
+                let read = self.place_read(e);
+                if self.is_owned(e) && self.cow.copies.contains(&e.id) {
+                    if matches!(self.ty_of(e), Some(Ty::Map(_) | Ty::JsMap(..))) {
+                        format!("{read}.toMap()")
+                    } else {
+                        format!("{read}.toList()")
+                    }
+                } else {
+                    read
+                }
+            }
             ExprKind::Name(n) if n.contains("$$") => {
                 if self.decls.static_fns.contains(n) {
                     format!("::{}", static_name(n))
@@ -2686,10 +3080,24 @@ impl<'a> Emitter<'a> {
                     TryKind::Plain | TryKind::Force => inner,
                 }
             }
+            // `self.x` in an `init` that sets fields: the field's local.
+            ExprKind::Field(base, field)
+                if matches!(&base.kind, ExprKind::Name(n) if n == "self")
+                    && self
+                        .init_mode
+                        .as_ref()
+                        .is_some_and(|m| !m.whole && m.fields.contains(&field.name)) =>
+            {
+                kw(&field.name)
+            }
             ExprKind::Field(base, field) => self.field(e, base, field),
             ExprKind::OptField(base, field) => format!("{}?.{}", self.expr(base), kw(&field.name)),
             ExprKind::Index(base, index) => format!("{}[{}]", self.expr(base), self.expr(index)),
+            ExprKind::Call(call) if call.args.iter().any(|a| matches!(a.value.kind, ExprKind::InOut(_))) => {
+                self.inout_call(e, call)
+            }
             ExprKind::Call(call) => self.call(e, call),
+            ExprKind::InOut(_) if let Some(b) = self.inout_boxes.get(&e.id) => b.clone(),
             ExprKind::Closure(c) => self.closure(c),
             ExprKind::If(i) if matches!(i.cond, Cond::Let(..)) => self.if_let_value(i),
             ExprKind::If(i) => {
@@ -2825,6 +3233,24 @@ impl<'a> Emitter<'a> {
     }
 
     fn call(&mut self, _e: &Expr, call: &Call) -> String {
+        match self.file.checked.calls.get(&_e.id) {
+            Some(bloom_lang::backend::CallRes::Mutating { name, .. })
+                if let ExprKind::Field(object, _) = &call.callee.kind =>
+            {
+                return self.mutating(object, name, call);
+            }
+            // `Array(repeating: v, count: n)`: `v` evaluated once, `n` copies.
+            Some(bloom_lang::backend::CallRes::ArrayRepeating) => {
+                let arg = |label: &str| {
+                    call.args.iter().find(|a| a.label.as_ref().is_some_and(|l| l.name == label))
+                };
+                if let (Some(v), Some(n)) = (arg("repeating"), arg("count")) {
+                    let (v, n) = (v.value.clone(), n.value.clone());
+                    return format!("arrayRepeating({}, {})", self.expr(&v), self.expr(&n));
+                }
+            }
+            _ => {}
+        }
         match &call.callee.kind {
             ExprKind::Name(n) => {
                 let n = n.as_str();
@@ -2855,10 +3281,10 @@ impl<'a> Emitter<'a> {
                             .get(*l)
                             .map(|l| l.name.clone())
                             .filter(|r| r.contains("$$") && r != n)
-                            // A declared type's `init` is its Kotlin constructor.
+                            // A class's `init` is its Kotlin constructor; a value type's is its factory.
                             .filter(|r| {
                                 bloom_lang::backend::demangle(r)
-                                    .is_some_and(|(o, _, _)| !self.decls.declared.contains(o))
+                                    .is_some_and(|(o, _, _)| !self.decls.classes.contains(o))
                             })
                     }
                     _ => None,
@@ -2981,6 +3407,17 @@ impl<'a> Emitter<'a> {
                 format!("{callee}({})", args.join(", "))
             }
         }
+    }
+}
+
+/// A Kotlin list or map type as its mutable form (`List<Long>` is `MutableList<Long>`).
+fn mutable_ty(ty: &str) -> String {
+    if let Some(rest) = ty.strip_prefix("List<") {
+        format!("MutableList<{rest}")
+    } else if let Some(rest) = ty.strip_prefix("Map<") {
+        format!("MutableMap<{rest}")
+    } else {
+        ty.to_string()
     }
 }
 

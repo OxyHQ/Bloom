@@ -1,0 +1,161 @@
+// Bloom (math): constants and functions over `Double` and `Int`.
+//
+// `abs`, `min`, `max`, `round`, `floor`, `ceil` and the `Int`/`Double` members
+// (`rounded()`, `clamped(…)`, …) are the compiler's; these complete them, with Foundation's
+// names and meaning. Each is the same double on every backend: TypeScript computes it with
+// V8's fdlibm port (`Math.cbrt`, …), Kotlin with the JVM's `StrictMath` (fdlibm), and Swift
+// with the same algorithms (not Darwin's libm, which differs in the last bit).
+
+extern module "./runtime" {
+  private let PI: Double
+  private let E: Double
+  private let INFINITY: Double
+  private let NAN: Double
+  /// The square root of `x`.
+  public func sqrt(_ x: Double) -> Double
+  /// The cube root of `x` (negative for a negative `x`, unlike `pow(x, 1.0 / 3.0)`).
+  public func cbrt(_ x: Double) -> Double
+  /// `x` to the power `y`.
+  public func pow(_ x: Double, _ y: Double) -> Double
+  /// `e` to the power `x`.
+  public func exp(_ x: Double) -> Double
+  /// The natural logarithm of `x`.
+  public func log(_ x: Double) -> Double
+  /// The base-2 logarithm of `x`.
+  public func log2(_ x: Double) -> Double
+  /// The base-10 logarithm of `x`.
+  public func log10(_ x: Double) -> Double
+  /// The sine of `x` (radians).
+  public func sin(_ x: Double) -> Double
+  /// The cosine of `x` (radians).
+  public func cos(_ x: Double) -> Double
+  /// The tangent of `x` (radians).
+  public func tan(_ x: Double) -> Double
+  /// The arc sine of `x` (radians, in -π/2...π/2; NaN outside -1...1).
+  public func asin(_ x: Double) -> Double
+  /// The arc cosine of `x` (radians, in 0...π; NaN outside -1...1).
+  public func acos(_ x: Double) -> Double
+  /// The arc tangent of `x` (radians, in -π/2...π/2).
+  public func atan(_ x: Double) -> Double
+  /// The angle of the point (`x`, `y`) from the x axis (radians).
+  public func atan2(_ y: Double, _ x: Double) -> Double
+  /// The length of the vector (`a`, `b`).
+  public func hypot(_ a: Double, _ b: Double) -> Double
+  /// The hyperbolic sine of `x`.
+  public func sinh(_ x: Double) -> Double
+  /// The hyperbolic cosine of `x`.
+  public func cosh(_ x: Double) -> Double
+  /// The hyperbolic tangent of `x`.
+  public func tanh(_ x: Double) -> Double
+  /// The inverse hyperbolic sine of `x`.
+  public func asinh(_ x: Double) -> Double
+  /// The inverse hyperbolic cosine of `x` (NaN below 1).
+  public func acosh(_ x: Double) -> Double
+  /// The inverse hyperbolic tangent of `x` (NaN outside -1...1).
+  public func atanh(_ x: Double) -> Double
+  /// 2 to the power `x`.
+  public func exp2(_ x: Double) -> Double
+  /// `exp(x) - 1`, exact for an `x` near 0.
+  public func expm1(_ x: Double) -> Double
+  /// `log(1 + x)`, exact for an `x` near 0.
+  public func log1p(_ x: Double) -> Double
+  /// `x` without its fraction, toward zero (`trunc(-2.7)` is `-2.0`).
+  public func trunc(_ x: Double) -> Double
+  /// The remainder of `x / y` with `x`'s sign (C's `fmod`, Swift's `truncatingRemainder`).
+  public func fmod(_ x: Double, _ y: Double) -> Double
+  private func random() -> Double
+  private func randomInt(_ from: Int, _ to: Int) -> Int
+  private func isFiniteNumber(_ n: Double) -> Bool
+  private func isNaNNumber(_ n: Double) -> Bool
+  private func formatNumber(_ n: Double, _ locale: String, _ minFraction: Int, _ maxFraction: Int) -> String
+  private func formatCurrency(_ n: Double, _ locale: String, _ currency: String, _ minFraction: Int, _ maxFraction: Int) -> String
+  private func formatCompact(_ n: Double, _ locale: String) -> String
+}
+
+extension Double {
+  /// The remainder of dividing by `other`, with this value's sign (Swift's `%` on `Double`).
+  public func truncatingRemainder(dividingBy other: Double) -> Double { fmod(self, other) }
+
+  /// π.
+  public static let pi: Double = PI
+
+  /// Euler's number.
+  public static let e: Double = E
+
+  /// Positive infinity (JS's `Infinity`): greater than every finite value.
+  public static let infinity: Double = INFINITY
+
+  /// Not a number (JS's `NaN`): the result of an undefined operation, unequal to itself.
+  public static let nan: Double = NAN
+
+  /// Zero (Swift's `AdditiveArithmetic.zero`): `x ?? .zero`.
+  public static let zero: Double = 0
+
+  /// The square root.
+  public var squareRoot: Double { sqrt(self) }
+
+  /// Whether the value is neither infinite nor NaN.
+  public var isFinite: Bool { isFiniteNumber(self) }
+
+  /// Whether the value is NaN.
+  public var isNaN: Bool { isNaNNumber(self) }
+
+  /// The value as a person in `locale` writes it (`""`: the device's locale), Swift's
+  /// `FormatStyle` over `Intl.NumberFormat`:
+  ///
+  /// - `formatted(digits: 1)`: exactly that many decimal places (`1234.5` is `1,234.5` in English);
+  /// - `formatted(fractionDigits: 0...3)`: at least 0 and at most 3 (JS's `toLocaleString()`;
+  ///   `{ maximumFractionDigits: n }` is `0...n`);
+  /// - `formatted(currency: "USD")`: in that currency (ISO 4217), with its own decimal places
+  ///   unless `fractionDigits` says otherwise (`$1,234.50`).
+  ///
+  /// With none of them, no decimal places.
+  public func formatted(
+    digits: Int? = none,
+    fractionDigits: ClosedRange<Int>? = none,
+    currency: String? = none,
+    locale: String = "",
+  ) -> String {
+    // A negative bound is the currency's own decimal places.
+    let unset = 0 - 1
+    var lo = unset
+    var hi = unset
+    if let range = fractionDigits {
+      lo = range.lowerBound
+      hi = range.upperBound
+    } else if let exactly = digits {
+      lo = exactly
+      hi = exactly
+    }
+    if let code = currency { return formatCurrency(self, locale, code, lo, hi) }
+    if lo < 0 { return formatNumber(self, locale, 0, 0) }
+    return formatNumber(self, locale, lo, hi)
+  }
+
+  /// Compact (`1.2K`, `3.4M`), as a person in `locale` writes it.
+  public func compact(locale: String = "") -> String { formatCompact(self, locale) }
+
+  /// A uniformly distributed value in `from..<to`.
+  public static func random(in from: Double, to: Double) -> Double { from + random() * (to - from) }
+}
+
+extension Int {
+  /// Zero (Swift's `AdditiveArithmetic.zero`): `x ?? .zero`.
+  public static let zero: Int = 0
+
+  /// The value as a person in `locale` writes it (`1234` is `1,234` in English); with
+  /// `currency`, in that currency (`$1,234.00`).
+  public func formatted(currency: String? = none, locale: String = "") -> String {
+    if let code = currency { return formatCurrency(self.toFloat(), locale, code, 0 - 1, 0 - 1) }
+    return formatNumber(self.toFloat(), locale, 0, 0)
+  }
+
+  /// Compact (`1.2K`, `3.4M`): how Mention shows counts.
+  public func compact(locale: String = "") -> String { formatCompact(self.toFloat(), locale) }
+
+  /// Whether the value is even.
+  public var isEven: Bool { self % 2 == 0 }
+
+  /// A uniformly distributed integer in `from..<to`.
+  public static func random(in from: Int, to: Int) -> Int { randomInt(from, to) }
+}

@@ -14,51 +14,62 @@ data class Temperature(
   val celsius: Double,
   val label: String = "°C",
 ) {
-  fun init(fahrenheit: Double) {
-    celsius = (fahrenheit - 32.0) * 5.0 / 9.0
-  }
-  fun init(reading: String): Self? {
-    val value: Double = Double(reading) ?: run {
-      return null
-    }
-    if (value < -273.15) {
-      return null
-    }
-    this.celsius = value
-    this.label = "read"
-  }
   val kelvin: Double
     get() = celsius + 273.15
+}
+
+fun Temperature__init_fahrenheit(fahrenheit: Double): Temperature {
+  var celsius: Double
+  var label: String = "°C"
+  celsius = (fahrenheit - 32.0) * 5.0 / 9.0
+  return Temperature(celsius = celsius, label = label)
+}
+fun Temperature__init_reading(reading: String): Temperature? {
+  var celsius: Double
+  var label: String = "°C"
+  val value: Double = Double(reading) ?: run {
+    return null
+  }
+  if (value < -273.15) {
+    return null
+  }
+  celsius = value
+  label = "read"
+  return Temperature(celsius = celsius, label = label)
 }
 
 @Immutable
 data class Point(
   val x: Long,
   val y: Long,
-) {
-  fun init(diagonal: Long) {
-    val n = diagonal
-    this = Point(n, n)
-  }
+)
+
+fun Point__init_diagonal(diagonal: Long): Point {
+  val n = diagonal
+  var self: Point
+  self = Point(n, n)
+  return self
 }
 
 enum class Size {
-  small, large;
+  small, large
+}
 
-  fun init(count: Long) {
-    if (count > 10L) {
-      this = Size.large
-    } else {
-      this = Size.small
-    }
+fun Size__init_count(count: Long): Size {
+  var self: Size
+  if (count > 10L) {
+    self = Size.large
+  } else {
+    self = Size.small
   }
+  return self
 }
 
 fun readings(): Double {
-  val body = Temperature(98.6)
-  val read = Temperature("21") ?: body
-  val p = Point(2L)
+  val body = Temperature__init_fahrenheit(98.6)
+  val read = Temperature__init_reading("21") ?: body
+  val p = Point__init_diagonal(2L)
   val q = Point(1L, p.y)
-  return body.kelvin + read.celsius + Double(q.x) + ((if (Size(count = 3L) == Size.small) 1.0 else 0.0))
+  return body.kelvin + read.celsius + Double(q.x) + ((if (Size__init_count(3L) == Size.small) 1.0 else 0.0))
 }
 

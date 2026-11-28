@@ -18,9 +18,9 @@ fun around(a: List<String>): List<String> {
 }
 
 fun appended(a: List<Long>): List<Long> {
-  var out = a
-  out = out + listOf(1L, 2L)
-  out = out + a
+  var out: MutableList<Long> = a.toMutableList()
+  out.addAll(listOf(1L, 2L))
+  out.addAll(a)
   return out
 }
 

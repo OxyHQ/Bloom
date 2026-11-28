@@ -404,8 +404,12 @@ pub fn load_with_std(dir: &Path, std: &[&str]) -> Result<Program, Vec<Problem>> 
 
 /// The standard library modules a module's Bloom code calls into: `JSON`'s coders read `URL`s
 /// and `Date`s (`Time`). `--std JSON` brings them.
-const STD_DEPENDS: &[(&str, &[&str])] =
-    &[("JSON", &["Core", "URL", "Time"]), ("URL", &["Core"]), ("Time", &["Core"])];
+const STD_DEPENDS: &[(&str, &[&str])] = &[
+    ("JSON", &["Core", "URL", "Time"]),
+    ("URL", &["Core"]),
+    ("Time", &["Core", "Localization"]),
+    ("Localization", &["Core"]),
+];
 
 /// `std` and the standard library modules they depend on, in a stable order.
 fn std_closure(std: &[&str]) -> Vec<String> {

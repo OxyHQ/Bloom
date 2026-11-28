@@ -13,6 +13,7 @@ const RUNTIME: &[(&str, &str)] = &[
     ("so/oxy/bloom/std/Externs.kt", include_str!("../runtime/android/so/oxy/bloom/std/Externs.kt")),
     ("so/oxy/bloom/std/TimeExterns.kt", include_str!("../runtime/android/so/oxy/bloom/std/TimeExterns.kt")),
     ("so/oxy/bloom/std/Builtins.kt", include_str!("../runtime/android/so/oxy/bloom/std/Builtins.kt")),
+    ("so/oxy/bloom/std/InPlace.kt", include_str!("../runtime/android/so/oxy/bloom/std/InPlace.kt")),
     ("so/oxy/bloom/ui/Tokens.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Tokens.kt")),
     (
         "so/oxy/bloom/ui/BloomTheme.generated.kt",

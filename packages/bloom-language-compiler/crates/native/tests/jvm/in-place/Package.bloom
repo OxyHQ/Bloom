@@ -1,0 +1,7 @@
+// Copy-on-write and inout on the JVM: test/packages/format-app's InPlace.bloom (the TypeScript
+// backend's in-place test), run by tests/jvm/InPlaceConformance.kt against the same values.
+let package = Package(
+  name: "InPlaceJvm",
+  platforms: [.android(26)],
+  targets: [.module("InPlace")]
+)
