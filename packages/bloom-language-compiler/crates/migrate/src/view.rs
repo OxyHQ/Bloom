@@ -277,7 +277,10 @@ impl Tr<'_> {
         let mut external: Vec<crate::props::Field> = Vec::new();
         let members: Vec<&TSSignature> = match annotation {
             TSType::TSTypeLiteral(literal) => literal.members.iter().collect(),
-            TSType::TSTypeReference(reference) => {
+            TSType::TSTypeReference(reference)
+                if !matches!(&reference.type_name, TSTypeName::IdentifierReference(u)
+                    if matches!(u.name.as_str(), "Pick" | "Omit") && reference.type_arguments.is_some()) =>
+            {
                 let TSTypeName::IdentifierReference(id) = &reference.type_name else {
                     return Some(self.refuse("view:props-type", "props of a qualified type", reference.span));
                 };
@@ -318,10 +321,14 @@ impl Tr<'_> {
                 }
             }
             // `P & { label: string }`: the local object types' fields, and one imported
-            // type's spread (`..P`).
-            TSType::TSIntersectionType(intersection) => {
+            // type's spread (`..P`). `Omit<P, 'k'>` alone is one such part.
+            TSType::TSIntersectionType(_) | TSType::TSTypeReference(_) => {
+                let parts: &[TSType] = match annotation {
+                    TSType::TSIntersectionType(intersection) => &intersection.types,
+                    one => std::slice::from_ref(one),
+                };
                 let mut members = Vec::new();
-                for part in &intersection.types {
+                for part in parts {
                     match part {
                         TSType::TSTypeLiteral(literal) => members.extend(literal.members.iter()),
                         TSType::TSTypeReference(r)
@@ -330,6 +337,16 @@ impl Tr<'_> {
                         {
                             if let Some(local) = local_object(module, &id.name) {
                                 members.extend(local);
+                            } else if let Some(interface) = local_interface(module, &id.name)
+                                && let Some(fields) = self.imported_bases(interface)
+                            {
+                                // `interface P extends Omit<Q, 'k'>` with `Q` imported: Q's fields
+                                // written out, then P's own.
+                                for f in fields {
+                                    external.retain(|e| e.name != f.name);
+                                    external.push(f);
+                                }
+                                members.extend(interface.body.body.iter());
                             } else if self.imported.contains(id.name.as_str())
                                 // `{ label, ...menu }: P & { label }` keeps P whole: `menu: P`.
                                 && !matches!(&param.pattern, BindingPattern::ObjectPattern(o) if o.rest.is_some())
@@ -3154,6 +3171,52 @@ fn is_single_if(lines: &str) -> bool {
 }
 
 /// The members of a module object type named `name` (an interface or an object alias).
+/// `Pick<Q, 'a' | 'b'>` or `Omit<Q, 'k'>` of an object type `Q` of this module: Q's members,
+/// those or but those.
+fn local_pick<'b, 'a>(module: &'b [Statement<'a>], part: &'b TSType<'a>, name: &str) -> Option<Vec<&'b TSSignature<'a>>> {
+    let TSType::TSTypeReference(r) = part else { return None };
+    let TSTypeName::IdentifierReference(util) = &r.type_name else { return None };
+    let pick = match util.name.as_str() {
+        "Pick" => true,
+        "Omit" => false,
+        _ => return None,
+    };
+    let [TSType::TSTypeReference(base), keys] = r.type_arguments.as_ref()?.params.as_slice() else { return None };
+    let TSTypeName::IdentifierReference(base) = &base.type_name else { return None };
+    if base.name == name {
+        return None;
+    }
+    let keys = string_literals(keys)?;
+    let members = local_object(module, &base.name)?;
+    Some(
+        members
+            .into_iter()
+            .filter(|m| {
+                let key = match m {
+                    TSSignature::TSPropertySignature(p) => key_name(&p.key),
+                    TSSignature::TSMethodSignature(m) => key_name(&m.key),
+                    _ => None,
+                };
+                key.is_none_or(|k| keys.contains(&k) == pick)
+            })
+            .collect(),
+    )
+}
+
+/// The interface `name` declared in this module.
+fn local_interface<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<&'b oxc_ast::ast::TSInterfaceDeclaration<'a>> {
+    module.iter().find_map(|statement| {
+        let declaration = match statement {
+            Statement::ExportDeclaration(e) => Some(&e.declaration),
+            other => other.as_declaration(),
+        };
+        match declaration {
+            Some(Declaration::TSInterfaceDeclaration(i)) if i.id.name == name => Some(&**i),
+            _ => None,
+        }
+    })
+}
+
 pub fn local_object<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<Vec<&'b TSSignature<'a>>> {
     for statement in module {
         let declaration = match statement {
@@ -3178,6 +3241,10 @@ pub fn local_object<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<V
             Some(Declaration::TSTypeAliasDeclaration(a)) if a.id.name == name => {
                 match &a.type_annotation {
                     TSType::TSTypeLiteral(literal) => return Some(literal.members.iter().collect()),
+                    // `type P = Omit<Q, 'k'>` of an object type here.
+                    part @ TSType::TSTypeReference(_) if a.type_parameters.is_none() => {
+                        return local_pick(module, part, name);
+                    }
                     // `type P = Q & { t: T }` of object types here: one object of all their fields,
                     // in order, a field named twice being its last (TS's narrower) one.
                     TSType::TSIntersectionType(intersection) if a.type_parameters.is_none() => {
@@ -3192,7 +3259,7 @@ pub fn local_object<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<V
                                 {
                                     members.extend(local_object(module, &id.name)?)
                                 }
-                                _ => return None,
+                                part => members.extend(local_pick(module, part, name)?),
                             }
                         }
                         let mut seen = HashSet::new();
@@ -3580,7 +3647,7 @@ fn is_constant(e: &Expression) -> bool {
 }
 
 /// The strings of `'a' | 'b'` (or one `'a'`).
-fn string_literals(ty: &TSType) -> Option<Vec<String>> {
+pub fn string_literals(ty: &TSType) -> Option<Vec<String>> {
     match ty {
         TSType::TSLiteralType(l) => match &l.literal {
             oxc_ast::ast::TSLiteral::StringLiteral(s) => s.value.as_str().map(|v| vec![v.to_string()]),

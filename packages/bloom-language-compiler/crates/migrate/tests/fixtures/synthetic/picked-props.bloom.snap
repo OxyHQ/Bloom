@@ -1,0 +1,42 @@
+// `Omit`/`Pick` of an object type: its fields but those, or those. Of a local type in a type
+// alias (`Omit<P, 'k'> & { … }`) or as the whole props type; of an imported one as an
+// interface's base (`interface C extends Omit<Q, 'k'>`), also when C is part of the props.
+
+private struct PlayerProps {
+  let src: String
+  let player: String
+  var loop: Bool? = none
+}
+
+public struct Surface: View {
+  let src: String
+  var loop: Bool? = none
+  let player: String?
+  var body: some View {
+    Text("\(src) \(player ?? "")")
+  }
+}
+
+public struct Owned: View {
+  let src: String
+  var loop: Bool = false
+  var body: some View {
+    Text("\(src) \(loop)")
+  }
+}
+
+private struct ChromeProps {
+  let title: String
+  var subtitle: String? = none
+  let live: Bool
+}
+
+public struct Chrome: View {
+  let live: Bool
+  let depth: Float
+  let title: String
+  var subtitle: String? = none
+  var body: some View {
+    Text("\(title) \(live) \(depth)")
+  }
+}
