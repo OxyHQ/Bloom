@@ -983,6 +983,60 @@ impl<'o> Checker<'o> {
 
     /// One `.bloom` declaration reached through two imports (a module's own and another
     /// module's signature that names it): each import numbers its types anew.
+    /// Where each of an imported module's `defs` is here: the def already here that is the same
+    /// declaration ([`Self::same_declaration`]'s rule, a TS or record type by its name and
+    /// origin), else a new one. A def read whole fills in one here that was read by its name
+    /// only (an import cycle's [`shell_signatures`]).
+    fn import_defs(&mut self, defs: &[Def]) -> Vec<DefId> {
+        let key = |d: &Def| -> (String, String) {
+            let origin = match &d.origin {
+                Origin::Bloom { .. } | Origin::Local => "bloom".to_string(),
+                other => format!("{other:?}"),
+            };
+            (
+                format!(
+                    "{}/{}/{:?}/{}",
+                    d.name,
+                    d.generics.len(),
+                    std::mem::discriminant(&d.kind),
+                    d.class.is_some()
+                ),
+                origin,
+            )
+        };
+        let mut here: HashMap<(String, String), DefId> = HashMap::default();
+        for (id, d) in self.out.defs.iter().enumerate() {
+            here.entry(key(d)).or_insert(id);
+        }
+        let mut next = self.out.defs.len();
+        let mut map = Vec::with_capacity(defs.len());
+        let mut added = Vec::new();
+        for (index, d) in defs.iter().enumerate() {
+            match here.get(&key(d)) {
+                Some(&id) => map.push(id),
+                None => {
+                    here.insert(key(d), next);
+                    map.push(next);
+                    added.push(index);
+                    next += 1;
+                }
+            }
+        }
+        for index in added {
+            let def = remap_def(&defs[index], &map);
+            self.out.defs.push(def);
+        }
+        for (index, d) in defs.iter().enumerate() {
+            let id = map[index];
+            if empty_kind(&self.out.defs[id].kind) && !empty_kind(&d.kind) {
+                let whole = remap_def(d, &map);
+                self.out.defs[id].kind = whole.kind;
+                self.out.defs[id].tagged = whole.tagged;
+            }
+        }
+        map
+    }
+
     fn same_declaration(&self, a: DefId, b: DefId) -> bool {
         let (x, y) = (&self.out.defs[a], &self.out.defs[b]);
         let bloom = |o: &Origin| matches!(o, Origin::Bloom { .. } | Origin::Local);
@@ -3174,20 +3228,31 @@ impl<'o> Checker<'o> {
             );
             return;
         };
-        // Its types are numbered from 0 there: after this module's here.
-        let offset = self.out.defs.len();
-        self.out.defs.extend(module.defs.iter().map(|d| shift_def(d, offset)));
-        self.out.transparent.extend(module.transparent.iter().map(|d| d + offset));
+        // Its types are numbered from 0 there. Each is one already here when it is the same
+        // declaration (read through another import, or this file's own read back through an
+        // import cycle), else it is added: so a type is one def however many imports bring it,
+        // and the defs a module carries grow with its types, not with its import graph.
+        let map = self.import_defs(&module.defs);
+        for (index, def) in module.defs.iter().enumerate() {
+            // The module's own types are imported from here, by this import's specifier (what
+            // it read through its own imports is named relative to it).
+            if matches!(&def.origin, Origin::Bloom { specifier: own } if own == specifier)
+                && matches!(self.out.defs[map[index]].origin, Origin::Bloom { .. })
+            {
+                self.out.defs[map[index]].origin = def.origin.clone();
+            }
+        }
+        self.out.transparent.extend(module.transparent.iter().map(|d| map[*d]));
         self.out.dependencies.extend(module.files.iter().map(|(p, _)| p.clone()));
         for (name, local, spec_span) in names {
             if let Some(def) = module.types.get(&name.name) {
-                self.type_names.insert(local.name.clone(), TypeName::Def(def + offset));
+                self.type_names.insert(local.name.clone(), TypeName::Def(map[*def]));
                 self.out.type_imports.push(local.name.clone());
                 self.out.type_only_imports.insert(*spec_span);
                 continue;
             }
             if let Some((ty, n)) = module.aliases.get(&name.name) {
-                self.type_names.insert(local.name.clone(), TypeName::Alias(shift(ty, offset), *n));
+                self.type_names.insert(local.name.clone(), TypeName::Alias(remap(ty, &map), *n));
                 self.out.type_imports.push(local.name.clone());
                 self.out.type_only_imports.insert(*spec_span);
                 continue;
@@ -3198,7 +3263,7 @@ impl<'o> Checker<'o> {
                     if let Some(&stateful) = module.modifiers.get(&name.name) {
                         self.modifier_decls.insert(local.name.clone(), stateful);
                     }
-                    self.declare_unique(local, shift(ty, offset), kind.clone());
+                    self.declare_unique(local, remap(ty, &map), kind.clone());
                 }
                 None => {
                     self.report(
@@ -8295,6 +8360,9 @@ thread_local! {
     /// The `.bloom` modules whose signatures are being read (an import cycle stops there).
     static READING: std::cell::RefCell<std::collections::BTreeSet<PathBuf>> =
         const { std::cell::RefCell::new(std::collections::BTreeSet::new()) };
+    /// Reading a module's signatures inside an import cycle: what it imports is read as
+    /// [`shell_signatures`], its types' names, so the read ends.
+    static SHELLS: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
 /// Marks a module's signatures as read when dropped.
@@ -8334,18 +8402,28 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
         sig.checked.set(epoch);
         return Some(sig);
     }
-    if READING.with(|r| r.borrow().contains(path)) {
-        return None;
+    if SHELLS.with(std::cell::Cell::get) {
+        return shell_signatures(path, specifier, options);
     }
+    // An import cycle (two files of a module naming each other's types, `ToneDeltaPair`'s
+    // `roleA: ColorRole` in one and `ColorRole` in the other): the module is read again, its
+    // own types whole and what it imports as their names only, so each type is the module's own
+    // whatever order the files are read in. Never cached: only the read that started the cycle
+    // is.
+    let cycle = READING.with(|r| r.borrow().contains(path));
     let source = std::fs::read_to_string(path).ok()?;
-    READING.with(|r| r.borrow_mut().insert(path.to_path_buf()));
-    let _reading = Reading(path.to_path_buf());
+    if !cycle {
+        READING.with(|r| r.borrow_mut().insert(path.to_path_buf()));
+    }
+    let _reading = (!cycle).then(|| Reading(path.to_path_buf()));
     let (mut file, _, _) = crate::parser::parse(&source);
     crate::extensions::lower(&mut file);
+    let outer_shells = SHELLS.with(|s| s.replace(cycle));
     // Its module imports, as the names its signatures use (`crate::modules`).
     crate::modules::prepare(&mut file, &source, &path.to_string_lossy(), options);
     let mut sub = Checker::new(&source, &path.to_string_lossy(), options);
     sub.declare_signatures(&file, specifier);
+    SHELLS.with(|s| s.set(outer_shells));
     let types = sub
         .type_names
         .iter()
@@ -8386,8 +8464,60 @@ fn signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Sign
         files: files.collect(),
         checked: std::cell::Cell::new(epoch),
     });
-    MODULES.with(|m| m.borrow_mut().insert(key, sig.clone()));
+    if !cycle {
+        MODULES.with(|m| m.borrow_mut().insert(key, sig.clone()));
+    }
     Some(sig)
+}
+
+/// A module's exported types by name alone (their kind and type parameters, no fields, cases
+/// or values): what a module read inside an import cycle sees of what it imports. A type is
+/// the same declaration as the whole one by its name ([`Checker::same_declaration`]).
+fn shell_signatures(path: &Path, specifier: &str, options: &Options) -> Option<Rc<Signatures>> {
+    let source = std::fs::read_to_string(path).ok()?;
+    let (mut file, _, _) = crate::parser::parse(&source);
+    crate::extensions::lower(&mut file);
+    let mut defs = Vec::new();
+    let mut types = HashMap::default();
+    let mut transparent = HashSet::default();
+    for item in &file.items {
+        if !item.visibility.exported(options.modules) {
+            continue;
+        }
+        let (name, generics, kind) = match &item.kind {
+            ItemKind::Struct(s) => (&s.name, &s.generics, DefKind::Struct(Vec::new())),
+            ItemKind::Enum(e) => (&e.name, &e.generics, DefKind::Enum(Vec::new())),
+            ItemKind::Class(c) => (&c.name, &c.generics, DefKind::Struct(Vec::new())),
+            ItemKind::Protocol(p) => (&p.name, &Vec::new(), DefKind::Protocol(Vec::new())),
+            _ => continue,
+        };
+        if is_transparent(item) {
+            transparent.insert(defs.len());
+        }
+        types.insert(name.name.clone(), defs.len());
+        defs.push(Def {
+            name: name.name.clone(),
+            generics: generics.iter().map(|g| g.name.clone()).collect(),
+            kind,
+            origin: Origin::Bloom { specifier: specifier.to_string() },
+            class: match &item.kind {
+                ItemKind::Class(c) => Some(ClassDef { observable: c.observable, ..ClassDef::default() }),
+                _ => None,
+            },
+            tagged: None,
+            own_init: own_init(item),
+        });
+    }
+    Some(Rc::new(Signatures {
+        defs,
+        types,
+        aliases: HashMap::default(),
+        values: HashMap::default(),
+        transparent,
+        modifiers: HashMap::default(),
+        files: vec![(path.to_path_buf(), ts::stamp(path).unwrap_or((None, 0)))],
+        checked: std::cell::Cell::new(ts::epoch()),
+    }))
 }
 
 /// What other files see of the `.bloom` file `file` (at `path`, its module imports
@@ -8534,40 +8664,47 @@ fn zonk_kind(checker: &Checker, kind: &DefKind) -> DefKind {
     }
 }
 
-/// `ty` with every struct and enum renumbered by `offset`.
-fn shift(ty: &Ty, offset: usize) -> Ty {
-    if offset == 0 {
-        return ty.clone();
+/// Whether a def has no fields, cases or requirements (as an import cycle's shell has).
+fn empty_kind(kind: &DefKind) -> bool {
+    match kind {
+        DefKind::Struct(fields) => fields.is_empty(),
+        DefKind::Enum(variants) => variants.is_empty(),
+        DefKind::Protocol(requirements) => requirements.is_empty(),
     }
+}
+
+/// `ty` with every struct and enum renumbered by `map` (an imported module's numbering to this
+/// one's).
+fn remap(ty: &Ty, map: &[DefId]) -> Ty {
     map_ty(ty, &mut |t| match t {
-        Ty::Adt(def, args) => Some(Ty::Adt(def + offset, args.iter().map(|a| shift(a, offset)).collect())),
-        Ty::Any(def) => Some(Ty::Any(def + offset)),
+        Ty::Adt(def, args) => Some(Ty::Adt(map[*def], args.iter().map(|a| remap(a, map)).collect())),
+        Ty::Any(def) => Some(Ty::Any(map[*def])),
         _ => None,
     })
 }
 
-fn shift_def(def: &Def, offset: usize) -> Def {
+fn remap_def(def: &Def, map: &[DefId]) -> Def {
     let kind = match &def.kind {
-        DefKind::Struct(fields) => DefKind::Struct(
-            fields.iter().map(|f| FieldDef { ty: shift(&f.ty, offset), ..f.clone() }).collect(),
-        ),
+        DefKind::Struct(fields) => {
+            DefKind::Struct(fields.iter().map(|f| FieldDef { ty: remap(&f.ty, map), ..f.clone() }).collect())
+        }
         DefKind::Enum(variants) => DefKind::Enum(
             variants
                 .iter()
                 .map(|v| VariantDef {
-                    payload: v.payload.iter().map(|(n, t)| (n.clone(), shift(t, offset))).collect(),
+                    payload: v.payload.iter().map(|(n, t)| (n.clone(), remap(t, map))).collect(),
                     ..v.clone()
                 })
                 .collect(),
         ),
         DefKind::Protocol(requirements) => DefKind::Protocol(
-            requirements.iter().map(|r| RequirementDef { ty: shift(&r.ty, offset), ..r.clone() }).collect(),
+            requirements.iter().map(|r| RequirementDef { ty: remap(&r.ty, map), ..r.clone() }).collect(),
         ),
     };
     let tagged = def.tagged.as_ref().map(|t| {
         Rc::new(Tagged {
             tag: t.tag.clone(),
-            members: t.members.iter().map(|(v, ty)| (v.clone(), shift(ty, offset))).collect(),
+            members: t.members.iter().map(|(v, ty)| (v.clone(), remap(ty, map))).collect(),
         })
     });
     Def { kind, tagged, ..def.clone() }

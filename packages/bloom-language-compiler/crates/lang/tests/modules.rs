@@ -111,6 +111,37 @@ fn a_js_options_function_is_called_with_an_object_from_a_sibling() {
     assert!(out.code.contains("shouldScroll({ tab: \"a\" })"), "{}", out.code);
 }
 
+/// Two files of a module naming each other's types (an import cycle: `Pair`'s fields are a
+/// `ColorRole`, and `ColorRole`'s file builds a `Pair`), the enum named as the language's token
+/// set is (`ColorRole`): a third file sees one `ColorRole` whatever order they are read in.
+/// The type is never the token set, and never two (theme engine, #1087's B0201 "expected
+/// `ColorRole`, found `ColorRole`").
+#[test]
+fn an_import_cycle_keeps_a_type_one_type() {
+    let root = package(
+        "cycle",
+        &[
+            ("Package.bloom", MANIFEST),
+            (
+                "Sources/Feed/Contrast.bloom",
+                "public struct Pair: Equatable {\n  public let roleA: ColorRole\n  public let roleB: ColorRole\n}\n",
+            ),
+            (
+                "Sources/Feed/ColorRoles.bloom",
+                "public enum ColorRole {\n  case primary\n  case onPrimary\n}\n\npublic func pairOf(_ role: ColorRole) -> Pair { Pair(roleA: role, roleB: ColorRole.onPrimary) }\n",
+            ),
+            (
+                "Sources/Feed/ColorRole.bloom",
+                "public func nearer(_ role: ColorRole) -> Bool {\n  let pair = pairOf(role)\n  return role == pair.roleA && pair.roleB == ColorRole.onPrimary\n}\n",
+            ),
+        ],
+    );
+    for file in ["ColorRole", "ColorRoles", "Contrast"] {
+        let out = build(&root, &format!("Sources/Feed/{file}.bloom"), &Options::default());
+        assert!(out.diagnostics.is_empty(), "{file}: {:?}", out.diagnostics);
+    }
+}
+
 #[test]
 fn app_modules_import_no_paths() {
     let root = package(
