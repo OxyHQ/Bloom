@@ -36,3 +36,8 @@ section: Added
   - a list the source tests is optional; an optional string among a text's runs, `!!x?.trim()`, a `Record` read destructured;
   - an imported base type's fields are written out (`extends`, intersections, `Pick`/`Omit`); a React component returning an element is a view; a JSX spread of written-out props passes each field;
   - JS's locale number formatting is FormatStyle (`toLocaleString()`, `Intl.NumberFormat`; needs the compiler's #1065).
+- Round 12 (lang-mention-12):
+  - JS's `Date` is the standard library's (a JS `Date` itself): `new Date()` is `Date.now`, `new Date(ms)` `Date(millisecondsSince1970:)`, `new Date(iso)` `try? Date(s, strategy: .iso8601)` (JS's Invalid Date as a value), the getters `components()`'s fields, `new Date(y, m, d)` and `Date.UTC` the calendar's `date(year:month:day:)`, and `setDate` on a local midnight its day's date;
+  - `toLocaleDateString`, `toLocaleTimeString`, `toLocaleString` and `Intl.DateTimeFormat` are `formatted(…)` with ECMA-402's defaults written out, `?.formatted(…) ?? "Invalid Date"` for a parse that may fail (needs the compiler's #1066);
+  - what TS's flow proved is read so bloomc narrows it: `!Array.isArray(x)` is `x == none`, a tested operand `p!.w!`, an aliased test (`hasName ? name!`), and a TS callback's index `xs[i.truncated()]`;
+  - rest props that are exactly a local base interface (`interface P extends B`) are one stored property of `B`; a function's string returns in a `switch` type it `String`.
