@@ -1769,6 +1769,18 @@ impl Tr<'_> {
                 let then = |tr: &mut Self| tr.child(&l.right);
                 self.child_if(&l.left, l.right.span(), then, None::<fn(&mut Self) -> String>)
             }
+            // `c && xs?.map((x) => …)`: the rows of an optional list, none when it is `none`.
+            Expression::LogicalExpression(l)
+                if l.operator == LogicalOperator::And
+                    && matches!(l.right.without_parentheses(), Expression::ChainExpression(c)
+                        if matches!(&c.expression, oxc_ast::ast::ChainElement::CallExpression(call) if is_map(call))) =>
+            {
+                let then = |tr: &mut Self| {
+                    let list = tr.head_expr(&l.right);
+                    format!("for row in {list} ?? [] {{ row }}")
+                };
+                self.child_if(&l.left, l.right.span(), then, None::<fn(&mut Self) -> String>)
+            }
             Expression::CallExpression(call) if is_map(call) => {
                 let Some(Argument::ArrowFunctionExpression(arrow)) = call.arguments.first() else {
                     unreachable!()
