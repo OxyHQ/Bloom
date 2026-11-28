@@ -1,0 +1,4 @@
+// The libraries the native module `BloomVideo` links, at the version expo-video 58 ships
+// (so the APK cost compares like for like): ExoPlayer, and HLS for `.m3u8` sources.
+implementation("androidx.media3:media3-exoplayer:1.9.1")
+implementation("androidx.media3:media3-exoplayer-hls:1.9.1")

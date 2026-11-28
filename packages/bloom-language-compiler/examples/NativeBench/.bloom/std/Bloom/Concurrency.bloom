@@ -1,0 +1,150 @@
+// Bloom (concurrency): `Task`, `TaskGroup`, `sleep(for:)` and `AsyncStream`.
+//
+// A view's work runs in `.task { }` (cancelled when the view leaves; `Task.signal` is its
+// cancellation, which `HTTPClient` and `sleep(for:)` take). Work that outlives a view
+// starts with `Task.run`:
+//
+//     let upload = Task.run { signal in try await api.perform(.post, "media", json: body, cancellation: signal) }
+//     upload.cancel()
+
+extern module "./runtime" {
+  private func sleepMs(_ ms: Double, _ signal: TaskSignal?) async throws
+  private func spawn<T>(_ work: (TaskSignal) async throws -> T) -> TaskHandle<T>
+  private func awaitAll<T>(_ values: [Pending<T>]) async throws -> [T]
+  private func isCancellation(_ error: Error) -> Bool
+  private func channel<T>() -> Channel<T>
+  private func refreshRun(_ state: Binding<Bool>, _ action: () async -> Unit) -> Binding<Bool>
+  private func actorQueue<A, T>(_ actor: A, _ work: () async throws -> T) async throws -> T
+  @extern("actorQueue") private func actorQueueSync<A, T>(_ actor: A, _ work: () throws -> T) async throws -> T
+}
+
+/// A cancellation signal: `Task.signal` in `.task { }`, or a `Task`'s own.
+public type TaskSignal = Foreign<"AbortSignal">
+
+/// The runtime's handle of a started task.
+public type TaskHandle<T> = Foreign<"any">
+
+/// A value not yet there.
+public type Pending<T> = Foreign<"Promise<any>">
+
+/// The runtime's broadcast channel.
+public type Channel<T> = Foreign<"any">
+
+/// Waits `duration`; throws a cancellation when `cancellation` fires first.
+public func sleep(for duration: Duration, cancellation: TaskSignal? = none) async throws {
+  try await sleepMs(duration.milliseconds, cancellation)
+}
+
+/// Whether `error` is a task's cancellation (not a failure to report).
+public func isCancelled(_ error: Error) -> Bool { isCancellation(error) }
+
+/// Work started now, which runs on until it ends or is cancelled.
+public struct Task<Success> {
+  public let handle: TaskHandle<Success>
+}
+
+extension Task {
+  /// Starts `work`, which receives the task's cancellation signal.
+  public static func run(_ work: (TaskSignal) async throws -> Success) -> Task<Success> {
+    Task(handle: spawn(work))
+  }
+
+  /// Asks the task to stop: its signal fires.
+  public func cancel() { self.handle.cancel() }
+
+  /// The task's result, or what it threw.
+  public func value() async throws -> Success {
+    let pending: Pending<Success> = self.handle.value
+    return try await pending
+  }
+
+  /// Whether `cancel()` was called.
+  public var isCancelled: Bool { self.handle.signal.aborted }
+}
+
+/// Runs work concurrently and gathers the results, in order.
+public struct TaskGroup<Element> {
+  public let tasks: [Task<Element>]
+}
+
+extension TaskGroup {
+  /// Starts every one of `works` now.
+  public static func start(_ works: [(TaskSignal) async throws -> Element]) -> TaskGroup<Element> {
+    TaskGroup(tasks: works.map { Task.run($0) })
+  }
+
+  /// `transform` of each of `items`, run concurrently; the results in `items`' order.
+  public static func map<T>(_ items: [T], _ transform: (T) async throws -> Element) -> TaskGroup<Element> {
+    TaskGroup(tasks: items.map { item in Task.run { _ in try await transform(item) } })
+  }
+
+  /// Every result, in order; the first failure cancels the others and is thrown.
+  public func values() async throws -> [Element] {
+    let pending: [Pending<Element>] = self.tasks.map { $0.handle.value }
+    do {
+      return try await awaitAll(pending)
+    } catch {
+      self.cancelAll()
+      throw error
+    }
+  }
+
+  /// Cancels every task.
+  public func cancelAll() {
+    for each in self.tasks { each.cancel() }
+  }
+}
+
+/// Values over time, to every subscriber: what a socket or a sensor sends.
+public struct AsyncStream<Element> {
+  public let channel: Channel<Element>
+}
+
+extension AsyncStream {
+  /// A stream nothing has been sent on yet.
+  public static func make() -> AsyncStream<Element> { AsyncStream(channel: channel()) }
+
+  /// Sends `value` to every subscriber.
+  public func yield(_ value: Element) { self.channel.send(value) }
+
+  /// Ends the stream: subscribers get `onFinish`, and later ones get it at once.
+  public func finish() { self.channel.finish() }
+
+  /// Calls `each` with every value sent from now on; returns the unsubscribe.
+  public func subscribe(_ each: (Element) -> Void, onFinish: () -> Void = {}) -> () -> Void {
+    self.channel.listen(each, onFinish)
+  }
+}
+
+/// What an `actor`'s method lowers onto: `work` runs once the actor's earlier calls have
+/// ended, one at a time (a per-instance queue).
+///
+///     actor Counter {
+///       var count = 0
+///       func increment() -> Int { count += 1; return count }
+///     }
+///     let n = await counter.increment()
+public func actorIsolated<A, T>(_ actor: A, _ work: () -> T) async -> T {
+  try! await actorQueueSync(actor, work)
+}
+
+/// `actorIsolated` for a method that throws: its error reaches the caller.
+public func actorIsolatedThrowing<A, T>(_ actor: A, _ work: () throws -> T) async throws -> T {
+  try await actorQueueSync(actor, work)
+}
+
+/// `actorIsolated` for an `async` method: the next call waits for its end, awaits included.
+public func actorIsolatedAsync<A, T>(_ actor: A, _ work: () async -> T) async -> T {
+  try! await actorQueue(actor, work)
+}
+
+/// `actorIsolatedAsync` for a method that throws.
+public func actorIsolatedAsyncThrowing<A, T>(_ actor: A, _ work: () async throws -> T) async throws -> T {
+  try await actorQueue(actor, work)
+}
+
+/// What `.refreshable { await model.refresh() }` lowers onto: the pull sets `state`, which
+/// runs `action` and clears it when the action ends (the spinner shows until then).
+public func refreshAction(_ state: Binding<Bool>, _ action: () async -> Unit) -> Binding<Bool> {
+  refreshRun(state, action)
+}

@@ -1,0 +1,48 @@
+// Bloom (media): the native video player and its view, behind `expo-video` in a Bloom build.
+//
+// A `bloom build` answers `expo-video` with a shim over this module (crates/bloomc's
+// `shims/expo-video.js`): `useVideoPlayer`, `createVideoPlayer` and `VideoView` keep their
+// API, so an app's call sites need no edits. Underneath is androidx media3 (ExoPlayer), the
+// library expo-video ships, without Expo's module core.
+
+/// The native player and its view (ADR 0002, section 7). The Kotlin side
+/// (`Native/BloomVideo/android`) conforms to the specs the toolchain generates from this
+/// interface. A player is a number the JS side picks; every call names it, and every event
+/// says which player it is about.
+extern native "BloomVideo" {
+  /// The view of `player`'s picture, fitted by `contentFit`. `onFirstFrame` runs when the
+  /// first frame of a source is on screen.
+  @extern("BloomVideoView")
+  private func videoView(
+    player: Int,
+    contentFit: "contain" | "cover" | "fill" = "contain",
+    onFirstFrame: (({ player: Int }) -> Void)?
+  ) -> View
+
+  /// A new player `id` of `source` (a URL, or nothing yet), with request `headers` as
+  /// `[name, value, …]`.
+  @extern("create") private func nativeCreate(_ id: Int, _ source: String?, _ headers: [String])
+  /// `id` plays `source` instead (nothing stops it).
+  @extern("replace") private func nativeReplace(_ id: Int, _ source: String?, _ headers: [String])
+  @extern("play") private func nativePlay(_ id: Int)
+  @extern("pause") private func nativePause(_ id: Int)
+  /// Moves to `seconds` from the start.
+  @extern("seek") private func nativeSeek(_ id: Int, _ seconds: Double)
+  @extern("setMuted") private func nativeSetMuted(_ id: Int, _ muted: Bool)
+  @extern("setLoop") private func nativeSetLoop(_ id: Int, _ loop: Bool)
+  @extern("setVolume") private func nativeSetVolume(_ id: Int, _ volume: Double)
+  @extern("setRate") private func nativeSetRate(_ id: Int, _ rate: Double)
+  /// How often `onTime` reports, in seconds (0 for never).
+  @extern("setTimeInterval") private func nativeSetTimeInterval(_ id: Int, _ seconds: Double)
+  /// Frees `id` and its decoders.
+  @extern("release") private func nativeRelease(_ id: Int)
+
+  /// `idle`, `loading`, `readyToPlay` or `error` (with its message).
+  @extern("onStatus") private func onNativeStatus(_ listener: ({ player: Int, status: String, error: String? }) -> Void) -> () -> Void
+  @extern("onPlaying") private func onNativePlaying(_ listener: ({ player: Int, playing: Bool }) -> Void) -> () -> Void
+  /// The position and the buffered position, in seconds, every `setTimeInterval`.
+  @extern("onTime") private func onNativeTime(_ listener: ({ player: Int, currentTime: Double, buffered: Double }) -> Void) -> () -> Void
+  @extern("onEnd") private func onNativeEnd(_ listener: ({ player: Int }) -> Void) -> () -> Void
+  /// A source's duration (seconds) and picture size (pixels), once known.
+  @extern("onSource") private func onNativeSource(_ listener: ({ player: Int, duration: Double, width: Double, height: Double }) -> Void) -> () -> Void
+}

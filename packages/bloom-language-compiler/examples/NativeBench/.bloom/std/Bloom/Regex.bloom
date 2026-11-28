@@ -1,0 +1,70 @@
+// Bloom: `Regex`, regular expressions (JS's syntax).
+//
+//     let mention = Regex(pattern: "@(\\w+)")
+//     let handles = mention.matches(in: text).map { $0.group(1) ?? "" }
+//     let plain = Regex(pattern: "\\s+").replacing(in: text, with: " ")
+
+extern module "./runtime" {
+  private func regexError(_ pattern: String, _ flags: String) -> String?
+  private func regexMatches(_ pattern: String, _ flags: String, _ s: String, _ limit: Int) -> [RegexMatch]
+  private func regexReplace(_ pattern: String, _ flags: String, _ s: String, _ replacement: String) -> String
+  private func regexSplit(_ pattern: String, _ flags: String, _ s: String) -> [String]
+}
+
+/// A regular expression: its pattern and its flags (`i` ignores case, `m` multiline,
+/// `s` lets `.` match newlines, `u` Unicode).
+public struct Regex: Equatable {
+  public let pattern: String
+  public var flags: String = ""
+}
+
+/// One match: its text, where it starts (UTF-16 offset) and its groups.
+public struct RegexMatch: Equatable {
+  public let text: String
+  public let start: Int
+  /// The numbered groups, from group 1 (`""` where a group did not take part).
+  public let groups: [String]
+  /// The named groups (`(?<handle>\\w+)`).
+  public let named: [String: String]
+}
+
+/// A pattern that is not a valid expression.
+public struct RegexError: Equatable {
+  public let pattern: String
+  public let message: String
+}
+
+extension Regex {
+  /// The expression, checked: throws a `RegexError` when `pattern` is invalid.
+  public static func compile(_ pattern: String, flags: String = "") throws -> Regex {
+    if let message = regexError(pattern, flags) {
+      throw RegexError(pattern: pattern, message: message)
+    }
+    return Regex(pattern: pattern, flags: flags)
+  }
+
+  /// Every match in `text`, in order.
+  public func matches(in text: String) -> [RegexMatch] { regexMatches(self.pattern, self.flags, text, 0) }
+
+  /// The first match in `text`, or `none`.
+  public func firstMatch(in text: String) -> RegexMatch? { regexMatches(self.pattern, self.flags, text, 1).first }
+
+  /// Whether the expression matches somewhere in `text`.
+  public func isMatch(_ text: String) -> Bool { self.firstMatch(in: text) != none }
+
+  /// `text` with every match replaced (`$1`, `$<name>` insert groups).
+  public func replacing(in text: String, with replacement: String) -> String {
+    regexReplace(self.pattern, self.flags, text, replacement)
+  }
+
+  /// The parts of `text` between matches.
+  public func split(_ text: String) -> [String] { regexSplit(self.pattern, self.flags, text) }
+}
+
+extension RegexMatch {
+  /// Group `n` (1 is the first), or `none`.
+  public func group(_ n: Int) -> String? { n == 0 ? self.text : self.groups[n - 1] }
+
+  /// Where the match ends (UTF-16 offset, exclusive).
+  public var end: Int { self.start + self.text.count }
+}

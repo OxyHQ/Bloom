@@ -1,0 +1,142 @@
+// Bloom (I/O): `KeyValueStore`, `SecureStore` and `FileStore`.
+//
+//     let prefs = KeyValueStore(name: "settings")
+//     prefs.setBool(true, for: "notifications.likes")
+//     let likes = prefs.bool("notifications.likes") ?? true
+//
+//     let tokens = SecureStore(name: "session")
+//     tokens.set(token, for: "access")
+//
+// Values are strings underneath; `Codable` values are stored as JSON (`setValue`,
+// `value(_:for:)`). Every call is synchronous, and values persist across launches:
+// the web keeps them in `localStorage`; Android and iOS keep `KeyValueStore` in SQLite,
+// `SecureStore` in the keystore (keychain) and `FileStore` in the app's files, through
+// Bloom's own native module, `BloomStorage` (Kotlin on Android; Swift on iOS with `bloom build ios`). A
+// `bloom build --with-expo` keeps them in the Expo modules it lists instead
+// (`expo-sqlite`, `expo-secure-store`, `expo-file-system`). Tests keep values in memory.
+
+/// The native storage module (ADR 0002, section 7): its Kotlin and Swift implementations
+/// (`Native/BloomStorage/`) conform to this interface through the TurboModule spec the
+/// toolchain generates from it. `kind` is `kv` (SQLite), `secure` (the keystore or keychain)
+/// or `file` (the app's files).
+extern native "BloomStorage" {
+  @extern("get") private func nativeGet(_ kind: String, _ name: String, _ key: String) -> String?
+  @extern("set") private func nativeSet(_ kind: String, _ name: String, _ key: String, _ value: String?)
+  @extern("keys") private func nativeKeys(_ kind: String, _ name: String) -> [String]
+}
+
+extern module "./runtime" {
+  private func storageGet(_ kind: String, _ name: String, _ key: String) -> String?
+  private func storageSet(_ kind: String, _ name: String, _ key: String, _ value: String?)
+  private func storageKeys(_ kind: String, _ name: String) -> [String]
+  /// The native module holds `kind`: a native build, and no backend installed for it.
+  private func storageIsNative(_ kind: String) -> Bool
+}
+
+private func get(_ kind: String, _ name: String, _ key: String) -> String? {
+  if storageIsNative(kind) { return nativeGet(kind, name, key) }
+  return storageGet(kind, name, key)
+}
+
+private func put(_ kind: String, _ name: String, _ key: String, _ value: String?) {
+  if storageIsNative(kind) {
+    nativeSet(kind, name, key, value)
+  } else {
+    storageSet(kind, name, key, value)
+  }
+}
+
+private func keysOf(_ kind: String, _ name: String) -> [String] {
+  if storageIsNative(kind) { return nativeKeys(kind, name) }
+  return storageKeys(kind, name)
+}
+
+/// Small values that persist across launches: preferences, drafts, caches.
+public struct KeyValueStore: Equatable {
+  /// The store's namespace: stores with different names never see each other's keys.
+  public let name: String
+}
+
+/// Secrets (tokens, keys): the platform's keychain or keystore where it has one.
+public struct SecureStore: Equatable {
+  public let name: String
+}
+
+/// Larger values (documents, caches of responses), by path within the app's storage.
+public struct FileStore: Equatable {
+  public let name: String
+}
+
+extension KeyValueStore {
+  /// The string at `key`, or `none`.
+  public func string(_ key: String) -> String? { get("kv", self.name, key) }
+
+  /// The boolean at `key`, or `none`.
+  public func bool(_ key: String) -> Bool? { self.string(key).map { $0 == "true" } }
+
+  /// The integer at `key`, or `none`.
+  public func int(_ key: String) -> Int? { self.string(key).flatMap { $0.toInt() } }
+
+  /// The number at `key`, or `none`.
+  public func double(_ key: String) -> Double? { self.string(key).flatMap { $0.toFloat() } }
+
+  /// Stores `value` at `key`.
+  public func set(_ value: String, for key: String) { put("kv", self.name, key, value) }
+
+  /// Stores a boolean at `key`.
+  public func setBool(_ value: Bool, for key: String) { put("kv", self.name, key, value ? "true" : "false") }
+
+  /// Stores a number at `key`.
+  public func setNumber(_ value: Double, for key: String) { put("kv", self.name, key, "\(value)") }
+
+  /// The `T` stored at `key` (as JSON), or `none` when absent or no longer decodable.
+  public func value<T>(_ codec: Codec<T>, for key: String) -> T? {
+    guard let text = self.string(key) else { return none }
+    do {
+      return try JSON.decode(codec, from: text)
+    } catch {
+      return none
+    }
+  }
+
+  /// Stores `value` at `key` as JSON.
+  public func setValue<T>(_ codec: Codec<T>, _ value: T, for key: String) {
+    put("kv", self.name, key, JSON.encode(codec, value))
+  }
+
+  /// Removes `key`.
+  public func remove(_ key: String) { put("kv", self.name, key, none) }
+
+  /// Every key of the store.
+  public var keys: [String] { keysOf("kv", self.name) }
+
+  /// Removes every key of the store.
+  public func clear() {
+    for key in self.keys { self.remove(key) }
+  }
+}
+
+extension SecureStore {
+  /// The secret at `key`, or `none`.
+  public func string(_ key: String) -> String? { get("secure", self.name, key) }
+
+  /// Stores the secret `value` at `key`.
+  public func set(_ value: String, for key: String) { put("secure", self.name, key, value) }
+
+  /// Removes `key`.
+  public func remove(_ key: String) { put("secure", self.name, key, none) }
+}
+
+extension FileStore {
+  /// The text of the file at `path`, or `none`.
+  public func read(_ path: String) -> String? { get("file", self.name, path) }
+
+  /// Writes `text` to the file at `path`.
+  public func write(_ text: String, to path: String) { put("file", self.name, path, text) }
+
+  /// Deletes the file at `path`.
+  public func delete(_ path: String) { put("file", self.name, path, none) }
+
+  /// The paths of every file, in no order.
+  public var paths: [String] { keysOf("file", self.name) }
+}

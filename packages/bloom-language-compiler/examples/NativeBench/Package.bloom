@@ -1,0 +1,16 @@
+// The native-backend prototype's bench (ADR 0003): the same two screens built two ways.
+// `bloom build android --release` draws them with React Native over Hermes (today's path);
+// `bloom-native --target kotlin-compose` emits them as Kotlin and Jetpack Compose.
+let package = Package(
+  name: "NativeBench",
+  platforms: [.iOS(17), .android(26), .web],
+  dependencies: [
+    .package("Bloom", from: "23.9.1"),
+  ],
+  app: App(id: "so.bloom.nativebench.rn", version: "0.1.0", build: 1, displayName: "Bench RN"),
+  targets: [
+    .app("NativeBench", dependencies: ["Feed", "Settings"]),
+    .module("Feed"),
+    .module("Settings"),
+  ]
+)
