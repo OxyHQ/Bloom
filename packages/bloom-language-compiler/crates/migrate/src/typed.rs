@@ -722,7 +722,9 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             ("B0201", _)
                 if d.message.starts_with("`??` gives a fallback")
                     && crate::expr::is_postfix_text(text)
-                    && !ts.contains(&format!("{text} ??")) =>
+                    && !ts.contains(&format!("{text} ??"))
+                    // (Anywhere else, TS's `x || ""` is a guard: below, `x` is declared optional.)
+                    && (source[..start].ends_with('(') || source[..start].ends_with("${")) =>
             {
                 let rest = &source[end..];
                 let at = rest.len() - rest.trim_start().len();
