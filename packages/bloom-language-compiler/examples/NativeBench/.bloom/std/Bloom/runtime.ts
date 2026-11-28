@@ -382,6 +382,38 @@ export function jsonMember(value: JSONValue, key: string): JSONValue {
     : undefined;
 }
 
+/** Lenient reads (`value.string`, `value.int`, …): the value as that type, or `undefined`. */
+export function jsonAsString(value: JSONValue): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+export function jsonAsNumber(value: JSONValue): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+export function jsonAsInt(value: JSONValue): number | undefined {
+  return typeof value === 'number' && Number.isSafeInteger(value) ? value : undefined;
+}
+
+export function jsonAsBool(value: JSONValue): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined;
+}
+
+export function jsonAsArray(value: JSONValue): readonly JSONValue[] | undefined {
+  return Array.isArray(value) ? value : undefined;
+}
+
+export function jsonAsObject(value: JSONValue): Readonly<Record<string, JSONValue>> | undefined {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, JSONValue>)
+    : undefined;
+}
+
+/** What was thrown, as is (`error.jsValue`): `undefined` for `null` or `undefined`. */
+export function errorValue(error: unknown): JSONValue {
+  return error ?? undefined;
+}
+
 export function jsonKeys(value: JSONValue): readonly string[] {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? Object.keys(value)
@@ -590,6 +622,27 @@ export function isCancellation(error: unknown): boolean {
   return (
     error instanceof Error && (error.name === 'CancellationError' || error.name === 'AbortError')
   );
+}
+
+/** A JS `Error` (`as? JSError`): its name, message and stack, or `undefined`. */
+export function jsErrorFrom(
+  error: unknown,
+): { name: string; message: string; stack: string | undefined } | undefined {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message, stack: error.stack ?? undefined };
+  }
+  // Another realm's `Error` (an iframe's, a VM context's): its shape.
+  if (error !== null && typeof error === 'object') {
+    const e = error as { name?: unknown; message?: unknown; stack?: unknown };
+    if (
+      typeof e.name === 'string' &&
+      typeof e.message === 'string' &&
+      typeof e.stack === 'string'
+    ) {
+      return { name: e.name, message: e.message, stack: e.stack };
+    }
+  }
+  return undefined;
 }
 
 export function errorMessage(error: unknown): string {

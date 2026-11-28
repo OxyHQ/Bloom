@@ -24,6 +24,7 @@ extern module "./runtime" {
   @extern("intersection") private func setIntersection<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
   @extern("subtracting") private func setSubtracting<T>(_ a: Set<T>, _ b: Set<T>) -> Set<T>
   private func errorMessage(_ error: Error) -> String
+  private func jsErrorFrom(_ error: Error) -> JSError?
 }
 
 /// One user-perceived character: an extended grapheme cluster, as a string.
@@ -34,6 +35,16 @@ public type Character = String
 public struct ClosedRange<Bound> {
   public let lowerBound: Bound
   public let upperBound: Bound
+}
+
+/// A stable identity for a view's life: a label paired with its field, a key into a registry.
+/// Made only as a view's state, once, when the view first appears:
+/// `@State private var id = UniqueID()`, then read `id.string`. It is its string at run time
+/// (`@Transparent`): React's `useId()` on the web and in React Native (hydration-safe).
+@Transparent
+public struct UniqueID: Equatable, Hashable {
+  /// The identity as text, unique within the app while the view lives.
+  public let string: String
 }
 
 // ---- String ---------------------------------------------------------------------
@@ -361,6 +372,21 @@ public final class Ref<T> {
 /// An error with a message: what `throw` takes when no domain error type fits.
 public struct RuntimeError: Equatable {
   public let message: String
+}
+
+/// A JS `Error` (a `TypeError`, a `RangeError`, a TS library's own): its name, message and stack
+/// trace. `error as? JSError` and `catch let e as JSError` read one from any thrown JS `Error`.
+public struct JSError: Equatable {
+  /// `"TypeError"`, `"AbortError"`, …
+  public let name: String
+  public let message: String
+  /// The engine's stack trace, when it keeps one.
+  public let stack: String?
+}
+
+extension JSError {
+  /// The `JSError` an error is, or `none` when it is not a JS `Error`.
+  public static func cast(_ error: Error) -> JSError? { jsErrorFrom(error) }
 }
 
 extension Error {
