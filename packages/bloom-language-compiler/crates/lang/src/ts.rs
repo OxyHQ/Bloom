@@ -1596,6 +1596,7 @@ impl Mapper<'_> {
                 ty,
                 optional: param.optional,
                 rest: param.rest,
+                inout: false,
             });
         }
         // A constrained type parameter (`<Style extends DefaultStyle>(updater: () => Style)`): the

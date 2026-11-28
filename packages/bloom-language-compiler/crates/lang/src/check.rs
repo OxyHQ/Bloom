@@ -97,6 +97,18 @@ pub enum CallRes {
     Regex,
     /// `Array(xs)`: a new array of a range's, a list's or a set's elements.
     ArrayOf,
+    /// `Array(repeating: v, count: n)` (Swift's): `n` copies of `v`, which is evaluated once.
+    ArrayRepeating,
+    /// Swift's mutating members of an array or a dictionary on a `var` place (`xs.append(v)`,
+    /// `xs.remove(at: i)`, `table.removeValue(forKey: k)`): `name` is the member's canonical
+    /// name (`append`, `appendContentsOf`, `insert`, `removeAt`, `removeFirst`, `removeLast`,
+    /// `removeFirstN`, `removeLastN`, `popLast`, `removeAll`, `removeAllWhere`, `swapAt`,
+    /// `sort`, `sortBy`, `reverse`, `removeValue`, `updateValue`). How the place is written is
+    /// [`CheckResult::mutations`]'s, as an assignment's is `assigns`'.
+    Mutating {
+        recv: Recv,
+        name: &'static str,
+    },
     /// `catching { … }`: the block's value, or what it threw, as a `Result`.
     Catching,
     /// `Int(s)` / `Float(s)`.
@@ -305,6 +317,12 @@ pub struct CheckResult {
     pub fields: HashMap<ExprId, FieldRes>,
     pub bindings: HashMap<ExprId, (LocalId, Vec<String>)>,
     pub assigns: HashMap<Span, AssignRes>,
+    /// A mutating member's call ([`CallRes::Mutating`]), by the call's id: how its receiver, a
+    /// place, is written back, as `assigns` says for an assignment to it.
+    pub mutations: HashMap<ExprId, AssignRes>,
+    /// `&x` passed to an `inout` parameter, by the `&x`'s id: how the place `x` is written back
+    /// when the call returns, as `assigns` says for an assignment to it.
+    pub inouts: HashMap<ExprId, AssignRes>,
     /// JS classes imported from "js": a call of one is `new`.
     pub constructors: HashSet<LocalId>,
     /// `x is T`: the type tested.
@@ -684,6 +702,11 @@ pub struct Checker<'o> {
     pending_shapes: Vec<PendingShape>,
     /// Inside a class's `init`: its fields are set directly, its `let`s too.
     in_init: bool,
+    /// Checking a mutating member's receiver (`xs.append(v)`, `Some(true)`) or an `inout`
+    /// argument (`&xs`, `Some(false)`) as the place it writes.
+    mutating_receiver: Option<bool>,
+    /// `&x` arguments an `inout` parameter takes (by id); `&` anywhere else is B0406.
+    inout_allowed: HashSet<ExprId>,
     /// The frame of the `init` being checked, and whether it is failable (`init?`): its `return`
     /// gives no value (`return none` fails an `init?`).
     init_frame: Option<(usize, bool)>,
@@ -807,6 +830,8 @@ impl<'o> Checker<'o> {
             claim_only: HashSet::default(),
             pending_shapes: Vec::new(),
             in_init: false,
+            mutating_receiver: None,
+            inout_allowed: HashSet::default(),
             init_frame: None,
             env_values: HashMap::default(),
             key_values: HashMap::default(),
@@ -1596,6 +1621,7 @@ impl<'o> Checker<'o> {
                         ty: self.resolve_type(p),
                         optional: false,
                         rest: false,
+                        inout: false,
                     })
                     .collect();
                 let ret = self.resolve_type(ret);
@@ -2216,7 +2242,15 @@ impl<'o> Checker<'o> {
                     (Some(label), _) => (true, false, Some(label.name.clone())),
                     (None, func) => (func && !rest, false, Some(p.name.name.clone())),
                 };
-                ParamTy { labelled, positional, name, ty, optional: p.default.is_some(), rest }
+                ParamTy {
+                    labelled,
+                    positional,
+                    name,
+                    ty,
+                    optional: p.default.is_some(),
+                    rest,
+                    inout: p.inout,
+                }
             })
             .collect();
         let ret = match &f.ret {
@@ -2520,7 +2554,25 @@ impl<'o> Checker<'o> {
                 self.rest_param(param, ty, index + 1 == f.params.len());
             }
             let local_ty = if ty.rest { Ty::List(Box::new(ty.ty.clone())) } else { ty.ty.clone() };
-            params.push(self.declare(&param.name, local_ty, LocalKind::Param));
+            // An `inout` parameter is the function's `var`, written back when it returns.
+            if param.inout {
+                params.push(self.declare(&param.name, local_ty, LocalKind::Var));
+                self.capturable.insert(param.name.span);
+                if f.is_async {
+                    self.report(
+                        Diagnostic::error(
+                            "B0406",
+                            param.name.span,
+                            format!("`{}` is `inout`, and an `async` function takes none", param.name.name),
+                        )
+                        .label("`inout` in an `async` function")
+                        .help("return the new value instead, and assign it where it is called")
+                        .spec("5-values-functions-and-closures"),
+                    );
+                }
+            } else {
+                params.push(self.declare(&param.name, local_ty, LocalKind::Param));
+            }
         }
         self.out.fn_params.insert(f.span, params);
         let ret = if init { Ty::Unit } else { fn_ty.ret.clone() };
@@ -2732,6 +2784,7 @@ impl<'o> Checker<'o> {
                 ty: self.resolve_type(&p.ty),
                 optional: p.default.is_some(),
                 rest: false,
+                inout: false,
             });
         }
         out
@@ -2755,6 +2808,7 @@ impl<'o> Checker<'o> {
                 ty: substitute(&f.ty, &targs),
                 optional: f.default != FieldDefault::None,
                 rest: false,
+                inout: false,
             })
             .collect();
         Some((ty, props))
@@ -4214,7 +4268,11 @@ impl<'o> Checker<'o> {
                 Diagnostic::error(
                     "B0403",
                     a.target.span,
-                    format!("cannot assign to `{name}`: it is immutable"),
+                    match self.mutating_receiver {
+                        Some(true) => format!("cannot use a mutating member on `{name}`: it is immutable"),
+                        Some(false) => format!("cannot pass `{name}` as `inout`: it is immutable"),
+                        None => format!("cannot assign to `{name}`: it is immutable"),
+                    },
                 )
                 .label("immutable")
                 .with_label(info.span, "declared here")
@@ -4299,6 +4357,55 @@ impl<'o> Checker<'o> {
             AssignRes::Var { local, fields }
         };
         self.out.assigns.insert(a.span, res);
+    }
+
+    /// `&x`, an `inout` parameter's argument: a place of exactly the parameter's type, written
+    /// back when the call returns (`CheckResult::inouts`).
+    fn inout_arg(&mut self, expr: &Expr, place: &Expr, expected: Option<&Ty>) -> Ty {
+        let ty = self.expr(place, None);
+        if !self.inout_allowed.remove(&expr.id) {
+            self.report(
+                Diagnostic::error(
+                    "B0406",
+                    expr.span,
+                    "`&` passes a place to an `inout` parameter, and this is none",
+                )
+                .label("not an `inout` parameter's argument")
+                .help("pass the value itself, without `&`")
+                .fix(Span::new(expr.span.start, place.span.start), "")
+                .spec("5-values-functions-and-closures"),
+            );
+            return ty;
+        }
+        // Swift's `inout` is invariant: the place holds exactly the parameter's type.
+        if let Some(want) = expected
+            && !self.unify(&ty, want)
+        {
+            self.mismatch(place.span, &ty, want);
+        }
+        let target = AssignStmt {
+            target: place.clone(),
+            op: AssignOp::Set,
+            value: Expr { id: ExprId(u32::MAX), kind: ExprKind::Error, span: place.span },
+            span: expr.span,
+        };
+        self.mutating_receiver = Some(false);
+        self.assign(&target);
+        self.mutating_receiver = None;
+        match self.out.assigns.remove(&expr.span) {
+            Some(res) => {
+                self.out.inouts.insert(expr.id, res);
+            }
+            None => {
+                self.report(
+                    Diagnostic::error("B0403", place.span, "an `inout` argument is a `var`'s place")
+                        .label("not a `var`")
+                        .help("copy it into a `var` first: `var next = …`, then pass `&next`")
+                        .spec("43-soundness-rules"),
+                );
+            }
+        }
+        ty
     }
 
     /// A ref is read and written in handlers, effects and tasks; while the view draws
@@ -5636,6 +5743,7 @@ impl<'o> Checker<'o> {
         }
         match &expr.kind {
             ExprKind::Error => Ty::Unknown,
+            ExprKind::InOut(place) => self.inout_arg(expr, place, expected),
             ExprKind::Int(_) => match expected_resolved {
                 // A literal is as polymorphic as the type it is written for.
                 Some(Ty::Float) => Ty::Float,
@@ -8175,6 +8283,7 @@ impl<'o> Checker<'o> {
                 ty: ty.clone(),
                 optional: false,
                 rest: false,
+                inout: false,
             });
             params.push((param, ty));
         }
@@ -8187,6 +8296,7 @@ impl<'o> Checker<'o> {
                 ty: tuple,
                 optional: false,
                 rest: false,
+                inout: false,
             }];
         }
         // A closure TS calls whose type Bloom does not know (`.onPress { … }`): a last `if … else`
@@ -8930,6 +9040,7 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
         | ExprKind::Await(e)
         | ExprKind::Try(e)
         | ExprKind::Force(e)
+        | ExprKind::InOut(e)
         | ExprKind::Throwing(_, e)
         | ExprKind::Field(e, _)
         | ExprKind::OptField(e, _) => walk_names(e, f),

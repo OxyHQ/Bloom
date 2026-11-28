@@ -362,6 +362,9 @@ pub struct Param {
     pub spread: bool,
     /// `..props: Props` (a view's): the props spread, and their whole value named.
     pub whole: Option<Ident>,
+    /// `_ xs: inout [Int]` (Swift's): the caller's place, passed as `&xs`, written back when the
+    /// function returns.
+    pub inout: bool,
     pub ty: TypeExpr,
     pub default: Option<Expr>,
     pub span: Span,
@@ -786,6 +789,8 @@ pub enum ExprKind {
     Index(Box<Expr>, Box<Expr>),
     /// `x[keyPath: kp]` (Swift's): the field of `x` the key path `kp` names, read or written.
     KeyPathIndex(Box<Expr>, Box<Expr>),
+    /// `&x` (Swift's): a place passed to an `inout` parameter, written back after the call.
+    InOut(Box<Expr>),
     /// `xs?[i]` (Swift's optional subscript): the element when `xs` is not `none`, as JS's
     /// `xs?.[i]`; `none` from there through the chain.
     OptIndex(Box<Expr>, Box<Expr>),

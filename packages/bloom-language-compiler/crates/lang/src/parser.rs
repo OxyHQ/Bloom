@@ -1091,6 +1091,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                             rest: false,
                             spread: false,
                             whole: None,
+                            inout: false,
                             ty: TypeExpr { kind: TypeKind::Named { name: binding, args: vec![ty] }, span },
                             default: None,
                             span: member.span,
@@ -1148,6 +1149,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                             rest: false,
                             spread: false,
                             whole: None,
+                            inout: false,
                             ty,
                             default: default.clone(),
                             span: member.span,
@@ -1879,6 +1881,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                     rest: false,
                     spread: true,
                     whole: None,
+                    inout: false,
                     ty,
                     default: None,
                     span: start.to(Span::new(self.prev_end(), self.prev_end())),
@@ -1914,6 +1917,15 @@ impl<'s, 'i> Parser<'s, 'i> {
             } else {
                 self.bump();
             }
+            // `_ xs: inout [Int]` (Swift's): the caller's place, written back.
+            let inout = matches!(self.tok(), Tok::Ident(word) if word == "inout")
+                && !matches!(
+                    self.nth(1),
+                    Tok::P(P::Comma | P::RParen | P::Eq | P::Lt | P::Dot | P::Question)
+                );
+            if inout {
+                self.bump();
+            }
             let ty = self.type_expr();
             let default = if self.eat(P::Eq) { Some(self.expr(Ctx::Normal)) } else { None };
             // `..props: Props`, a named type and not a list: the props spread, their whole named.
@@ -1925,6 +1937,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                     rest: false,
                     spread: true,
                     whole: Some(name),
+                    inout: false,
                     ty,
                     default,
                     span: start.to(Span::new(self.prev_end(), self.prev_end())),
@@ -1940,6 +1953,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 rest,
                 spread: false,
                 whole: None,
+                inout,
                 ty,
                 default,
                 span: start.to(Span::new(self.prev_end(), self.prev_end())),
@@ -2850,6 +2864,13 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let operand = self.unary(ctx);
                 let span = start.to(operand.span);
                 self.expr_node(ExprKind::Unary(UnaryOp::Neg, Box::new(operand)), span)
+            }
+            // `&x` (Swift's): a place passed to an `inout` parameter.
+            Tok::P(P::Amp) => {
+                self.bump();
+                let operand = self.unary(ctx);
+                let span = start.to(operand.span);
+                self.expr_node(ExprKind::InOut(Box::new(operand)), span)
             }
             // `try f()`, `try? f()`, `try! f()` (2.0).
             Tok::Ident(word) if word == "try" && self.try_ahead() => {

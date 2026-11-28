@@ -1,0 +1,40 @@
+error[B0403]: cannot use a mutating member on `xs`: it is immutable
+ --> check/mutating_let.bloom:3:3
+  |
+2 |   let xs = ys
+  |       -- declared here
+3 |   xs.append(1)
+  |   ^^ immutable
+  |
+help: declare it with `var xs = …` (in a function) or make it `@state xs = …` (in a view)
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0403]: cannot use a mutating member on `ys`: it is immutable
+ --> check/mutating_let.bloom:4:3
+  |
+1 | public func f(_ ys: [Int]) -> [Int] {
+  |                 -- declared here
+  |
+4 |   ys.removeAll()
+  |   ^^ immutable
+  |
+help: only a `@state` or a `var` can be assigned
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0403]: cannot use the mutating member `reverse` on an immutable value
+ --> check/mutating_let.bloom:5:3
+  |
+5 |   [1, 2].reverse()
+  |   ^^^^^^ not a `var`
+  |
+help: copy it into a `var` first: `var next = …`, then `next.reverse(…)`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#43-soundness-rules
+
+error[B0201]: `sort()` compares the elements, and `(Int, Int)` is not `Comparable`
+  --> check/mutating_let.bloom:13:9
+   |
+13 |   pairs.sort()
+   |         ^^^^ numbers, strings and dates compare
+   |
+help: pass the order: `.sort(by: { $0.x < $1.x })`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#12-standard-library-surface-draft

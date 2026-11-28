@@ -696,8 +696,24 @@ A `class` is a reference type: a TS class with its stored properties as fields (
 written without a type takes its literal's), `init` (lowered to `T$$init`, which makes `self`
 and returns it; without one, `T()` is `new T()`), and members lowered as a struct's. A `let`
 property is assigned only in `init` (B0403); a `private(set)` or `private` one only in the
-class's own members (B0404). A write into a field's element or sub-field (`posts[i].likes += 1`,
-also on a `var`'s list) rebuilds the path with fresh objects, so values stay values.
+class's own members (B0404). A write into a field's element or sub-field (`posts[i].likes += 1`)
+rebuilds the path with fresh objects, so values stay values.
+
+**Arrays and dictionaries are values, written in place (copy-on-write, Swift's).** A local `var`
+holding a `[T]` or a `[String: V]` that is written in place (an element `xs[i] = v`, `table[k] = v`,
+`xs[i] += 1`; a mutating member `xs.append(v)`; `xs += ys`; or passed as `&xs`) owns its storage,
+and on TypeScript each such write is one JS write, O(1): n writes take O(n). The `var` is copied
+only where its storage could be shared: when it is set from a value another name may hold
+(`var xs = ys`, `xs = f()`; not from a literal, `Array(repeating:count:)`, `map`, `filter` or
+another fresh result), and where it escapes (`let b = xs`, an argument, a field, a literal's
+element, a closure's result). Reading it keeps it in place: `xs[i]`, `xs.count`, a standard
+library member's receiver, `for x in xs` (copied first when the loop writes `xs`), `==`, `+`, and
+the function's own `return xs`. A write is never seen through another name: `let before = xs;
+xs[0] = 9` leaves `before` as it was. Only the top level is the `var`'s own: `grid[i][j] = v`
+writes `grid[i]` in place with a rebuilt row, so a row read earlier (`let row = grid[i]`) keeps
+its value. A closure that captures the `var` shares it, as Swift's capture does. Any other place
+(a `@State`, a struct's field, a class's field) is written with a changed copy. Kotlin and Swift
+have value semantics of their own.
 
 `@Observable` makes the class a store with field-level subscriptions and no proxies: writes go
 through `$set(field, value)` (a write of the same value notifies nobody), and bloomc computes at
@@ -747,6 +763,17 @@ props, never a rest parameter.
 
 Named arguments: a Bloom function's parameters can be passed by name (`f(1, label: "x")`)
 in any order after the positional ones.
+
+**`inout` (Swift's).** `func fill(_ xs: inout [Int], with v: Int) { xs[0] = v }` takes a place,
+written `&xs` at the call (`fill(&grid, with: 1)`, `swap(&a, &b)`, `bump(&bag.count)`); the
+function's parameter is its `var`, and the place is written back when it returns. The place is
+a `var`, a `@State`, or a field or element of one, of exactly the parameter's type (B0201); a
+`let` is B0403; an `inout` parameter given no `&`, or `&` anywhere else, is B0406 (with the fix),
+and so is `inout` in an `async` function. An array or dictionary passed from a `var` is that
+`var`'s own storage, written in place (copy-on-write, above); from any other place, a copy. On
+TypeScript the function gives the parameters back after its result: `xs` (a `Unit` function with
+one), `[a, b]` (with several), `[result, xs]` (with a result), which the call assigns to each
+place.
 
 **2.0 (`func`): argument labels.** A `func` parameter is called by its label, which is its name
 unless written before it, and `_` drops it: `func move(_ p: Point, to target: Point, by step: Int = 1)`
@@ -1418,8 +1445,8 @@ Zero-cost rules the emitter keeps (each is gated, see the ADR):
 |---|---|
 | `String` | `count` (user-perceived characters, Swift's: `"👍🏽".count` is 1 on every backend; `s.utf16.count` is JS's `length`, 4), `isEmpty`, `slice(a, b)` (in characters), `contains`, `startsWith`, `endsWith`, `lowercased()`, `uppercased()`, `trimmed()`, `split(sep)`, `replace(a, b)` (every match; with a `RegExp` pattern JS's `replace`, its flags saying how often), `match(re)` (TS's `RegExpMatchArray | null`), `toInt() -> Int?`, `toFloat() -> Float?`. Every offset and length of a string API is in characters, as `count` is: `firstIndex(of:)`, `lastIndex(of:)`, `prefix`/`suffix`/`dropFirst`/`dropLast`, `paddingStart(to:)`/`paddingEnd(to:)` and a regex match's `start`/`end`, so one read off one API indexes another. `s.utf16` (Swift's `UTF16View`, the string itself at run time) has JS's units: `count`, `slice(a, b)`, `prefix`/`suffix`, `firstIndex(of:)`/`lastIndex(of:)`, `paddingStart`/`paddingEnd`, for what counts UTF-16 units (a server's length limit). The TS backend counts with `characterCount` (`@oxy.so/bloom-language`: `Intl.Segmenter`, or UAX #29's rules where the engine has none, as Hermes; a string with nothing at or past U+0300 is counted without segmenting) |
 | `Int`/`Float` | `Double.infinity`, `Double.nan` (JS's `Infinity`, `NaN`), `toFloat()`, `rounded()`, `floor()`, `ceil()`, `truncated()`, `abs()`, `min(b)`, `max(b)`, `clamp(lo, hi)`, `formatted(digits:locale:)` (Intl, localized), `formatted(fractionDigits: 0...3, locale:)` (Intl: at least 0, at most 3 decimals, JS's `toLocaleString()`), `formatted(currency: "USD", locale:)` (Intl's currency style), `formatted(fractionDigits: n)` (JS's `toFixed(n)`: exactly `n` decimals, never localized, `"3.14"`); a range `a...b` where a `ClosedRange` is expected is that value, `{ lowerBound, upperBound }`, and an implicit member chain (`.dateTime.month(.abbreviated).day()` where a `DateFormat` is expected) starts from that type's static member, as Swift's does |
-| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `sorted()`/`min()`/`max()` (numbers, strings and dates, in their natural order; `min(by:)`/`max(by:)` otherwise), `reversed()`, `prefix(n)`, `suffix(n)`, `dropFirst(n)`, `dropLast(n)` (`dropFirst()`/`dropLast()` drop one; past either end they give what there is, a count below zero none, as Swift's; never JS `slice`'s negative index), `appending(x)`, `inserting(x, at:)`, `removing(at:)`, `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T` (2.0, as Swift: out of range is a trap; a dev build checks it and throws `RangeError("Index out of range: …")`, a release build reads `xs[i]` as is), `at(i) -> T?` (the element, or `none` out of range or for a negative `i`, unlike JS's `at`); there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
-| `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)` |
+| `[T]` | `count`, `isEmpty`, `first`, `last`, `map`, `filter`, `compactMap`, `reduce`, `find -> T?`, `findIndex -> Int?`, `contains`, `sorted(by:)`, `sorted()`/`min()`/`max()` (numbers, strings and dates, in their natural order; `min(by:)`/`max(by:)` otherwise), `reversed()`, `prefix(n)`, `suffix(n)`, `dropFirst(n)`, `dropLast(n)` (`dropFirst()`/`dropLast()` drop one; past either end they give what there is, a count below zero none, as Swift's; never JS `slice`'s negative index), `appending(x)`, `inserting(x, at:)`, `removing(at:)`; on a `var` (or any place: a `@State`, a field), Swift's mutating members, written in place (section 4.9, copy-on-write): `append(x)`, `append(contentsOf: ys)`, `insert(x, at: i)`, `remove(at: i) -> T`, `removeFirst() -> T`, `removeLast() -> T`, `removeFirst(k)`, `removeLast(k)`, `popLast() -> T?`, `removeAll()`, `removeAll(where:)`, `swapAt(i, j)`, `sort()`, `sort(by:)`, `reverse()` (an index out of range traps); `Array(repeating: v, count: n)` (`v` once, in each slot); `joined(sep)`, `flatMap`, `any { }` / `all { }` (`some`/`every`), `slice(a, b)`, `indexOf(x) -> Int?`, `enumerated() -> [(Int, T)]` (`xs.enumerated().map { (i, x) in … }` and `for (i, x) in xs.enumerated()` build no pairs: `xs.map((x, i) => …)`, `xs.entries()`), `[i] -> T` (2.0, as Swift: out of range is a trap; a dev build checks it and throws `RangeError("Index out of range: …")`, a release build reads `xs[i]` as is), `at(i) -> T?` (the element, or `none` out of range or for a negative `i`, unlike JS's `at`); there is no `forEach` (write `for`); the literal `[..a, b]` spreads a list in place (`[...a, b]`) |
+| `[String: V]` | `count`, `isEmpty`, `[k] -> V?`, `keys`, `values`, `entries`, `setting(k, v)`, `removing(k)`; on a `var`, `table[k] = v` and the mutating `removeValue(forKey: k) -> V?`, `updateValue(v, forKey: k) -> V?`, `removeAll()`, written in place |
 | `Map<K, V>` | `Map(entries)` / `Map()` / `Map<K, V>()` (`new Map`), `count`, `isEmpty`, `get(k) -> V?`, `contains(k)`, `keys`, `values`, `entries` (lists), `setting(k, v)`, `removing(k)`; `for (k, v) in m` |
 | `Set<T>` | `Set(values)` / `Set()` (`new Set`), `count`, `isEmpty`, `contains(x)`, `values`, `inserting(x)`, `removing(x)`; `for x in s` |
 | prelude | `min(a, b, …)` / `max` (also `..xs`), `abs(x)`, `round(x)` / `floor` / `ceil` (to `Int`): `Math.…`; `Int(s) -> Int?`, `Float(s) -> Float?` (`Double(s)` the same) in place of `Number(…)`; of a number, Swift's conversions: `Int(x)` truncates toward zero, `Double(n)`/`Float(n)` is the number (`Double(a) / Double(b)` divides exactly); `x.clamped(lo, hi)`; `Regex(pattern, flags?)`, a JS `RegExp` (`new RegExp`; `re.test(s)` is TS's); `catching { … } -> Result<T, Error>`: the block's last line is `ok`, what TS code in it throws is `err` (emitted as a local `try`/`catch`; no `return` inside, and `?` there throws to it) |

@@ -17,6 +17,7 @@ mod chains;
 mod check;
 mod codable;
 mod composition;
+mod cow;
 pub mod diagnostic;
 mod emit;
 mod extensions;

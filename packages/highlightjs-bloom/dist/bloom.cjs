@@ -60,6 +60,7 @@ var hljsGrammar = (() => {
         "import",
         "in",
         "init",
+        "inout",
         "internal",
         "is",
         "layout",

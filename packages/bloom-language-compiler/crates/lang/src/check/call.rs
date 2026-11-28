@@ -4,7 +4,9 @@
 
 use std::rc::Rc;
 
-use super::{CallRes, Checker, ClosureInfo, FieldRes, LocalId, LocalKind, NameRes, Recv, TypeName};
+use super::{
+    AssignRes, CallRes, Checker, ClosureInfo, FieldRes, LocalId, LocalKind, NameRes, Recv, TypeName,
+};
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, closest};
 use crate::types::*;
@@ -298,6 +300,24 @@ impl Checker<'_> {
                         return Ty::Foreign("RegExp".into());
                     }
                     // `Array(0..<n)`, `Array(xs)`, `Array(set)`: a new array of the elements.
+                    // `Array(repeating: v, count: n)`: `n` copies of `v`, evaluated once.
+                    "Array"
+                        if self.lookup("Array").is_none()
+                            && call.trailing.is_none()
+                            && call.args.len() == 2
+                            && call.args.iter().zip(["repeating", "count"]).all(|(a, l)| {
+                                !a.spread && a.label.as_ref().is_some_and(|label| label.name == l)
+                            }) =>
+                    {
+                        self.out.calls.insert(expr.id, CallRes::ArrayRepeating);
+                        let element = match expected.map(|e| self.resolve(e)) {
+                            Some(Ty::List(item)) => Some(*item),
+                            _ => None,
+                        };
+                        let ty = self.expr(&call.args[0].value, element.as_ref());
+                        self.expr(&call.args[1].value, Some(&Ty::Int));
+                        return Ty::List(Box::new(element.unwrap_or(ty)));
+                    }
                     "Array" if self.lookup("Array").is_none() => {
                         self.out.calls.insert(expr.id, CallRes::ArrayOf);
                         let [arg] = call.args.as_slice() else {
@@ -1434,6 +1454,26 @@ impl Checker<'_> {
                 deferred.push((index, ty));
                 continue;
             }
+            // An `inout` parameter takes `&place`, and only it does.
+            match (&arg.value.kind, f.params[slot].inout) {
+                (ExprKind::InOut(_), true) => {
+                    self.inout_allowed.insert(arg.value.id);
+                }
+                (_, true) => {
+                    let name = f.params[slot].name.clone().unwrap_or_default();
+                    self.report(
+                        Diagnostic::error(
+                            "B0406",
+                            arg.value.span,
+                            format!("`{name}` is `inout`: pass a `var`'s place with `&`"),
+                        )
+                        .label("written back when the call returns")
+                        .fix(Span::new(arg.value.span.start, arg.value.span.start), "&")
+                        .spec("5-values-functions-and-closures"),
+                    );
+                }
+                _ => {}
+            }
             self.expr(&arg.value, Some(&ty));
         }
         for (index, ty) in deferred {
@@ -2333,6 +2373,7 @@ impl Checker<'_> {
                 ty: value.clone(),
                 optional: false,
                 rest: false,
+                inout: false,
             }],
             ret: Ty::Unit,
             is_async: false,
@@ -2556,6 +2597,7 @@ impl Checker<'_> {
             ty,
             optional: false,
             rest: false,
+            inout: false,
         };
         let params = match (enumerated, row.params.len()) {
             (true, 2) => vec![param(Ty::Int), param(item)],
@@ -2624,6 +2666,7 @@ impl Checker<'_> {
                 ty: row,
                 optional: false,
                 rest: false,
+                inout: false,
             }],
             // `VirtualListRowFn<T>` gives a `Child`, which may be nothing: a row may be `none`
             // (Swift's `Optional<View>` is a view), `if item == "tabs" { stickyTabs } else { … }`
@@ -3586,6 +3629,7 @@ impl Checker<'_> {
                         ty,
                         optional: false,
                         rest: false,
+                        inout: false,
                     })
                     .collect();
                 let handler = Ty::Fn(Rc::new(FnTy {
@@ -3673,6 +3717,9 @@ impl Checker<'_> {
     }
 
     fn method_call(&mut self, expr: &Expr, call: &Call, recv: &Ty, name: &Ident) -> Ty {
+        if let Some(ret) = self.mutating_call(expr, call, recv, name) {
+            return ret;
+        }
         let Some((recv_kind, method, params, ret)) = self.method_sig(recv, &name.name) else {
             let methods = method_names(recv);
             let optional = match recv {
@@ -3758,6 +3805,155 @@ impl Checker<'_> {
         ret
     }
 
+    /// Swift's mutating members of an array (`append`, `insert(_:at:)`, `remove(at:)`, …) and
+    /// of a dictionary (`removeValue(forKey:)`, `updateValue(_:forKey:)`, `removeAll()`), on a
+    /// place a `var`, a `@State` or a class's field holds: the place is written as an assignment
+    /// to it is ([`CheckResult::mutations`]). `None` when `name` is not one of them.
+    fn mutating_call(&mut self, expr: &Expr, call: &Call, recv: &Ty, name: &Ident) -> Option<Ty> {
+        let ExprKind::Field(object, _) = &call.callee.kind else { return None };
+        let labels: Vec<Option<&str>> =
+            call.args.iter().map(|a| a.label.as_ref().map(|l| l.name.as_str())).collect();
+        let trailing = call.trailing.is_some();
+        let f = |params: Vec<Ty>, ret: Ty| {
+            Ty::Fn(Rc::new(FnTy {
+                params: params
+                    .into_iter()
+                    .map(|ty| ParamTy {
+                        labelled: false,
+                        positional: false,
+                        name: None,
+                        ty,
+                        optional: false,
+                        rest: false,
+                        inout: false,
+                    })
+                    .collect(),
+                ret,
+                is_async: false,
+                generics: 0,
+                ts: false,
+                options: false,
+                throws: false,
+                bounds: Vec::new(),
+                shapes: Vec::new(),
+            }))
+        };
+        let (recv_kind, canonical, params, ret): (Recv, &'static str, Vec<Ty>, Ty) = match recv {
+            Ty::List(elem) => {
+                let t = (**elem).clone();
+                let list = Ty::List(elem.clone());
+                match (name.name.as_str(), labels.as_slice(), trailing) {
+                    ("append", [None], false) => (Recv::List, "append", vec![t], Ty::Unit),
+                    ("append", [Some("contentsOf")], false) => {
+                        (Recv::List, "appendContentsOf", vec![list], Ty::Unit)
+                    }
+                    ("insert", [None, Some("at")], false) => {
+                        (Recv::List, "insert", vec![t, Ty::Int], Ty::Unit)
+                    }
+                    ("remove", [Some("at")], false) => (Recv::List, "removeAt", vec![Ty::Int], t),
+                    ("removeFirst", [], false) => (Recv::List, "removeFirst", vec![], t),
+                    ("removeLast", [], false) => (Recv::List, "removeLast", vec![], t),
+                    ("removeFirst", [None], false) => (Recv::List, "removeFirstN", vec![Ty::Int], Ty::Unit),
+                    ("removeLast", [None], false) => (Recv::List, "removeLastN", vec![Ty::Int], Ty::Unit),
+                    ("popLast", [], false) => (Recv::List, "popLast", vec![], Ty::Option(Box::new(t))),
+                    ("removeAll", [], false) => (Recv::List, "removeAll", vec![], Ty::Unit),
+                    ("removeAll", [Some("where")], false) | ("removeAll", [], true) => {
+                        (Recv::List, "removeAllWhere", vec![f(vec![t], Ty::Bool)], Ty::Unit)
+                    }
+                    ("swapAt", [None, None], false) => {
+                        (Recv::List, "swapAt", vec![Ty::Int, Ty::Int], Ty::Unit)
+                    }
+                    ("sort", [], false) => (Recv::List, "sort", vec![], Ty::Unit),
+                    ("sort", [Some("by")], false) | ("sort", [], true) => {
+                        (Recv::List, "sortBy", vec![f(vec![t.clone(), t], Ty::Bool)], Ty::Unit)
+                    }
+                    ("reverse", [], false) => (Recv::List, "reverse", vec![], Ty::Unit),
+                    _ => return None,
+                }
+            }
+            Ty::Map(value) => {
+                let v = (**value).clone();
+                match (name.name.as_str(), labels.as_slice(), trailing) {
+                    ("removeValue", [Some("forKey")], false) => {
+                        (Recv::Map, "removeValue", vec![Ty::Str], Ty::Option(Box::new(v)))
+                    }
+                    ("updateValue", [None, Some("forKey")], false) => {
+                        (Recv::Map, "updateValue", vec![v.clone(), Ty::Str], Ty::Option(Box::new(v)))
+                    }
+                    ("removeAll", [], false) => (Recv::Map, "removeAll", vec![], Ty::Unit),
+                    _ => return None,
+                }
+            }
+            _ => return None,
+        };
+        // `xs.sort()`: a `Comparable` element's natural order, as `sorted()`'s.
+        if canonical == "sort" {
+            let element = match recv {
+                Ty::List(item) => self.resolve(item),
+                _ => Ty::Unknown,
+            };
+            if !matches!(
+                element,
+                Ty::Int | Ty::Float | Ty::Str | Ty::Strings(_) | Ty::Date | Ty::Unknown | Ty::Var(_)
+            ) {
+                let shown = self.show(&element);
+                self.report(
+                    Diagnostic::error(
+                        "B0201",
+                        name.span,
+                        format!("`sort()` compares the elements, and {shown} is not `Comparable`"),
+                    )
+                    .label("numbers, strings and dates compare")
+                    .help("pass the order: `.sort(by: { $0.x < $1.x })`")
+                    .spec("12-standard-library-surface-draft"),
+                );
+            }
+        }
+        self.positional(call, &params);
+        // The receiver is a place, written as `place = …` writes it.
+        let target = AssignStmt {
+            target: (**object).clone(),
+            op: AssignOp::Set,
+            value: Expr { id: ExprId(u32::MAX), kind: ExprKind::Error, span: object.span },
+            span: expr.span,
+        };
+        self.mutating_receiver = Some(true);
+        self.assign(&target);
+        self.mutating_receiver = None;
+        let res = self.out.assigns.remove(&expr.span);
+        // A member that gives nothing changes the state's current value through its updater, so
+        // its receiver is not a stale read (B0410); one that gives a result reads the drawn value.
+        if matches!(res, Some(AssignRes::State { .. })) && ret == Ty::Unit {
+            let span = object.span;
+            self.out
+                .diagnostics
+                .retain(|d| !(d.code == "B0410" && span.start <= d.span.start && d.span.end <= span.end));
+        }
+        match res {
+            Some(AssignRes::State { local, fields, .. }) => {
+                // An update of the state's current value, never of the render's.
+                self.out.mutations.insert(expr.id, AssignRes::State { local, fields, functional: true });
+            }
+            Some(res) => {
+                self.out.mutations.insert(expr.id, res);
+            }
+            None => {
+                self.report(
+                    Diagnostic::error(
+                        "B0403",
+                        object.span,
+                        format!("cannot use the mutating member `{}` on an immutable value", name.name),
+                    )
+                    .label("not a `var`")
+                    .help(format!("copy it into a `var` first: `var next = …`, then `next.{}(…)`", name.name))
+                    .spec("43-soundness-rules"),
+                );
+            }
+        }
+        self.out.calls.insert(expr.id, CallRes::Mutating { recv: recv_kind, name: canonical });
+        Some(ret)
+    }
+
     /// A standard library method: its receiver kind, name, parameter and result types.
     fn method_sig(&mut self, recv: &Ty, name: &str) -> Option<(Recv, &'static str, Vec<Ty>, Ty)> {
         let f = |params: Vec<Ty>, ret: Ty| {
@@ -3771,6 +3967,7 @@ impl Checker<'_> {
                         ty,
                         optional: false,
                         rest: false,
+                        inout: false,
                     })
                     .collect(),
                 ret,

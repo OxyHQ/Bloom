@@ -1,0 +1,156 @@
+// Arrays and dictionaries are values, written in place (copy-on-write): a `var` changes its own
+// storage, and no other name ever sees the change.
+
+/// The Wu quantizer's cube: `n`³ element writes, each in place.
+public func cube(_ n: Int) -> [Int] {
+  var xs = Array(repeating: 0, count: n * n * n)
+  for i in 0..<xs.count {
+    xs[i] = i * 2
+    xs[i] += 1
+  }
+  return xs
+}
+
+/// A histogram counted per pixel, in place.
+public func histogram(_ words: [String]) -> [String: Int] {
+  var table: [String: Int] = [:]
+  for w in words { table[w] = (table[w] ?? 0) + 1 }
+  return table
+}
+
+/// A `var` set from a value, then changed: neither the value nor an earlier copy changes.
+public func aliasing(_ ys: [Int]) -> ([Int], [Int], [Int]) {
+  var xs = ys
+  let before = xs
+  xs[0] = 99
+  xs.append(7)
+  let last = xs.removeLast()
+  xs.insert(last + 1, at: 0)
+  return (ys, before, xs)
+}
+
+/// Every mutating member, in order.
+public func members() -> [[Int]] {
+  var out: [[Int]] = []
+  var xs = [5, 3, 8, 1]
+  xs.append(contentsOf: [9, 2])
+  out.append(xs)
+  let removed = xs.remove(at: 1)
+  xs.removeFirst()
+  xs.removeLast(2)
+  out.append(xs + [removed])
+  xs = [4, 1, 3, 2, 6]
+  xs.sort()
+  out.append(xs)
+  xs.sort { $0 > $1 }
+  out.append(xs)
+  xs.swapAt(0, 4)
+  xs.reverse()
+  out.append(xs)
+  xs.removeAll { $0 % 2 == 0 }
+  out.append(xs)
+  let popped = xs.popLast()
+  xs.removeAll()
+  out.append(xs + [popped ?? 0])
+  xs += [1, 2]
+  xs += xs
+  out.append(xs)
+  return out
+}
+
+/// A dictionary's mutating members.
+public func dictionary() -> ([String: Int], Int?, Int?) {
+  var table = ["a": 1, "b": 2]
+  let old = table.updateValue(5, forKey: "a")
+  let gone = table.removeValue(forKey: "b")
+  table["c"] = 3
+  return (table, old, gone)
+}
+
+/// A row read out before its element is written keeps its value.
+public func grid() -> ([[Int]], [Int]) {
+  var g = [[0, 0], [0, 0]]
+  let row = g[0]
+  g[0][1] = 5
+  g.append(row)
+  return (g, row)
+}
+
+/// A loop over the array it appends to walks the array as it was.
+public func doubled(_ ys: [Int]) -> [Int] {
+  var xs = ys
+  for x in xs { xs.append(x * 10) }
+  return xs
+}
+
+/// A closure that captured the `var` writes it, and a later read sees the write.
+public func captured() -> (Int, [Int]) {
+  var xs: [Int] = []
+  let add = { xs.append(xs.count) }
+  add()
+  add()
+  let snapshot = xs
+  add()
+  return (snapshot.count, xs)
+}
+
+public struct Bag {
+  var items: [Int]
+}
+
+/// A struct's field and an element of another `var`: changed copies, written back.
+public func nested(_ b: Bag) -> (Bag, Bag) {
+  var c = b
+  c.items.append(4)
+  c.items.sort()
+  let first = c.items.removeFirst()
+  var bags = [b, c]
+  bags[1].items.append(first)
+  return (c, bags[1])
+}
+
+// ---- inout ---------------------------------------------------------------------------
+
+func bump(_ n: inout Int) { n += 1 }
+
+/// An `inout` array is the caller's own storage, written in place.
+func fill(_ xs: inout [Int], with v: Int) {
+  for i in 0..<xs.count { xs[i] = v }
+  xs.append(v)
+}
+
+func takeLast(_ xs: inout [Int]) -> Int {
+  if xs.isEmpty { return 0 }
+  return xs.removeLast()
+}
+
+func swapped(_ a: inout Int, _ b: inout Int) {
+  let t = a
+  a = b
+  b = t
+}
+
+/// The array itself, given back with the write-back: a copy, never the caller's storage.
+func echo(_ xs: inout [Int]) -> [Int] {
+  xs.append(0)
+  return xs
+}
+
+/// `inout` places: a `var`, an `Int`, two at once, a struct's field.
+public func inouts() -> ([Int], Int, Int, Int, [Int], [Int]) {
+  var xs = [1, 2, 3]
+  fill(&xs, with: 7)
+  let last = takeLast(&xs)
+  var n = 1
+  bump(&n)
+  bump(&n)
+  var a = 1
+  var b = 2
+  swapped(&a, &b)
+  var bag = Bag(items: [5])
+  fill(&bag.items, with: 9)
+  var ys = [4]
+  let echoed = echo(&ys)
+  ys.append(1)
+  return (xs, last, n, a * 10 + b, bag.items, echoed + ys)
+}

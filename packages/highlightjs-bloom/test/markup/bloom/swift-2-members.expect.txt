@@ -38,3 +38,7 @@
     <span class="hljs-variable language_">self</span>.value <span class="hljs-operator">=</span> v
   }
 }
+
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">fill</span>(_ grid: <span class="hljs-keyword">inout</span> [<span class="hljs-type">Int</span>], with v: <span class="hljs-type">Int</span>) {
+  grid.<span class="hljs-title function_ invoke__">append</span>(v)
+}

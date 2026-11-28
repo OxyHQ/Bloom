@@ -39,6 +39,10 @@ public struct Reading {
   }
 }
 
+func fill(_ grid: inout [Int], with v: Int) {
+  grid.append(v)
+}
+
 ----------------------------------------------------
 [
 	[
@@ -1116,6 +1120,90 @@ public struct Reading {
 	[
 		"punctuation",
 		"}"
+	],
+	[
+		"punctuation",
+		"}"
+	],
+	[
+		"keyword",
+		"func"
+	],
+	[
+		"function-definition",
+		"fill"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	"_ ",
+	[
+		"argument-label",
+		"grid"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"keyword",
+		"inout"
+	],
+	[
+		"punctuation",
+		"["
+	],
+	[
+		"class-name-reference",
+		"Int"
+	],
+	[
+		"punctuation",
+		"]"
+	],
+	[
+		"punctuation",
+		","
+	],
+	" with ",
+	[
+		"argument-label",
+		"v"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"class-name-reference",
+		"Int"
+	],
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"punctuation",
+		"{"
+	],
+	"\n  grid",
+	[
+		"punctuation",
+		"."
+	],
+	[
+		"function",
+		"append"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	"v",
+	[
+		"punctuation",
+		")"
 	],
 	[
 		"punctuation",

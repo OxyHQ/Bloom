@@ -452,7 +452,7 @@ export default grammar({
 
     parameters: ($) => seq('(', optional(seq(commaSep1($.parameter), optional(','))), ')'),
 
-    /** `p: T = v`, `to target: Point` (a label, then the name), `..xs: [T]`, `..Props`. */
+    /** `p: T = v`, `to target: Point` (a label, then the name), `_ xs: inout [T]`, `..xs: [T]`, `..Props`. */
     parameter: ($) =>
       choice(
         seq('..', field('type', $.user_type)),
@@ -461,6 +461,7 @@ export default grammar({
           optional(field('label', $._label_name)),
           field('name', $._name),
           ':',
+          optional(field('inout', 'inout')),
           field('type', $._type),
           optional(seq('=', field('default', $._expression))),
         ),
@@ -1135,7 +1136,11 @@ function expressionFamily(head) {
       ),
 
     [`${p}prefix_expression`]: ($) =>
-      prec.right(PREC.prefix, seq(field('operator', choice('!', '-')), field('operand', expr($)))),
+      // `&x`: a place passed to an `inout` parameter.
+      prec.right(
+        PREC.prefix,
+        seq(field('operator', choice('!', '-', '&')), field('operand', expr($))),
+      ),
 
     /** `try f()`, `try? f()`, `try! f()`. */
     [`${p}try_expression`]: ($) =>

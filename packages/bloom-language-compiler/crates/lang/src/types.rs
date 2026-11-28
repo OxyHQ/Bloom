@@ -98,6 +98,8 @@ pub struct ParamTy {
     pub optional: bool,
     /// A TS rest parameter (`...args: T[]`): takes any number of `T`.
     pub rest: bool,
+    /// Swift's `inout`: the argument is a place (`&x`), written back when the call returns.
+    pub inout: bool,
 }
 
 #[derive(Debug, PartialEq)]
@@ -296,6 +298,7 @@ pub fn map_ty(ty: &Ty, f: &mut impl FnMut(&Ty) -> Option<Ty>) -> Ty {
                     ty: map_ty(&p.ty, f),
                     optional: p.optional,
                     rest: p.rest,
+                    inout: p.inout,
                 })
                 .collect(),
             ret: map_ty(&fn_ty.ret, f),
@@ -376,8 +379,15 @@ fn write_ty(f: &mut impl Write, ty: &Ty, defs: &[Def]) -> fmt::Result {
                 f.write_str("async ")?;
             }
             f.write_str("(")?;
-            let params: Vec<Ty> = fn_ty.params.iter().map(|p| p.ty.clone()).collect();
-            list(f, &params)?;
+            for (i, p) in fn_ty.params.iter().enumerate() {
+                if i > 0 {
+                    f.write_str(", ")?;
+                }
+                if p.inout {
+                    f.write_str("inout ")?;
+                }
+                write_ty(f, &p.ty, defs)?;
+            }
             let throws = if fn_ty.throws { " throws" } else { "" };
             write!(f, "){throws} -> {}", Display { ty: &fn_ty.ret, defs })
         }

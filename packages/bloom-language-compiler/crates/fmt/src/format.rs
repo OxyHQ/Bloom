@@ -648,7 +648,8 @@ impl<'a> Formatter<'a> {
                 } else if unlabelled.contains(&param.span) {
                     name = format!("_ {name}");
                 }
-                let mut parts = vec![text(name), text(": "), this.ty(&param.ty)];
+                let mut parts =
+                    vec![text(name), text(if param.inout { ": inout " } else { ": " }), this.ty(&param.ty)];
                 if let Some(default) = &param.default {
                     parts.push(text(" = "));
                     parts.push(this.expr(default));
@@ -1028,6 +1029,7 @@ impl<'a> Formatter<'a> {
             ExprKind::Unary(op, inner) => {
                 concat(vec![text(if *op == UnaryOp::Not { "!" } else { "-" }), self.expr(inner)])
             }
+            ExprKind::InOut(inner) => concat(vec![text("&"), self.expr(inner)]),
             ExprKind::Binary(op, ..) => self.binary(e, *op),
             ExprKind::Ternary(c, a, b) => {
                 concat(vec![self.expr(c), text(" ? "), self.expr(a), text(" : "), self.expr(b)])

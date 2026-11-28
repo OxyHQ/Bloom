@@ -1,0 +1,278 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+function $appendAll<T>(items: T[], more: readonly T[]): void {
+  for (const item of more) items.push(item);
+}
+function $at<T>(items: readonly T[], at: number, item: T): readonly T[] {
+  const out = items.slice();
+  out[at] = item;
+  return out;
+}
+function $insertAt<T>(items: T[], item: T, at: number): void {
+  if (!(at >= 0 && at <= items.length)) throw new RangeError(`Index out of range: ${at} is not in 0...${items.length}`);
+  items.splice(at, 0, item);
+}
+function $mutated<T>(value: T, change: (copy: { -readonly [K in keyof T]: T[K] }) => unknown): T {
+  const copy = (Array.isArray(value) ? [...value] : { ...value }) as { -readonly [K in keyof T]: T[K] };
+  change(copy);
+  return copy as T;
+}
+function $removeAll(items: unknown[] | Record<string, unknown>): void {
+  if (Array.isArray(items)) items.length = 0;
+  else for (const key of Object.keys(items)) delete items[key];
+}
+function $removeAllWhere<T>(items: T[], remove: (item: T) => boolean): void {
+  let kept = 0;
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i] as T;
+    if (!remove(item)) items[kept++] = item;
+  }
+  items.length = kept;
+}
+function $removeAt<T>(items: T[], at: number): T {
+  if (!(at >= 0 && at < items.length)) throw new RangeError(`Index out of range: ${at} is not in 0..<${items.length}`);
+  return items.splice(at, 1)[0] as T;
+}
+function $removeFirst<T>(items: T[]): T {
+  if (items.length === 0) throw new RangeError("Can't remove the first element of an empty array");
+  return items.shift() as T;
+}
+function $removeLast<T>(items: T[]): T {
+  if (items.length === 0) throw new RangeError("Can't remove the last element of an empty array");
+  return items.pop() as T;
+}
+function $removeLastN<T>(items: T[], k: number): void {
+  if (!(k >= 0 && k <= items.length)) throw new RangeError(`Can't remove ${k} elements of ${items.length}`);
+  items.length -= k;
+}
+function $removeValue<V>(map: Record<string, V>, key: string): V | undefined {
+  if (!Object.prototype.hasOwnProperty.call(map, key)) return undefined;
+  const value = map[key];
+  delete map[key];
+  return value;
+}
+function $sortBy<T>(items: T[], before: (a: T, b: T) => boolean): void {
+  items.sort((a, b) => (before(a, b) ? -1 : before(b, a) ? 1 : 0));
+}
+function $sortNatural<T>(items: T[]): void {
+  items.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+}
+function $swapAt<T>(items: T[], i: number, j: number): void {
+  if (!(i >= 0 && i < items.length && j >= 0 && j < items.length)) throw new RangeError(`Index out of range: ${i}, ${j} in 0..<${items.length}`);
+  const item = items[i] as T;
+  items[i] = items[j] as T;
+  items[j] = item;
+}
+function $updateValue<V>(map: Record<string, V>, value: V, key: string): V | undefined {
+  const old = Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;
+  map[key] = value;
+  return old;
+}
+
+export function cube(n: number): readonly number[] {
+let xs: number[] = new Array<number>((n * n) * n).fill(0);
+for (let i = 0, $t0 = xs.length; i < $t0; i++) {
+xs[i] = i * 2;
+xs[i] = xs[i]! + (1);
+}
+return xs;
+}
+
+export function histogram(words: readonly string[]): Readonly<Record<string, number>> {
+let table: Record<string, number> = {};
+for (const w of words) {
+table[w] = (table[w] ?? 0) + 1;
+}
+return table;
+}
+
+export function aliasing(ys: readonly number[]): readonly [readonly number[], readonly number[], readonly number[]] {
+let xs: number[] = [...ys];
+const before = [...xs];
+const $t1 = 0;
+xs[$t1] = 99;
+xs.push(7);
+const last = $removeLast(xs);
+$insertAt(xs, last + 1, 0);
+return [ys, before, [...xs]] as const;
+}
+
+export function members(): readonly (readonly number[])[] {
+let out: (readonly number[])[] = [];
+let xs: number[] = [5, 3, 8, 1];
+$appendAll(xs, [9, 2]);
+out.push([...xs]);
+const removed = $removeAt(xs, 1);
+$removeFirst(xs);
+$removeLastN(xs, 2);
+out.push([...xs, removed]);
+xs = [4, 1, 3, 2, 6];
+$sortNatural(xs);
+out.push([...xs]);
+$sortBy(xs, ($0: number, $1: number) => $0 > $1);
+out.push([...xs]);
+$swapAt(xs, 0, 4);
+xs.reverse();
+out.push([...xs]);
+$removeAllWhere(xs, ($0: number) => ($0 % 2) === 0);
+out.push([...xs]);
+const popped = xs.pop();
+$removeAll(xs);
+out.push([...xs, popped ?? 0]);
+xs.push(1, 2);
+$appendAll(xs, [...xs]);
+out.push([...xs]);
+return out;
+}
+
+export function dictionary(): readonly [Readonly<Record<string, number>>, number | undefined, number | undefined] {
+let table: Record<string, number> = { "a": 1, "b": 2 };
+const old = $updateValue(table, 5, "a");
+const gone = $removeValue(table, "b");
+const $t2 = "c";
+table[$t2] = 3;
+return [({ ...table }), old, gone] as const;
+}
+
+export function grid(): readonly [readonly (readonly number[])[], readonly number[]] {
+let g: (readonly number[])[] = [[0, 0], [0, 0]];
+const row = g[0]!;
+const $t3 = 0;
+const $t4 = 1;
+g[$t3] = $at(g[$t3]!, $t4, 5);
+g.push(row);
+return [[...g], row] as const;
+}
+
+export function doubled(ys: readonly number[]): readonly number[] {
+let xs: number[] = [...ys];
+for (const x of [...xs]) {
+xs.push(x * 10);
+}
+return xs;
+}
+
+export function captured(): readonly [number, readonly number[]] {
+let xs: number[] = [];
+const add = () => void xs.push(xs.length);
+add();
+add();
+const snapshot = [...xs];
+add();
+return [snapshot.length, [...xs]] as const;
+}
+
+export interface Bag {
+  readonly items: readonly number[];
+}
+
+export function nested(b: Bag): readonly [Bag, Bag] {
+let c = b;
+c = { ...c, items: $mutated(c.items, ($copy) => $copy.push(4)) };
+c = { ...c, items: $mutated(c.items, ($copy) => $sortNatural($copy)) };
+const $t5 = $removeFirst([...c.items]);
+c = { ...c, items: $mutated(c.items, ($copy) => $removeFirst($copy)) };
+const first = $t5;
+let bags: Bag[] = [b, c];
+const $t6 = 1;
+bags[$t6] = { ...bags[$t6]!, items: $mutated(bags[1]!.items, ($copy) => $copy.push(first)) };
+return [c, bags[1]!] as const;
+}
+
+const $view0 = Button(Text("Add"));
+const Basket = view(function Basket() {
+"use no memo";
+const $ = $c(3);
+const [items, setItems] = useState<readonly number[]>(() => []);
+const [counts, setCounts] = useState<Readonly<Record<string, number>>>(() => ({}));
+let $t8;
+if ($[0] !== items || $[1] !== counts) {
+$t8 = $view0.onPress(() => {
+const $t7 = items.length;
+setItems((items) => $mutated(items, ($copy) => $copy.push($t7)));
+setItems((items) => $mutated(items, ($copy) => $swapAt($copy, 0, 1)));
+setCounts((counts) => $mutated(counts, ($copy) => $removeAll($copy)));
+});
+$[0] = items;
+$[1] = counts;
+$[2] = $t8;
+} else {
+$t8 = $[2];
+}
+return $t8;
+});
+
+export function escapes(ys: readonly number[]): readonly (readonly number[])[] {
+let xs: number[] = [...ys];
+const $t9 = 0;
+xs[$t9] = xs[$t9]! + (1);
+let g: (readonly number[])[] = [[...xs]];
+const $t10 = 0;
+const $t11 = 0;
+g[$t10] = $at(g[$t10]!, $t11, 2);
+const f = () => [...xs];
+return [[...xs], f(), g[0]!];
+}
+
+function bump(n: number): number {
+n = n + (1);
+return n;
+}
+
+function fill(xs: number[], v: number): number[] {
+for (let i = 0, $t12 = xs.length; i < $t12; i++) {
+xs[i] = v;
+}
+xs.push(v);
+return xs;
+}
+
+function takeLast(xs: number[]): [number, number[]] {
+if ((xs.length === 0)) {
+return [0, xs];
+}
+return [$removeLast(xs), xs];
+}
+
+function swapped(a: number, b: number): [number, number] {
+const t = a;
+a = b;
+b = t;
+return [a, b];
+}
+
+function echo(xs: number[]): [readonly number[], number[]] {
+xs.push(0);
+return [[...xs], xs];
+}
+
+export function inouts(): readonly [readonly number[], number, number, number, readonly number[], readonly number[]] {
+let xs: number[] = [1, 2, 3];
+const $t13 = fill(xs, 7);
+xs = $t13;
+const $t14 = takeLast(xs);
+xs = $t14[1];
+const last = $t14[0];
+let n = 1;
+const $t15 = bump(n);
+n = $t15;
+const $t16 = bump(n);
+n = $t16;
+let a = 1;
+let b = 2;
+const $t17 = swapped(a, b);
+a = $t17[0];
+b = $t17[1];
+let bag = { items: [5] };
+const $t18 = fill([...bag.items], 9);
+bag = { ...bag, items: $t18 };
+let ys: number[] = [4];
+const $t19 = echo(ys);
+ys = $t19[1];
+const echoed = $t19[0];
+ys.push(1);
+return [[...xs], last, n, (a * 10) + b, bag.items, [...echoed, ...ys]] as const;
+}
+

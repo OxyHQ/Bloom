@@ -38,3 +38,7 @@ public struct Reading {
     self.value = v
   }
 }
+
+func fill(_ grid: inout [Int], with v: Int) {
+  grid.append(v)
+}
