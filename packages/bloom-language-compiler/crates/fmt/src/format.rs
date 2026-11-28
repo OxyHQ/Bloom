@@ -23,6 +23,8 @@ pub struct Formatter<'a> {
     next: usize,
     /// `bloom migrate --from 0.x`: print 0.x forms as 2.0's.
     migrate: Option<Migration>,
+    /// Printing a `@jsOptions` function: its parameters keep their labels.
+    keep_labels: bool,
 }
 
 /// What a 0.x-to-2.0 print needs: each local function's parameter labels (`Some(name)` when a
@@ -82,12 +84,12 @@ impl Commas {
 
 impl<'a> Formatter<'a> {
     pub fn new(source: &'a str, comments: &'a Comments) -> Self {
-        Self { source, comments: &comments.comments, next: 0, migrate: None }
+        Self { source, comments: &comments.comments, next: 0, migrate: None, keep_labels: false }
     }
 
     /// A formatter that prints 0.x forms as 2.0's (`bloom migrate --from 0.x`).
     pub fn migrating(source: &'a str, comments: &'a Comments, migration: Migration) -> Self {
-        Self { source, comments: &comments.comments, next: 0, migrate: Some(migration) }
+        Self { source, comments: &comments.comments, next: 0, migrate: Some(migration), keep_labels: false }
     }
 
     /// The migration's notes: what it left in 0.x form, and why.
@@ -378,6 +380,14 @@ impl<'a> Formatter<'a> {
                 text(" = "),
                 self.ty(&a.ty),
             ]),
+            // `@jsOptions`: its labels are its TS object's fields, so the 0.x pass keeps them.
+            ItemKind::Fn(f) if item.modifiers.attrs.iter().any(|a| a.name.name == "jsOptions") => {
+                let saved = self.keep_labels;
+                self.keep_labels = true;
+                let doc = self.fn_decl(f);
+                self.keep_labels = saved;
+                doc
+            }
             ItemKind::Fn(f) => self.fn_decl(f),
             ItemKind::View(v) => self.view_decl(v),
             ItemKind::Const(c) => {
@@ -607,6 +617,7 @@ impl<'a> Formatter<'a> {
         parts.push(text(if f.name.name == "==" { "== ".to_string() } else { f.name.name.clone() }));
         parts.push(self.constrained_generics(&f.generics, &f.constraints));
         let labels = self.migrate.as_ref().and_then(|m| m.labels.get(&f.name.name)).cloned();
+        let labels = if self.keep_labels { None } else { labels };
         parts.push(self.params_labelled(&f.params, labels.as_deref()));
         if f.is_async && func {
             parts.push(text(" async"));

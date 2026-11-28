@@ -53,7 +53,5 @@ public func MoreMenu(_ trigger: View, _ arg1: MoreProps) -> View? {
   }
 }
 
-public func Heading(_ arg: { title: String }) -> View {
-  let { title } = arg
-  Text(title)
-}
+@jsOptions
+public func Heading(title: String) -> View { Text(title) }
