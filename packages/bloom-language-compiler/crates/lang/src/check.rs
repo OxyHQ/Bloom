@@ -578,6 +578,8 @@ pub struct Checker<'o> {
     error_classes: HashMap<String, String>,
     /// `try? a ?? b`: the `??`'s id and where the `try?` starts, while its operand is checked.
     try_default: Option<(ExprId, u32)>,
+    /// The type variables of TS generics' instantiations (`instantiate`), TS's to infer.
+    ts_vars: HashSet<u32>,
     /// The derived `Codable` codecs (`T.self`) declared ahead of their place, by name span.
     codecs_ahead: HashMap<Span, LocalId>,
     /// The `.modifier(X(…))` argument being checked: the one place `X(…)` is not B0421.
@@ -758,6 +760,7 @@ impl<'o> Checker<'o> {
             modifier_arg: None,
             error_classes: HashMap::default(),
             try_default: None,
+            ts_vars: HashSet::default(),
             codecs_ahead: HashMap::default(),
             hook_args: HashSet::default(),
             hook_body: None,
@@ -5404,6 +5407,12 @@ impl<'o> Checker<'o> {
                     if let ExprKind::Spread(inner) = &item.kind {
                         let list = Ty::List(Box::new(elem.clone()));
                         let ty = self.expr(inner, Some(&list));
+                        // `[..stats.columns]` of a TS list: its items are TS's (`T[number]`), not `_`.
+                        if let Ty::Foreign(text) = self.resolve(&ty)
+                            && matches!(self.resolve(&elem), Ty::Var(_))
+                        {
+                            self.unify(&elem, &Ty::Foreign(format!("NonNullable<{text}>[number]").into()));
+                        }
                         self.out.types.insert(item.id, ty);
                         continue;
                     }
@@ -6163,6 +6172,14 @@ impl<'o> Checker<'o> {
         match ty {
             Ty::Fn(f) if f.generics > 0 => {
                 let args: Vec<Ty> = (0..f.generics).map(|_| self.fresh()).collect();
+                // A TS generic's type variables are TS's to infer (`useShallow<S, U>`): one still
+                // unknown where a member is read is a TS value (`member`).
+                if f.ts {
+                    self.ts_vars.extend(args.iter().filter_map(|a| match a {
+                        Ty::Var(v) => Some(*v),
+                        _ => None,
+                    }));
+                }
                 let params =
                     f.params.iter().map(|p| ParamTy { ty: substitute(&p.ty, &args), ..p.clone() }).collect();
                 let bounds = f.bounds.iter().map(|(t, p)| (substitute(t, &args), p.clone())).collect();
@@ -7538,7 +7555,17 @@ impl<'o> Checker<'o> {
 
     /// `value.name` on a value of type `ty`.
     fn member(&mut self, expr: &Expr, ty: &Ty, name: &Ident, object_span: Span) -> Ty {
-        let resolved = self.resolve(ty);
+        let mut resolved = self.resolve(ty);
+        // `useShallow { state in state.trends }`: a TS generic's parameter Bloom cannot see is a
+        // TS value (TS infers it from the outer call), read as TS reads it. A Bloom generic's
+        // unsolved variable stays an error.
+        if let Ty::Var(v) = resolved
+            && self.ts_vars.contains(&v)
+        {
+            let foreign = Ty::Foreign("any".into());
+            self.unify(&resolved, &foreign);
+            resolved = foreign;
+        }
         let builtin = matches!(
             (&resolved, name.name.as_str()),
             (
