@@ -1,0 +1,14 @@
+// The standard library's `Date` is a JS `Date` (Swift's `Date` bridging to `NSDate`): a TS
+// function's `Date` parameter takes it, and a TS `Date` result is one, with no conversion. Two are
+// equal at the same instant, compare with `<`, and move with `+`/`-` in seconds.
+import { epoch, isoOf } from "@/corpus"
+
+public struct Stamp: Equatable {
+  let at: Date
+}
+
+public func stamp(_ d: Date) -> String { isoOf(d) }
+public func first() -> Date { epoch() }
+public func same(_ a: Stamp, _ b: Stamp) -> Bool { a == b }
+public func soon(_ d: Date) -> Bool { d < epoch() + 60.0 }
+public func before(_ d: Date) -> Date { d - 1.5 }

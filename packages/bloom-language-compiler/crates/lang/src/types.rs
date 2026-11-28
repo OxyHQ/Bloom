@@ -18,6 +18,9 @@ pub enum Ty {
     Never,
     /// JavaScript's `Error`, the error of a rejected TS promise.
     JsError,
+    /// The standard library's `Date` (Swift's): a JS `Date`, which it is at runtime and in TS, in
+    /// both directions, as Swift's `Date` bridges to `NSDate`.
+    Date,
     List(Box<Ty>),
     /// `[String: V]`.
     Map(Box<Ty>),
@@ -324,6 +327,7 @@ fn write_ty(f: &mut impl Write, ty: &Ty, defs: &[Def]) -> fmt::Result {
         Ty::Unit => f.write_str("Unit"),
         Ty::Never => f.write_str("Never"),
         Ty::JsError => f.write_str("Error"),
+        Ty::Date => f.write_str("Date"),
         Ty::List(t) => write!(f, "[{}]", Display { ty: t, defs }),
         Ty::Map(t) => write!(f, "[String: {}]", Display { ty: t, defs }),
         Ty::JsMap(k, v) => write!(f, "Map<{}, {}>", Display { ty: k, defs }, Display { ty: v, defs }),

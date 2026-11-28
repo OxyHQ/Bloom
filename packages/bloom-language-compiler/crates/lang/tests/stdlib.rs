@@ -792,3 +792,34 @@ fn format_styles_compile_to_intl() {
     }
     assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
 }
+
+/// `Date` is the standard library's, a JS `Date` at runtime: Swift's initializers by their labels,
+/// `try? Date(_:strategy:)`, its members and operators. A `"js"` import of `Date` does not shadow it.
+const DATES: &str = r#"import { Date } from "js"
+
+public func dates(_ text: String, _ s: Double) -> [Date?] {
+  let a = Date(timeIntervalSince1970: s)
+  let b = Date(millisecondsSince1970: s * 1000.0)
+  let c = try? Date(text, strategy: .iso8601)
+  return [a, b, c, Date(), a + 60.0, a.addingTimeInterval(-1.0)]
+}
+
+public func reads(_ a: Date, _ b: Date) -> Bool {
+  a.timeIntervalSince1970 > 0.0 && a < b && a.timeIntervalSince(b) < 0.0 && a != b
+}
+"#;
+
+#[test]
+fn date_is_the_standard_librarys_over_a_js_date() {
+    let root = package("dates", &[("Sources/Model/Dates.bloom", DATES)]);
+    let path = root.join("Sources/Model/Dates.bloom");
+    // A migrating file's `"js"` import (`--allow-ts-imports`).
+    let out =
+        compile(DATES, &path.to_string_lossy(), &Options { allow_ts_imports: true, ..Options::default() });
+    assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/date.ts.snap");
+    if std::env::var_os("BLOOM_BLESS").is_some() {
+        std::fs::write(&golden, &out.code).unwrap();
+    }
+    assert_eq!(std::fs::read_to_string(&golden).unwrap_or_default(), out.code);
+}

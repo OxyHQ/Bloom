@@ -202,6 +202,34 @@ impl Checker<'_> {
                         return Ty::Option(Box::new(if int { Ty::Int } else { Ty::Float }));
                     }
                     "Binding" => return self.binding_ctor(expr, call),
+                    // The standard library's `Date`, by its `init`'s labels (Swift's
+                    // `Date(timeIntervalSince1970:)`, `Date(_:strategy:)`, `Date()`), in place of
+                    // JS's `Date` (which a TS import of it no longer shadows).
+                    "Date" if !self.type_names.contains_key("Date") => {
+                        let init = crate::extensions::init_name(
+                            "Date",
+                            call.args.iter().map(|a| Some(a.label.as_ref().map_or("_", |l| l.name.as_str()))),
+                        );
+                        if let Some(local) = self.lookup(&init) {
+                            self.out.names.insert(call.callee.id, NameRes::Local(local));
+                            let ty = self.out.locals[local].ty.clone();
+                            let ty = self.instantiate(&ty);
+                            return self.value_call(expr, call, &ty);
+                        }
+                        if self.lookup("Date$$get$now").is_some() {
+                            self.report(
+                                Diagnostic::error("B0207", call.callee.span, "`Date` has no `init` with these labels")
+                                    .label("not one of its initializers")
+                                    .help(
+                                        "write `Date()`, `Date(timeIntervalSince1970: s)`, \
+                                         `Date(millisecondsSince1970: ms)` or `try Date(text, strategy: .iso8601)`",
+                                    )
+                                    .spec("10-modules-and-interop"),
+                            );
+                            self.args_unchecked(call);
+                            return Ty::Date;
+                        }
+                    }
                     // `EnvironmentKey("session", default: Session.signedOut)`: an app's own
                     // environment value, which `@Environment(\.session)` reads.
                     "EnvironmentKey" => return self.environment_key_value(expr, call),

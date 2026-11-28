@@ -1,0 +1,26 @@
+import { epoch, isoOf } from "@/corpus";
+
+export interface Stamp {
+  readonly at: Date;
+}
+
+export function stamp(d: Date): string {
+return isoOf(d);
+}
+
+export function first(): Date {
+return epoch();
+}
+
+export function same(a: Stamp, b: Stamp): boolean {
+return a.at.getTime() === b.at.getTime();
+}
+
+export function soon(d: Date): boolean {
+return d < (new Date(epoch().getTime() + 60.0 * 1000));
+}
+
+export function before(d: Date): Date {
+return new Date(d.getTime() - 1.5 * 1000);
+}
+

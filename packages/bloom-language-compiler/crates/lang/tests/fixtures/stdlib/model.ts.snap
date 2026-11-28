@@ -3,7 +3,7 @@ import { c as $c } from "react/compiler-runtime";
 import { Text, VStack, view } from "@oxy.so/bloom-language";
 import { type ModelStore, modelStore, useQuery, useRecordQuery, ModelStore$insert, ModelStore$update } from "../../.bloom/std/Bloom/Data.bloom";
 import { Bool$$decode, Bool$$encode, type Codec, Date$$decode, Date$$encode, type JSONValue, Optional$$decode, String$$decode, String$$encode, jsonField, jsonObject } from "../../.bloom/std/Bloom/JSON.bloom";
-import { type Date } from "../../.bloom/std/Bloom/Time.bloom";
+import { Date$$init$_$strategy, Date$$init$millisecondsSince1970, Date$$init$timeIntervalSince1970 } from "../../.bloom/std/Bloom/Time.bloom";
 
 export interface Note {
   readonly slug: string;

@@ -39,7 +39,7 @@ $t0 = $[28];
 }
 return $t0;
 }, (a: PostRowProps, b: PostRowProps): boolean => {
-return a.post.id === b.post.id && a.post.text === b.post.text && a.post.author.id === b.post.author.id && a.post.author.name === b.post.author.name && a.post.author.avatar === b.post.author.avatar && a.post.author.isVerified === b.post.author.isVerified && a.post.createdAt.timeIntervalSince1970 === b.post.createdAt.timeIntervalSince1970 && a.post.likes === b.post.likes && a.post.isLiked === b.post.isLiked;
+return a.post.id === b.post.id && a.post.text === b.post.text && a.post.author.id === b.post.author.id && a.post.author.name === b.post.author.name && a.post.author.avatar === b.post.author.avatar && a.post.author.isVerified === b.post.author.isVerified && a.post.createdAt.getTime() === b.post.createdAt.getTime() && a.post.likes === b.post.likes && a.post.isLiked === b.post.isLiked;
 });
 
 const $fields2 = ["posts"] as const;

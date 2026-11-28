@@ -1,5 +1,5 @@
 import { Array$$decode, Array$$encode, Bool$$decode, Bool$$encode, type Codec, Date$$decode, Date$$encode, Dictionary$$decode, Dictionary$$encode, Int$$decode, Int$$encode, type JSONValue, Optional$$decode, Optional$$encode, String$$decode, String$$encode, decodeCase, encodeCase, jsonField, jsonObject, Array$$codec, JSON$$decode, JSON$$encode } from "../../.bloom/std/Bloom/JSON.bloom";
-import { type Date } from "../../.bloom/std/Bloom/Time.bloom";
+import { Date$$init$_$strategy, Date$$init$millisecondsSince1970, Date$$init$timeIntervalSince1970 } from "../../.bloom/std/Bloom/Time.bloom";
 
 export interface User {
   readonly name: string;

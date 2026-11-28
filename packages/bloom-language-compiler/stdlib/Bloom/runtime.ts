@@ -165,6 +165,19 @@ export function randomInt(from: number, to: number): number {
 
 // ---- time ---------------------------------------------------------------------
 
+/** The standard library's `Date` is a JS `Date`. */
+export function dateNow(): Date {
+  return new Date();
+}
+
+export function dateOfMs(ms: number): Date {
+  return new Date(ms);
+}
+
+export function msOfDate(date: Date): number {
+  return date.getTime();
+}
+
 export function nowMs(): number {
   return Date.now();
 }

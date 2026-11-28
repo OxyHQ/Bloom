@@ -1,13 +1,19 @@
 // Bloom (time): `Date`, `Duration`, `Clock`, `Calendar` and formatting.
 //
-// A `Date` is a value: an instant, as seconds since 1970-01-01T00:00:00Z. It encodes
-// as an ISO 8601 string (`Codable`), compares with `<`, and formats for a locale:
+// A `Date` is a value: an instant, as seconds since 1970-01-01T00:00:00Z (Swift's). At runtime and
+// in TS it is a JS `Date`, in both directions, as Swift's `Date` bridges to `NSDate`: a TS function
+// taking or returning a `Date` takes and gives this one. It is equal to another at the same
+// instant, encodes as an ISO 8601 string (`Codable`), compares with `<`, moves with `+`/`-` (in
+// seconds), and formats for a locale:
 //
 //     Text(post.createdAt.formatted(.relative))                       // "2 minutes ago"
 //     Text(event.startsAt.formatted(date: .abbreviated, time: .shortened)) // "Nov 26, 2026, 6:30 PM"
 //     Text(event.startsAt.formatted(.dateTime.month(.abbreviated).day()))   // "Nov 26"
 
 extern module "./runtime" {
+  private func dateNow() -> Date
+  private func dateOfMs(_ ms: Double) -> Date
+  private func msOfDate(_ date: Date) -> Double
   private func nowMs() -> Double
   private func monotonicMs() -> Double
   private func parseISO(_ s: String) -> Double?
@@ -28,10 +34,15 @@ extern module "./runtime" {
   private func currentTimeZone() -> String
 }
 
-/// An instant in time.
-public struct Date: Equatable {
-  /// Seconds since 1970-01-01T00:00:00Z.
-  public let timeIntervalSince1970: Double
+/// How `Date(_:strategy:)` reads a date's text.
+public enum DateParseStrategy {
+  /// ISO 8601 (`2026-11-26T18:30:00Z`), as JS's `Date.parse` reads it.
+  case iso8601
+}
+
+/// Text `Date(_:strategy:)` could not read as a date.
+public struct DateParseError: Equatable {
+  public let text: String
 }
 
 /// A length of time, in seconds (negative: before).
@@ -145,28 +156,51 @@ public struct DateComponents: Equatable {
 }
 
 extension Date {
-  /// The current instant.
-  public static var now: Date { Date(timeIntervalSince1970: nowMs() / 1000.0) }
+  /// The current instant: `Date()`.
+  public init() { dateNow() }
+
+  /// The instant `seconds` after 1970-01-01T00:00:00Z.
+  public init(timeIntervalSince1970 seconds: Double) { dateOfMs(seconds * 1000.0) }
 
   /// The instant `ms` milliseconds after 1970 (what JS APIs and many servers send).
-  public static func fromMilliseconds(_ ms: Double) -> Date { Date(timeIntervalSince1970: ms / 1000.0) }
+  public init(millisecondsSince1970 ms: Double) { dateOfMs(ms) }
+
+  /// The instant `text` names, read by `strategy` (`try? Date(text, strategy: .iso8601)`); throws
+  /// a `DateParseError` when it names none.
+  public init(_ text: String, strategy: DateParseStrategy) throws {
+    guard let ms = parseISO(text) else { throw DateParseError(text: text) }
+    return dateOfMs(ms)
+  }
+
+  /// The current instant.
+  public static var now: Date { dateNow() }
+
+  /// The instant `ms` milliseconds after 1970.
+  public static func fromMilliseconds(_ ms: Double) -> Date { dateOfMs(ms) }
 
   /// The instant an ISO 8601 string names (`2026-11-26T18:30:00Z`), or `none`.
   public static func parse(iso8601 text: String) -> Date? {
     guard let ms = parseISO(text) else { return none }
-    return Date(timeIntervalSince1970: ms / 1000.0)
+    return dateOfMs(ms)
   }
 
+  /// Seconds since 1970-01-01T00:00:00Z.
+  public var timeIntervalSince1970: Double { msOfDate(self) / 1000.0 }
+
   /// Milliseconds since 1970.
-  public var millisecondsSince1970: Double { self.timeIntervalSince1970 * 1000.0 }
+  public var millisecondsSince1970: Double { msOfDate(self) }
+
+  /// The instant `seconds` later (earlier when negative): `date + seconds`.
+  public func addingTimeInterval(_ seconds: Double) -> Date { dateOfMs(msOfDate(self) + seconds * 1000.0) }
+
+  /// The seconds from `other` to this instant (negative when `other` is later).
+  public func timeIntervalSince(_ other: Date) -> Double { (msOfDate(self) - msOfDate(other)) / 1000.0 }
 
   /// The instant as ISO 8601, in UTC.
   public var iso8601: String { isoString(self.millisecondsSince1970) }
 
   /// The instant `duration` later (earlier when negative).
-  public func adding(_ duration: Duration) -> Date {
-    Date(timeIntervalSince1970: self.timeIntervalSince1970 + duration.seconds)
-  }
+  public func adding(_ duration: Duration) -> Date { self.addingTimeInterval(duration.seconds) }
 
   /// How long from this instant to `other` (negative when `other` is earlier).
   public func distance(to other: Date) -> Duration {

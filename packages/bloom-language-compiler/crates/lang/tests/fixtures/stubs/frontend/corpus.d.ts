@@ -140,3 +140,6 @@ export interface StyledBoxProps extends Omit<BoxBase, 'testID'> {
   horizontal?: boolean;
 }
 export declare function StyledBox(props: StyledBoxProps): ReactNode;
+/** TS helpers that take and give a JS `Date`: Bloom's `Date` crosses as itself. */
+export declare function isoOf(date: Date): string;
+export declare function epoch(): Date;

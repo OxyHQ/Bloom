@@ -28,7 +28,7 @@ fn tsc_errors_in_emitted_code_land_on_the_bloom_span() {
     assert_eq!(stderr.matches("error[").count(), 1, "{stderr}");
     assert!(
         stderr.contains(
-            "error[B0620]: TS2345: Argument of type 'string' is not assignable to parameter of type 'Date'."
+            "error[B0620]: TS2345: Argument of type 'string' is not assignable to parameter of type 'RegExp'."
         ),
         "{stderr}"
     );
