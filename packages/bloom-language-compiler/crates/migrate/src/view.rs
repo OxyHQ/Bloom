@@ -1571,20 +1571,46 @@ impl Tr<'_> {
         {
             return None;
         }
-        let mut names = Vec::new();
-        for p in &arrow.params.items {
-            let BindingPattern::BindingIdentifier(id) = &p.pattern else { return None };
+        // A parameter is a name, or an object pattern of names (`{ cleared }`), read from `argN`.
+        let mut names: Vec<(String, Span, Option<Vec<(String, Span)>>)> = Vec::new();
+        for (i, p) in arrow.params.items.iter().enumerate() {
             if p.type_annotation.is_some() || p.initializer.is_some() || p.optional {
                 return None;
             }
-            names.push((id.name.as_str(), id.span));
+            match &p.pattern {
+                BindingPattern::BindingIdentifier(id) => names.push((id.name.to_string(), id.span, None)),
+                BindingPattern::ObjectPattern(o) if o.rest.is_none() => {
+                    let mut fields = Vec::new();
+                    for prop in &o.properties {
+                        let BindingPattern::BindingIdentifier(id) = &prop.value else { return None };
+                        if !prop.shorthand {
+                            return None;
+                        }
+                        fields.push((id.name.to_string(), id.span));
+                    }
+                    names.push((format!("arg{i}"), p.span, Some(fields)));
+                }
+                _ => return None,
+            }
         }
         let ty = self.ty(ty);
         let saved = self.scope.clone();
-        let params: Vec<String> = names.iter().map(|(n, s)| self.bind(n, *s)).collect();
+        let mut prelude = Vec::new();
+        let params: Vec<String> = names
+            .iter()
+            .map(|(n, s, fields)| {
+                let bound = self.bind(n, *s);
+                if let Some(fields) = fields {
+                    let fields: Vec<String> = fields.iter().map(|(f, fs)| self.bind(f, *fs)).collect();
+                    prelude.push(format!("let {{ {} }} = {bound}", fields.join(", ")));
+                }
+                bound
+            })
+            .collect();
         let body = self.closure_body(arrow);
         self.scope = saved;
         let name = self.bind(name, span);
+        let body = if prelude.is_empty() { body } else { format!("{}\n{body}", prelude.join("\n")) };
         Some(format!("let {name}: {ty} = {{ {} in\n{body}\n}}", params.join(", ")))
     }
 
