@@ -25,9 +25,12 @@ function fieldName(property: string): string {
     .join('');
 }
 
-/** A token's Kotlin name: `2xl` is `_2xl`, `caption-1` is `caption1`. */
+/**
+ * A token's Kotlin name: `2xl` is `_2xl`, `caption-1` is `caption1`, `large-title` is
+ * `largeTitle`, `12.5` is `_12_5` (the native backend's `token_name` names them the same).
+ */
 function tokenName(name: string): string {
-  const flat = name.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+  const flat = name.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase()).replace(/\./g, '_');
   return /^[0-9]/.test(flat) ? `_${flat}` : flat;
 }
 
@@ -74,13 +77,51 @@ function fontObject(): string {
   for (const [family, [size, line, tracking]] of families) {
     lines.push(`  val ${tokenName(family)} = ramp(${size}, ${line}, ${double(tracking)}, 400)`);
   }
+  // A size rung (`.md`) sets the size alone: the text keeps the rest of its style (Bloom's
+  // `Text` keeps its body step's line height under a `fontSize`).
+  const sizes = (spec.scales as unknown as Record<string, Scale>).fontSize ?? {};
+  for (const [key, size] of Object.entries(sizes)) {
+    if (key.startsWith('$')) continue;
+    lines.push(`  val ${tokenName(key)} = TextStyle(fontSize = ${size}.sp)`);
+  }
   return [
-    "/** The type ramp, the spec's `typeRamp`: each family at each weight, and the family's regular. */",
+    "/** The type ramp, the spec's `typeRamp`: each family at each weight, and the family's regular; then the size rungs (`spec.scales.fontSize`). */",
     'object Font {',
     '  private fun ramp(size: Int, line: Int, tracking: Double, weight: Int) =',
     '    TextStyle(fontSize = size.sp, lineHeight = line.sp, letterSpacing = (tracking / size).em, fontWeight = FontWeight(weight))',
     '',
     ...lines,
+    '}',
+    '',
+  ].join('\n');
+}
+
+/** `.weight()`, `.leading()` and a border's width, from the spec's scales. */
+function textAndLineScales(scales: Record<string, Record<string, unknown>>): string {
+  const entries = (scale: Record<string, unknown> | undefined) =>
+    Object.entries(scale ?? {}).filter(([k]) => !k.startsWith('$'));
+  const weights = entries(scales.weight).map(([k, v]) => `  val ${tokenName(k)} = FontWeight(${v})`);
+  const leading = [
+    ...entries(scales.leading).map(([k, v]) => `  val ${tokenName(k)}: TextUnit = ${v}.em`),
+    ...entries(scales.leadingPx).map(([k, v]) => `  val ${tokenName(k)}: TextUnit = ${v}.sp`),
+  ];
+  const widths = entries(scales.borderWidth).map(([k, v]) =>
+    v === 'hairline' ? `  val ${tokenName(k)}: Dp = Dp.Hairline` : `  val ${tokenName(k)}: Dp = ${v}.dp`,
+  );
+  return [
+    "/** A text's weight (`spec.scales.weight`). */",
+    'object Weight {',
+    ...weights,
+    '}',
+    '',
+    "/** A text's line height (`spec.scales.leading`, a multiple of its size, and `leadingPx`). */",
+    'object Leading {',
+    ...leading,
+    '}',
+    '',
+    "/** A border's width (`spec.scales.borderWidth`): `hairline` is the screen's thinnest line. */",
+    'object BorderWidth {',
+    ...widths,
     '}',
     '',
   ].join('\n');
@@ -214,6 +255,7 @@ export function renderBloomThemeKotlin(): string {
     'import androidx.compose.ui.text.TextStyle',
     'import androidx.compose.ui.text.font.FontWeight',
     'import androidx.compose.ui.unit.Dp',
+    'import androidx.compose.ui.unit.TextUnit',
     'import androidx.compose.ui.unit.dp',
     'import androidx.compose.ui.unit.em',
     'import androidx.compose.ui.unit.sp',
@@ -223,6 +265,7 @@ export function renderBloomThemeKotlin(): string {
     dpEnum('IconSize', "An icon's size (`spec.scales.iconSize`).", scales.iconSize ?? {}),
     dpEnum('AvatarSize', "An avatar's size (`spec.scales.avatarSize`).", scales.avatarSize ?? {}),
     fontObject(),
+    textAndLineScales(spec.scales as unknown as Record<string, Record<string, unknown>>),
     colorRoles(new Set(fields)),
     toneEnum(),
     palette,

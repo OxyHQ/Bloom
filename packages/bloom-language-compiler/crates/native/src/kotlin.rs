@@ -123,6 +123,9 @@ struct Emitter<'a> {
     shorthand_it: bool,
     /// The enum the statement being emitted switches over, for its patterns.
     fresh: u32,
+    /// The layout scopes the view being emitted is drawn in, innermost last: `row` (an
+    /// `HStack`'s `RowScope`), `column` (a `VStack`'s), or `other` (a box, a list, a lambda).
+    scopes: Vec<&'static str>,
     /// Emitting an actor's members: its methods run isolated.
     actor: bool,
     /// `return` inside a lambda body (an actor's `isolated { }`): `return@label`.
@@ -188,6 +191,7 @@ const NODES: &[&str] = &[
     "HStack",
     "ZStack",
     "ScrollView",
+    "ScrollArea",
     "VirtualList",
     "List",
     "GroupedSection",
@@ -234,6 +238,11 @@ fn token_class(node: &str, param: &str) -> &'static str {
         (_, "edge") => "Edge",
         (_, "length") => "Length",
         (_, "weight") => "Weight",
+        (_, "leading") => "Leading",
+        (_, "borderColor") => "Colors",
+        (_, "borderWidth") => "BorderWidth",
+        (_, "borderEdge") => "BorderEdge",
+        (_, "axis") => "Axis",
         _ => "Tokens",
     }
 }
@@ -248,6 +257,7 @@ impl<'a> Emitter<'a> {
             locals: vec![HashMap::new()],
             shorthand_it: false,
             fresh: 0,
+            scopes: Vec::new(),
             actor: false,
             return_label: None,
             owner_generics: Vec::new(),
@@ -1494,7 +1504,12 @@ impl<'a> Emitter<'a> {
                     }
                     _ => self.unsupported(f.pattern.span, "this `for` pattern"),
                 };
-                let body = self.block(&f.body.stmts, indent + 1, Mode::Unit);
+                // In a view builder, each pass draws its views.
+                let body = if mode == Mode::View {
+                    self.view_block(&f.body.stmts, indent + 1, None)
+                } else {
+                    self.block(&f.body.stmts, indent + 1, Mode::Unit)
+                };
                 let label = f.label.as_ref().map(|l| format!("{}@ ", l.name)).unwrap_or_default();
                 format!("{p}{label}for ({name} in {iter}) {{\n{body}{p}}}\n")
             }
@@ -1783,6 +1798,7 @@ impl<'a> Emitter<'a> {
         for stmt in stmts {
             match &stmt.kind {
                 StmtKind::Expr(e) => out.push_str(&self.view_stmt(e, indent, modifier)),
+                StmtKind::For(_) => out.push_str(&self.stmt(stmt, indent, Mode::View)),
                 _ => out.push_str(&self.stmt(stmt, indent, Mode::Unit)),
             }
         }
@@ -1836,8 +1852,25 @@ impl<'a> Emitter<'a> {
                     let _ = write!(effects, "{p}OnChange({of}) {{ {names} ->\n{inner}{p}}}\n");
                 }
                 n if universal(n) => layout.push(self.layout_modifier(chain.name, n, call)),
+                // A press on a view of the app (`MediaBox(…).onPress { }`): the view's modifier.
+                "onPress" if !matches!(chain.name, "Button" | "Action") => {
+                    layout.push(self.layout_modifier(chain.name, "onTapGesture", call))
+                }
                 _ => node_mods.push((name, call)),
             }
+        }
+        // A border on a rounded view follows its corner (`.border(…).corner(.lg)`).
+        if let Some(radius) = layout.iter().find_map(|m| {
+            m.strip_prefix(".bloomCorner(").and_then(|r| r.strip_suffix(')')).map(str::to_string)
+        }) {
+            for m in layout.iter_mut().filter(|m| m.starts_with(".bloomBorder(") && m.ends_with(')')) {
+                m.pop();
+                m.push_str(&format!(", corner = {radius})"));
+            }
+        }
+        // `.shrink().grow()`: the grow's weight alone.
+        if layout.iter().any(|m| m == ".weight(1f)") {
+            layout.retain(|m| m != ".weight(1f, fill = false)");
         }
         // Bloom's modifiers wrap outward (the last is outermost), Compose's chain runs from the
         // outside in: reversed.
@@ -1874,14 +1907,23 @@ impl<'a> Emitter<'a> {
     fn layout_modifier(&mut self, node: &str, name: &str, call: &Call) -> String {
         // A Compose row already hands its last child the room left, and a child never grows
         // past its constraints: flex's `grow` and `shrink` have nothing to do.
+        // Flex's grow and shrink are a weight in the parent stack (Compose's `RowScope` or
+        // `ColumnScope`): `grow` takes the room left; `shrink` gives way first, measured after
+        // its siblings (`fill = false`: no wider than its content). Outside a stack: nothing.
         if matches!(name, "grow" | "shrink") {
-            return String::new();
+            if !matches!(self.scopes.last(), Some(&"row" | &"column")) {
+                return String::new();
+            }
+            return if name == "grow" { ".weight(1f)".into() } else { ".weight(1f, fill = false)".into() };
         }
         let args: Vec<String> = call
             .args
             .iter()
-            .map(|a| {
+            .enumerate()
+            .map(|(i, a)| {
                 let param = match (name, a.label.as_ref().map(|l| l.name.as_str())) {
+                    // `.border(color, width, edge)`.
+                    ("border", None) => ["borderColor", "borderWidth", "borderEdge"].get(i).copied().unwrap_or("value"),
                     ("padding", _) if matches!(&a.value.kind, ExprKind::ImplicitMember(m) if is_edge(&m.name)) => "edge",
                     ("frame", Some(_)) => "length",
                     ("corner", _) => "corner",
@@ -1981,6 +2023,19 @@ impl<'a> Emitter<'a> {
                     let inner = self.view_expr(&a.value, indent + 1, None).unwrap_or_default();
                     format!("{{\n{inner}{p}}}")
                 }
+                // `.trailing { … }`: a builder of views, a composable lambda.
+                (_, "trailing", None) if m.trailing.is_some() => {
+                    let c = m.trailing.as_deref().unwrap_or_else(|| unreachable!());
+                    self.scopes.push("row");
+                    let inner = self.view_block(&c.body, indent + 1, None);
+                    self.scopes.pop();
+                    format!("{{\n{inner}{p}}}")
+                }
+                // `.countFormat(compact)`: a function of the program, passed by reference.
+                (_, "countFormat", Some(a)) => match &a.value.kind {
+                    ExprKind::Name(n) if self.decls.funcs.contains_key(n.as_str()) => format!("::{}", kw(n)),
+                    _ => self.expr(&a.value),
+                },
                 (_, "onPress", _) => match m.trailing.as_deref() {
                     Some(c) => self.closure(c),
                     None => arg.map(|a| self.expr(&a.value)).unwrap_or_default(),
@@ -2013,7 +2068,13 @@ impl<'a> Emitter<'a> {
                 format!("{p}NavigationStack({}) {content}\n", args.join(", "))
             }
             (_, Some(c)) => {
+                self.scopes.push(match node {
+                    "HStack" => "row",
+                    "VStack" | "ScrollView" => "column",
+                    _ => "other",
+                });
                 let body = self.view_block(&c.body, indent + 1, None);
+                self.scopes.pop();
                 format!("{p}{node}({}) {{\n{body}{p}}}\n", args.join(", "))
             }
             (_, None) => format!("{p}{node}({})\n", args.join(", ")),
@@ -2034,7 +2095,9 @@ impl<'a> Emitter<'a> {
         let p = pad(indent);
         let params: Vec<String> = c.params.iter().map(|q| kw(&q.name.name)).collect();
         let head = if params.is_empty() { String::new() } else { format!(" {} ->", params.join(", ")) };
+        self.scopes.push("other");
         let body = self.view_block(&c.body, indent + 1, None);
+        self.scopes.pop();
         format!("{{{head}\n{body}{p}}}")
     }
 
@@ -2707,8 +2770,23 @@ fn is_edge(name: &str) -> bool {
 }
 
 /// A token's Kotlin name: `2xl` is not an identifier (`_2xl`), nor is `caption-1` (`caption1`).
+/// A token's Kotlin name, as `scripts/native-theme-kotlin.ts` names it: `caption-1` is
+/// `caption1`, `large-title` `largeTitle`, `2xl` `_2xl`, `12.5` `_12_5`.
 fn token_name(name: &str) -> String {
-    let name = name.replace('-', "");
+    let mut flat = String::new();
+    let mut upper = false;
+    for c in name.chars() {
+        match c {
+            '-' => upper = !flat.is_empty(),
+            '.' => flat.push('_'),
+            c if upper => {
+                flat.extend(c.to_uppercase());
+                upper = false;
+            }
+            c => flat.push(c),
+        }
+    }
+    let name = flat;
     match name.chars().next() {
         Some(c) if c.is_ascii_digit() => format!("_{name}"),
         _ => kw(&name),

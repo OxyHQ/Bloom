@@ -19,21 +19,29 @@ extern native "BloomIsland" {
   private func islandView(
     island: String,
     props: String,
+    themePreset: String?,
+    themeScheme: String?,
     onIslandEvent: (({ name: String, payload: String }) -> Void)?
   ) -> View
 }
 
 /// The island `name` (a module marked `native: .island`), drawn from its props as one JSON
-/// object (`json`), its events to `onEvent` as `(prop name, value as JSON)`.
+/// object (`json`), its events to `onEvent` as `(prop name, value as JSON)`. It draws in the
+/// app's theme: `preset` (an `AppColorName`) and `scheme` (`"light"` or `"dark"`; none, the
+/// system's), Bloom's default preset when none is given.
 public struct Island: View {
   let name: String
   let json: String
+  var preset: String? = none
+  var scheme: String? = none
   var onEvent: ((String, String) -> Void)? = none
 
   var body: some View {
     islandView(
       island: name,
       props: json,
+      themePreset: preset,
+      themeScheme: scheme,
       onIslandEvent: { event in
         if let handle = onEvent { handle(event.name, event.payload) }
       },

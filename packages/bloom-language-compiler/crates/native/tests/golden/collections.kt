@@ -49,7 +49,9 @@ fun Tags(seen: Seen, modifier: Modifier = Modifier) {
   var picked by remember { mutableStateOf(TODO()()) }
   VStack(modifier = modifier) {
     for (id in seen.ids) {
-      Button(Text(id)).onPress({ 
+      Button({
+        Text(id)
+      }, onPress = { 
     picked = picked.inserting(id)
 })
     }

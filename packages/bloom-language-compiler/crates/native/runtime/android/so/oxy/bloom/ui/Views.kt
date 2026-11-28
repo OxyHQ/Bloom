@@ -39,6 +39,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -51,6 +52,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -133,6 +138,17 @@ fun Divider(modifier: Modifier = Modifier) {
   Box(modifier.fillMaxWidth().height(0.5.dp).background(Colors.border))
 }
 
+/** A scroll's direction (`.axis()`). */
+enum class Axis { horizontal, vertical }
+
+/** `ScrollArea { … }.axis(.horizontal)`: its content scrolled along the axis. */
+@Composable
+fun ScrollArea(axis: Axis = Axis.vertical, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+  val state = rememberScrollState()
+  val scrolled = if (axis == Axis.horizontal) modifier.horizontalScroll(state) else modifier.verticalScroll(state)
+  Box(scrolled) { content() }
+}
+
 /** `ScrollView { … }`: a vertical scroll of a column. */
 @Composable
 fun ScrollView(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
@@ -152,22 +168,62 @@ class VirtualListRow<T>(val item: T, val index: Long)
 
 // ---- text and images -----------------------------------------------------------------
 
+/**
+ * `Text(…)`: Bloom's `Text`, its body step (14/20) in Bloom's sans face, which a ramp font
+ * replaces and a size rung (`.font(.md)`) resizes, keeping the step's line height; then
+ * `.weight()` and `.leading()` over it, as the TypeScript runtime's `textStyle` writes them.
+ */
 @Composable
 fun Text(
   text: String,
   font: androidx.compose.ui.text.TextStyle = Font.body,
+  weight: androidx.compose.ui.text.font.FontWeight? = null,
+  leading: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
   foreground: Color? = null,
   lines: Long? = null,
+  monospacedDigit: Boolean = false,
   modifier: Modifier = Modifier,
 ) {
   val color = foreground ?: currentForeground
+  var style = Font.body.merge(font).copy(color = color, fontFamily = BloomFonts.sans())
+  if (weight != null) style = style.copy(fontWeight = weight)
+  if (leading != androidx.compose.ui.unit.TextUnit.Unspecified) style = style.copy(lineHeight = leading)
+  if (monospacedDigit) style = style.copy(fontFeatureSettings = "tnum")
   BasicText(
     text,
     modifier,
-    style = font.copy(color = color),
+    style = style,
     maxLines = lines?.toInt() ?: Int.MAX_VALUE,
     overflow = if (lines != null) TextOverflow.Ellipsis else TextOverflow.Clip,
   )
+}
+
+/**
+ * Bloom's faces: `sans` is Inter, the face Bloom's `Text` names, from the app's assets
+ * (`fonts/Inter.ttf`, which `bloom build` ships), at the weights the text asks for; the
+ * platform's face where the app has none.
+ */
+object BloomFonts {
+  @Volatile private var loaded: androidx.compose.ui.text.font.FontFamily? = null
+
+  @Composable
+  fun sans(): androidx.compose.ui.text.font.FontFamily {
+    loaded?.let { return it }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    return load(context).also { loaded = it }
+  }
+
+  private fun load(context: android.content.Context): androidx.compose.ui.text.font.FontFamily {
+    val assets = context.applicationContext.assets
+    val path = "fonts/Inter.ttf"
+    val present = runCatching { assets.open(path).close() }.isSuccess
+    if (!present) return androidx.compose.ui.text.font.FontFamily.Default
+    // One regular face: a heavier weight is drawn as Android draws a React Native text's
+    // (the platform's synthesized weight over the file's face).
+    return androidx.compose.ui.text.font.FontFamily(
+      androidx.compose.ui.text.font.Font(path, assets, androidx.compose.ui.text.font.FontWeight.Normal),
+    )
+  }
 }
 
 /** A glyph: SVG path data in a view box, filled or stroked. */
@@ -190,7 +246,9 @@ fun Icon(icon: IconData, size: IconSize = IconSize.sm, foreground: Color? = null
 
 @Composable
 fun Avatar(source: String, size: AvatarSize = AvatarSize.md, modifier: Modifier = Modifier) {
-  Image(source, contentFit = ContentFit.cover, modifier = modifier.size(size.dp).clip(CircleShape))
+  // Bloom's avatar: a circle, filled while its picture loads (or when it has none).
+  val box = modifier.size(size.dp).clip(CircleShape).background(Colors.surface)
+  if (source.isEmpty()) Box(box) else Image(source, contentFit = ContentFit.cover, modifier = box)
 }
 
 /** `Image(url)`: decoded off the main thread at its drawn size, through [ImagePipeline]. */
@@ -378,10 +436,84 @@ fun GroupedSectionItem(
 }
 
 // ---- the post's action bar -----------------------------------------------------------
+// Bloom's EngagementBar (src/engagement-bar), at its `md` geometry: a 20 glyph, 6/2 padding,
+// a 4 gap to a 13 tabular count, the bar bled 6 on both sides so the first glyph lines up with
+// the content; an action on in its tone's text colour (`resolveAccentColors(…, 'outlined')`),
+// held on its tone's subtle wash; the pop when a press turns it on, and the count's roll.
 
+private const val ENGAGEMENT_PAD_X = 6
+private const val ENGAGEMENT_PAD_Y = 2
+private const val ENGAGEMENT_COUNT_GAP = 4
+private const val ENGAGEMENT_ICON = 20
+private const val ROLL_DISTANCE = 10
+
+private val LocalCountFormat = staticCompositionLocalOf<(Long) -> String> { { it.toString() } }
+
+/** `ActionBar { … }.trailing { … }.countFormat(f)`: the actions, the trailing ones at the far edge. */
 @Composable
-fun ActionBar(modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {
-  Row(modifier.fillMaxWidth().padding(top = Space.xs), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, content = content)
+fun ActionBar(
+  trailing: (@Composable RowScope.() -> Unit)? = null,
+  countFormat: ((Long) -> String)? = null,
+  size: ControlSize = ControlSize.md,
+  modifier: Modifier = Modifier,
+  content: @Composable RowScope.() -> Unit,
+) {
+  val format = countFormat ?: LocalCountFormat.current
+  CompositionLocalProvider(LocalCountFormat provides format) {
+    Row(modifier.fillMaxWidth().bleed(ENGAGEMENT_PAD_X.dp), verticalAlignment = Alignment.CenterVertically) {
+      content()
+      if (trailing != null) {
+        Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+          trailing()
+        }
+      }
+    }
+  }
+}
+
+/** Wider than its parent by `x` on both sides (a negative margin). */
+private fun Modifier.bleed(x: androidx.compose.ui.unit.Dp): Modifier = layout { measurable, constraints ->
+  val px = x.roundToPx()
+  val wide = if (constraints.hasBoundedWidth) {
+    constraints.copy(minWidth = constraints.minWidth + 2 * px, maxWidth = constraints.maxWidth + 2 * px)
+  } else constraints
+  val placeable = measurable.measure(wide)
+  layout((placeable.width - 2 * px).coerceAtLeast(0), placeable.height) { placeable.place(-px, 0) }
+}
+
+/** A tone's text colour (the outlined foreground) and its subtle wash: `tonePalette`'s. */
+private val Tone.text: Color
+  @Composable get() = when (this) {
+    Tone.success -> BloomTheme.palette.successText
+    Tone.warning -> BloomTheme.palette.warningText
+    Tone.error, Tone.danger -> BloomTheme.palette.errorText
+    Tone.info -> BloomTheme.palette.infoText
+    Tone.secondary, Tone.support -> BloomTheme.palette.secondaryText
+    Tone.tertiary, Tone.action -> BloomTheme.palette.tertiaryText
+    Tone.neutral -> BloomTheme.palette.mutedForeground
+    else -> BloomTheme.palette.primaryText
+  }
+
+private val Tone.wash: Color
+  @Composable get() = when (this) {
+    Tone.success -> BloomTheme.palette.successSubtle
+    Tone.warning -> BloomTheme.palette.warningSubtle
+    Tone.error, Tone.danger -> BloomTheme.palette.errorSubtle
+    Tone.info -> BloomTheme.palette.infoSubtle
+    Tone.secondary, Tone.support -> BloomTheme.palette.secondarySubtle
+    Tone.tertiary, Tone.action -> BloomTheme.palette.tertiarySubtle
+    else -> BloomTheme.palette.primarySubtle
+  }
+
+/** Bloom's `outExpo` (motion's `pop` and `roll`). */
+private val OutExpo = androidx.compose.animation.core.CubicBezierEasing(0.16f, 1f, 0.3f, 1f)
+private val InOutQuad = androidx.compose.animation.core.CubicBezierEasing(0.455f, 0.03f, 0.515f, 0.955f)
+
+/** The pop's glyph scale at `t` (0…1): it dips to 0.7 by 1/10, swells to 1.2 by 4/10, settles. */
+private fun popScale(t: Float): Float = when {
+  t < 0.1f -> 1f - 0.3f * InOutQuad.transform(t / 0.1f)
+  t < 0.4f -> 0.7f + 0.5f * ((t - 0.1f) / 0.3f)
+  else -> 1.2f - 0.2f * ((t - 0.4f) / 0.6f)
 }
 
 /** One engagement action: a glyph, its count, its active state and tone. */
@@ -389,32 +521,93 @@ fun ActionBar(modifier: Modifier = Modifier, content: @Composable RowScope.() ->
 fun Action(
   icon: IconData,
   label: String,
-  count: Long = 0L,
+  count: Long? = null,
   active: Boolean = false,
   tint: Tone = Tone.primary,
   onPress: (() -> Unit)? = null,
   modifier: Modifier = Modifier,
 ) {
-  val color = if (active) tint.color else Colors.muted
-  val glyph = if (active && icon === Icons.like) Icons.likeFill else icon
+  val format = LocalCountFormat.current
+  val onColor = tint.text
+  val color = if (active) onColor else Colors.muted
+  val glyph = if (active) Icons.active(icon) else icon
+  val interaction = remember { MutableInteractionSource() }
+  val pressed by interaction.collectIsPressedAsState()
+  val pop = remember { androidx.compose.animation.core.Animatable(1f) }
+  var pressedOn by remember { mutableStateOf(false) }
+  // The pop plays when a press turns the action on (not when the props arrive on).
+  androidx.compose.runtime.LaunchedEffect(active) {
+    if (active && pressedOn) {
+      pop.snapTo(0f)
+      pop.animateTo(1f, tween(300, easing = OutExpo))
+    }
+    pressedOn = false
+  }
   Row(
     modifier
-      .height(32.dp)
-      .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onPress?.invoke() }
+      .clip(RoundedCornerShape(50))
+      .background(if (pressed) tint.wash else Color.Transparent)
+      .clickable(interactionSource = interaction, indication = null) {
+        pressedOn = !active
+        onPress?.invoke()
+      }
       .semantics { contentDescription = label }
-      .padding(horizontal = Space.xs),
+      .padding(horizontal = ENGAGEMENT_PAD_X.dp, vertical = ENGAGEMENT_PAD_Y.dp),
     verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.spacedBy(Space.xs),
+    horizontalArrangement = Arrangement.spacedBy(ENGAGEMENT_COUNT_GAP.dp),
   ) {
-    Icon(glyph, IconSize.md, color)
-    if (count > 0) BasicText(compact(count), style = Font.body2.copy(color = color))
+    Box(Modifier.size(ENGAGEMENT_ICON.dp), contentAlignment = Alignment.Center) {
+      val t = pop.value
+      if (t < 1f) {
+        // The ring bursts from 0.4 to 1.6 and fades from 0.6.
+        Canvas(Modifier.size(ENGAGEMENT_ICON.dp)) {
+          val r = size.minDimension / 2 * (0.4f + 1.2f * t)
+          drawCircle(color, radius = r, alpha = 0.6f * (1f - t), style = Stroke(width = 2.dp.toPx()))
+        }
+      }
+      val scale = if (t < 1f) popScale(t) else 1f
+      Icon(glyph, IconSize.md, color, Modifier.graphicsLayer { scaleX = scale; scaleY = scale })
+    }
+    val shown = count?.takeIf { it != 0L }
+    if (shown != null) {
+      RollingCount(format(shown), shown, color, active)
+    }
   }
 }
 
-private fun compact(n: Long): String = when {
-  n >= 1_000_000 -> "${n / 100_000 / 10.0}M"
-  n >= 1_000 -> "${n / 100 / 10.0}K"
-  else -> n.toString()
+/** The count, rolled 10 up (or down) as it changes: the new value in, the old one out. */
+@Composable
+private fun RollingCount(text: String, value: Long, color: Color, active: Boolean) {
+  val style = androidx.compose.ui.text.TextStyle(
+    fontFamily = BloomFonts.sans(),
+    fontSize = Font.sm.fontSize,
+    fontFeatureSettings = "tnum",
+    fontWeight = if (active) androidx.compose.ui.text.font.FontWeight(600) else null,
+    color = color,
+  )
+  var previous by remember { mutableStateOf(text to value) }
+  val roll = remember { androidx.compose.animation.core.Animatable(1f) }
+  var shownOld by remember { mutableStateOf<String?>(null) }
+  var up by remember { mutableStateOf(true) }
+  androidx.compose.runtime.LaunchedEffect(text) {
+    if (previous.first != text) {
+      up = value > previous.second
+      shownOld = previous.first
+      previous = text to value
+      roll.snapTo(0f)
+      roll.animateTo(1f, tween(400, easing = OutExpo))
+      shownOld = null
+    }
+  }
+  val t = roll.value
+  val d = ROLL_DISTANCE * (if (up) 1 else -1)
+  Box(Modifier.clipToBounds()) {
+    val old = shownOld
+    if (old != null && t < 1f) {
+      BasicText(old, Modifier.graphicsLayer { translationY = -d * t * density; alpha = 1f - t }, style = style)
+    }
+    BasicText(text, Modifier.graphicsLayer { translationY = if (t < 1f) d * (1f - t) * density else 0f; alpha = if (t < 1f) t else 1f }, style = style)
+  }
 }
 
 // ---- navigation ----------------------------------------------------------------------

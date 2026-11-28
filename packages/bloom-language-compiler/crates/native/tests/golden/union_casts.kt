@@ -49,7 +49,9 @@ fun score(value: Long?): String? {
 fun Tabs(selected: Tab, onSelect: (Tab) -> Unit, modifier: Modifier = Modifier) {
   HStack(modifier = modifier) {
     for (tab in TABS) {
-      Button(Text(tab)).foreground((if (tab == selected) Colors.foreground else Colors.muted)).onPress({ onSelect(tab) })
+      Button({
+        Text(tab)
+      }, foreground = (if (tab == selected) Colors.foreground else Colors.muted), onPress = { onSelect(tab) })
     }
   }
 }
