@@ -693,9 +693,16 @@ export function channel<T>(): Channel<T> {
 export type RegexMatch = {
   readonly text: string;
   readonly start: number;
-  readonly groups: readonly string[];
+  readonly groups: readonly (string | undefined)[];
   readonly named: Readonly<Record<string, string>>;
 };
+
+function matchOf(m: RegExpMatchArray): RegexMatch {
+  const named: Record<string, string> = {};
+  for (const [name, value] of Object.entries(m.groups ?? {}))
+    if (value !== undefined) named[name] = value;
+  return { text: m[0], start: m.index ?? 0, groups: m.slice(1), named };
+}
 
 const compiled = new Map<string, RegExp>();
 
@@ -729,15 +736,16 @@ export function regexMatches(
   const re = regex(pattern, flags);
   const out: RegexMatch[] = [];
   for (const m of s.matchAll(re)) {
-    out.push({
-      text: m[0],
-      start: m.index ?? 0,
-      groups: m.slice(1).map((g) => g ?? ''),
-      named: (m.groups ?? {}) as Record<string, string>,
-    });
+    out.push(matchOf(m));
     if (limit > 0 && out.length >= limit) break;
   }
   return out;
+}
+
+/** The match of `pattern` spanning all of `s` (Swift's `wholeMatch(of:)`), or `undefined`. */
+export function regexWhole(pattern: string, flags: string, s: string): RegexMatch | undefined {
+  const m = new RegExp(`^(?:${pattern})$`, flags.replace(/[gmy]/g, '')).exec(s);
+  return m ? matchOf(m) : undefined;
 }
 
 export function regexReplace(

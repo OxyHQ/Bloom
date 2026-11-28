@@ -100,10 +100,13 @@ extension String {
   public func prefix(_ n: Int) -> String { graphemes(self).prefix(n).joined("") }
 
   /// The last `n` characters (user-perceived).
-  public func suffix(_ n: Int) -> String {
-    let all = graphemes(self)
-    return all.dropFirst(all.count > n ? all.count - n : 0).joined("")
-  }
+  public func suffix(_ n: Int) -> String { graphemes(self).suffix(n).joined("") }
+
+  /// Without the first `n` characters (user-perceived; one by default).
+  public func dropFirst(_ n: Int = 1) -> String { graphemes(self).dropFirst(n).joined("") }
+
+  /// Without the last `n` characters (user-perceived; one by default).
+  public func dropLast(_ n: Int = 1) -> String { graphemes(self).dropLast(n).joined("") }
 
   /// At most `length` characters, with `ellipsis` in place of the rest.
   public func truncated(to length: Int, ellipsis: String = "…") -> String {
@@ -395,4 +398,4 @@ extension Error {
 }
 
 /// Stops the program: a state the code holds impossible was reached.
-public func fatal<T>(_ message: String = "unreachable") -> T { throw RuntimeError(message: message) }
+public func fatal(_ message: String = "unreachable") -> Never { throw RuntimeError(message: message) }

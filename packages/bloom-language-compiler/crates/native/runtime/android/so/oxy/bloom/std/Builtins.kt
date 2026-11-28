@@ -63,6 +63,8 @@ fun <T> List<T>.findIndex(predicate: (T) -> Boolean): Long? = indexOfFirst(predi
 fun <T> List<T>.prefix(n: Long): List<T> = take(n.toInt().coerceAtLeast(0))
 
 fun <T> List<T>.dropFirst(n: Long = 1L): List<T> = drop(n.toInt().coerceAtLeast(0))
+fun <T> List<T>.suffix(n: Long): List<T> = takeLast(n.toInt().coerceAtLeast(0))
+fun <T> List<T>.dropLast(n: Long = 1L): List<T> = dropLast(n.toInt().coerceAtLeast(0))
 
 fun <T> List<T>.appending(element: T): List<T> = ArrayList<T>(size + 1).also { it.addAll(this); it.add(element) }
 
