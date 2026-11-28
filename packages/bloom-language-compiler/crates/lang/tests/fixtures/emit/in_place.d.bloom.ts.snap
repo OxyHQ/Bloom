@@ -1,0 +1,14 @@
+export declare function cube(n: number): readonly number[];
+export declare function histogram(words: readonly string[]): Readonly<Record<string, number>>;
+export declare function aliasing(ys: readonly number[]): readonly [readonly number[], readonly number[], readonly number[]];
+export declare function members(): readonly (readonly number[])[];
+export declare function dictionary(): readonly [Readonly<Record<string, number>>, number | undefined, number | undefined];
+export declare function grid(): readonly [readonly (readonly number[])[], readonly number[]];
+export declare function doubled(ys: readonly number[]): readonly number[];
+export declare function captured(): readonly [number, readonly number[]];
+export interface Bag {
+  readonly items: readonly number[];
+}
+export declare function nested(b: Bag): readonly [Bag, Bag];
+export declare function escapes(ys: readonly number[]): readonly (readonly number[])[];
+export declare function inouts(): readonly [readonly number[], number, number, number, readonly number[], readonly number[]];

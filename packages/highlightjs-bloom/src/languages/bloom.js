@@ -46,6 +46,7 @@ export default function bloom(hljs) {
       'import',
       'in',
       'init',
+      'inout',
       'internal',
       'is',
       'layout',

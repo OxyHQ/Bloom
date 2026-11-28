@@ -175,6 +175,7 @@ fn lower_member(owner: &Owner, member: &TypeMember, ids: &mut Ids, out: &mut Vec
         rest: false,
         spread: false,
         whole: None,
+        inout: false,
         ty: owner.self_ty.clone(),
         default: None,
         span,

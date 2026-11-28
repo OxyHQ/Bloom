@@ -2711,6 +2711,16 @@
           }
         ]
       },
+      "inout": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "inout",
+            "named": false
+          }
+        ]
+      },
       "label": {
         "multiple": false,
         "required": false,
@@ -2827,6 +2837,10 @@
         "types": [
           {
             "type": "!",
+            "named": false
+          },
+          {
+            "type": "&",
             "named": false
           },
           {
@@ -4678,6 +4692,10 @@
   },
   {
     "type": "init",
+    "named": false
+  },
+  {
+    "type": "inout",
     "named": false
   },
   {

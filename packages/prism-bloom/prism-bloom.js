@@ -105,7 +105,7 @@
       /\bactor(?=\s+$)/,
       /\b(?:get|set)\b(?=\s*(?:set\s*)?\})/,
       /\bextern\s+(?:module|native)\b/,
-      /\b(?:any|as|async|await|body|break|case|catch|class|continue|default|defer|do|else|enum|extension|extern|fallthrough|fileprivate|final|fn|for|from|func|guard|if|import|in|init|internal|is|layout|let|match|mutating|nonisolated|private|protocol|pub|public|repeat|rethrows|return|screen|some|static|struct|switch|task|throw|throws|try|type|var|view|where|while)\b/,
+      /\b(?:any|as|async|await|body|break|case|catch|class|continue|default|defer|do|else|enum|extension|extern|fallthrough|fileprivate|final|fn|for|from|func|guard|if|import|in|init|inout|internal|is|layout|let|match|mutating|nonisolated|private|protocol|pub|public|repeat|rethrows|return|screen|some|static|struct|switch|task|throw|throws|try|type|var|view|where|while)\b/,
     ],
     boolean: /\b(?:true|false)\b/,
     nil: { pattern: /\bnone\b/, alias: 'constant' },

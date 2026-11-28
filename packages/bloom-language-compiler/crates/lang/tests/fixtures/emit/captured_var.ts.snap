@@ -8,13 +8,13 @@ export interface Tagged {
 }
 
 export function tagged(tags: readonly string[], run: (p0: string) => void): Tagged {
-let handlers: Readonly<Record<string, () => void>> = {};
+let handlers: Record<string, () => void> = {};
 const add = (tag: string) => {
-handlers = { ...handlers, [tag]: () => run(tag) };
+handlers[tag] = () => run(tag);
 return tag;
 };
 const rows = tags.map((t: string) => add(t));
-return { tags: rows, actions: handlers };
+return { tags: rows, actions: ({ ...handlers }) };
 }
 
 export function total(tags: readonly string[]): number {

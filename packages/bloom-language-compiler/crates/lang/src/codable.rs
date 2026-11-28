@@ -141,6 +141,7 @@ impl Gen {
             rest: false,
             spread: false,
             whole: None,
+            inout: false,
             ty,
             default: None,
             span: self.fresh(),

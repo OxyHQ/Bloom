@@ -2,6 +2,9 @@
 import { c as $c } from "react/compiler-runtime";
 import { Button, Text, VStack, view } from "@oxy.so/bloom-language";
 import { useState } from "react";
+function $appendAll<T>(items: T[], more: readonly T[]): void {
+  for (const item of more) items.push(item);
+}
 
 export function both(a: readonly number[], b: readonly number[]): readonly number[] {
 return [...a, ...b];
@@ -12,9 +15,9 @@ return ["first", ...a, "last"];
 }
 
 export function appended(a: readonly number[]): readonly number[] {
-let out = a;
-out = [...out, 1, 2];
-out = [...out, ...a];
+let out: number[] = [...a];
+out.push(1, 2);
+$appendAll(out, a);
 return out;
 }
 

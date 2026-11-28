@@ -149,6 +149,7 @@
   "open"
   "static"
   "final"
+  "inout"
   "extern"
   "module"
   "native"

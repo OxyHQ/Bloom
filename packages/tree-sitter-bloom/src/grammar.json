@@ -3280,6 +3280,22 @@
               "value": ":"
             },
             {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "FIELD",
+                  "name": "inout",
+                  "content": {
+                    "type": "STRING",
+                    "value": "inout"
+                  }
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            },
+            {
               "type": "FIELD",
               "name": "type",
               "content": {
@@ -5287,6 +5303,10 @@
                 {
                   "type": "STRING",
                   "value": "-"
+                },
+                {
+                  "type": "STRING",
+                  "value": "&"
                 }
               ]
             }
@@ -6276,6 +6296,10 @@
                 {
                   "type": "STRING",
                   "value": "-"
+                },
+                {
+                  "type": "STRING",
+                  "value": "&"
                 }
               ]
             }

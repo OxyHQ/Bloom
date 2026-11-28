@@ -601,7 +601,7 @@
         },
         {
           "name": "storage.modifier.bloom",
-          "match": "\\b(pub|public|internal|private|fileprivate|static|mutating|default|async|nonisolated)\\b"
+          "match": "\\b(pub|public|internal|private|fileprivate|static|mutating|inout|default|async|nonisolated)\\b"
         },
         {
           "comment": "`open` and `final` are modifiers only before a declaration (`open` is often a value's name).",

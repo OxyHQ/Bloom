@@ -913,3 +913,47 @@ public struct Temperature {
         (block
           (return_statement
             (none_literal)))))))
+
+==================================================
+inout parameters and & arguments
+==================================================
+
+func fill(_ xs: inout [Int], with v: Int) { xs[0] = v }
+func run() { fill(&grid, with: 1) }
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (identifier)
+        (array_type
+          (user_type
+            (type_identifier))))
+      (parameter
+        (identifier)
+        (identifier)
+        (user_type
+          (type_identifier))))
+    (block
+      (assignment
+        (subscript_expression
+          (identifier)
+          (integer_literal))
+        (identifier))))
+  (function_declaration
+    (identifier)
+    (parameters)
+    (block
+      (call_expression
+        (identifier)
+        (value_arguments
+          (value_argument
+            (prefix_expression
+              (identifier)))
+          (value_argument
+            (identifier)
+            (integer_literal)))))))

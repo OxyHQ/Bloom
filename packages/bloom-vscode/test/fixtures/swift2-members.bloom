@@ -69,3 +69,8 @@ public struct Reading {
     self.value = v
   }
 }
+
+func fill(_ grid: inout [Int], with v: Int) {
+//                ^^^^^ storage.modifier.bloom
+  grid.append(v)
+}
