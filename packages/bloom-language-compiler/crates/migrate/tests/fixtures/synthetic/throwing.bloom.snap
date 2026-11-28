@@ -1,0 +1,49 @@
+// An async function that returns a value and awaits a TS promise outside a `try`: TS's
+// rejection rejects its promise, so it is `async throws` and the await is `try await`; a call
+// that hands its promise on is a task of it. A generic function keeps its type parameters, and a
+// TS tuple read by a constant index is the tuple's member (`coordinates.0`).
+
+import { type Place, fetchJson, query } from "./pages"
+import { console } from "js"
+
+private struct Page<T> {
+  let rows: [T]
+  let more: Bool
+}
+
+private func fetchPage<T>(_ path: String) async throws -> Page<T> {
+  // bloom: review: type arguments `<T>` dropped from `fetchJson(…)`: annotate the binding if tsc needs them
+  let res = try await fetchJson(path)
+  { rows: res.data?.rows ?? [], more: res.data?.more ?? false }
+}
+
+/// Awaits a throwing function outside a `try`: it throws too.
+private func countRows(_ path: String) async throws -> Float {
+  let page = try await fetchPage(path)
+  page.rows.count
+}
+
+/// Nothing catches here: the rest of the block is a `do` whose `catch` ends it.
+private func logRows(_ path: String) async {
+  // bloom: review: a rejection of the awaited call stops the block here (TS: an unhandled rejection)
+  do {
+    let count = try await countRows(path)
+    console.log(count)
+  } catch {}
+}
+
+private func where(_ place: Place) -> String {
+  let longitude = place.coordinates.0
+  let latitude = place.coordinates.1
+  "\(latitude), \(longitude)"
+}
+
+public struct Rows: View {
+  let path: String
+  let place: Place
+  let pages = query(key: path, fn: { (try await countRows(path)) + 1 })
+
+  var body: some View {
+    Text("\(pages.count) rows near \(where(place))").onPress { task { await logRows(path) } }
+  }
+}

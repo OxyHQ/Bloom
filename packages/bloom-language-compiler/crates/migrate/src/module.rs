@@ -160,6 +160,10 @@ pub struct Tr<'s> {
     pub propagate: bool,
     /// Inside a `do` block (TS's `try`): a TS `await` is `try await`, a `throw` is `throw`.
     pub in_do: bool,
+    /// Async functions that return a value and await a TS promise outside a `try`: TS's
+    /// rejection rejects their promise, so they are `async throws` and their awaits `try await`
+    /// (`Tr::scan_throwing`).
+    pub throwing: HashSet<String>,
     /// Translating a `Map`'s entries: a two-item list literal is a tuple.
     pub pairs: bool,
     /// Inside that closure: a bare `return` is `return ok(())`.
@@ -399,6 +403,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         quiet: false,
         propagate: false,
         in_do: false,
+        throwing: HashSet::new(),
         pairs: false,
         try_return: false,
         closures: 0,
@@ -505,6 +510,7 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
     }
     tr.scan_labelled(&program.body);
     tr.scan_tanstack(&program.body);
+    tr.scan_throwing(&program);
     let mut items = Vec::new();
     // Comments above an item with no `.bloom` text of its own (a `defineModifier`,
     // a props interface) go above the next item, as plain comments.
@@ -1002,6 +1008,118 @@ impl<'s> Tr<'s> {
     /// options and result fields; a file that reads others keeps TanStack's TS declarations.
     /// `useInfiniteQuery` is the cursor-paged one: a `String?` cursor (`initialPageParam` of
     /// `undefined`/`null`), `queryFn: ({ pageParam }) => …` and a one-page `getNextPageParam`.
+    /// [`Tr::throwing`]: `async function f(…): Promise<T>` (or `const f = async (…): Promise<T> =>`),
+    /// `T` not `void`, whose body awaits a TS call at its own level, outside any `try`.
+    fn scan_throwing(&mut self, program: &oxc_ast::ast::Program) {
+        use oxc_ast_visit::Visit;
+        struct Scan<'s> {
+            locals: &'s HashSet<String>,
+            found: HashSet<String>,
+        }
+        fn value_promise(ret: Option<&oxc_ast::ast::TSTypeAnnotation>) -> bool {
+            let Some(ret) = ret else { return false };
+            let TSType::TSTypeReference(r) = &ret.type_annotation else { return false };
+            let oxc_ast::ast::TSTypeName::IdentifierReference(id) = &r.type_name else { return false };
+            id.name == "Promise"
+                && r.type_arguments.as_ref().is_some_and(|a| {
+                    a.params.len() == 1
+                        && !matches!(a.params[0], TSType::TSVoidKeyword(_) | TSType::TSUndefinedKeyword(_))
+                })
+        }
+        fn ts_await(locals: &HashSet<String>, e: &Expression) -> bool {
+            match e.without_parentheses() {
+                Expression::AwaitExpression(a) => match a.argument.without_parentheses() {
+                    Expression::CallExpression(c) => {
+                        !matches!(&c.callee, Expression::Identifier(id) if locals.contains(id.name.as_str()))
+                    }
+                    _ => true,
+                },
+                Expression::UnaryExpression(u) => ts_await(locals, &u.argument),
+                _ => false,
+            }
+        }
+        fn unguarded(locals: &HashSet<String>, statements: &[Statement]) -> bool {
+            statements.iter().any(|st| match st {
+                Statement::VariableDeclaration(v) => {
+                    v.declarations.iter().any(|d| d.init.as_ref().is_some_and(|i| ts_await(locals, i)))
+                }
+                Statement::ExpressionStatement(e) => ts_await(locals, &e.expression),
+                Statement::ReturnStatement(r) => r.argument.as_ref().is_some_and(|a| ts_await(locals, a)),
+                Statement::IfStatement(i) => {
+                    ts_await(locals, &i.test)
+                        || unguarded(locals, std::slice::from_ref(&i.consequent))
+                        || i.alternate.as_ref().is_some_and(|a| unguarded(locals, std::slice::from_ref(a)))
+                }
+                Statement::BlockStatement(b) => unguarded(locals, &b.body),
+                _ => false,
+            })
+        }
+        impl<'a> Visit<'a> for Scan<'_> {
+            fn visit_function(
+                &mut self,
+                f: &oxc_ast::ast::Function<'a>,
+                flags: oxc_syntax::scope::ScopeFlags,
+            ) {
+                if f.r#async
+                    && let Some(id) = &f.id
+                    && value_promise(f.return_type.as_deref())
+                    && f.body.as_ref().is_some_and(|b| unguarded(self.locals, &b.statements))
+                {
+                    self.found.insert(id.name.to_string());
+                }
+                oxc_ast_visit::walk::walk_function(self, f, flags);
+            }
+            fn visit_variable_declarator(&mut self, d: &oxc_ast::ast::VariableDeclarator<'a>) {
+                // `const f = async (…) => …`, also as `useCallback(async (…) => …, deps)`.
+                let init = d.init.as_ref().map(|i| match i.without_parentheses() {
+                    Expression::CallExpression(c)
+                        if matches!(&c.callee, Expression::Identifier(u) if u.name == "useCallback") =>
+                    {
+                        c.arguments.first().and_then(|a| a.as_expression()).unwrap_or(i)
+                    }
+                    other => other,
+                });
+                if let BindingPattern::BindingIdentifier(id) = &d.id
+                    && let Some(Expression::ArrowFunctionExpression(a)) =
+                        init.map(|i| i.without_parentheses())
+                    && a.r#async
+                    && a.get_expression().is_none()
+                    && value_promise(a.return_type.as_deref())
+                    && unguarded(self.locals, crate::view::arrow_statements(a))
+                {
+                    self.found.insert(id.name.to_string());
+                }
+                oxc_ast_visit::walk::walk_variable_declarator(self, d);
+            }
+        }
+        // A local function: any name the module declares that is not imported.
+        let mut locals = HashSet::new();
+        {
+            struct Names<'n>(&'n mut HashSet<String>);
+            impl<'a> Visit<'a> for Names<'_> {
+                fn visit_binding_identifier(&mut self, id: &oxc_ast::ast::BindingIdentifier<'a>) {
+                    self.0.insert(id.name.to_string());
+                }
+            }
+            Names(&mut locals).visit_program(program);
+        }
+        for i in &self.imported {
+            locals.remove(i);
+        }
+        // To a fixed point: awaiting a throwing local function outside a `try` throws too.
+        let mut found = HashSet::new();
+        loop {
+            let ts_like: HashSet<String> = locals.difference(&found).cloned().collect();
+            let mut scan = Scan { locals: &ts_like, found: HashSet::new() };
+            scan.visit_program(program);
+            if scan.found.len() == found.len() {
+                break;
+            }
+            found = scan.found;
+        }
+        self.throwing = found;
+    }
+
     fn scan_tanstack(&mut self, body: &[Statement]) {
         use oxc_ast_visit::Visit;
         const OPTIONS: &[&str] =
