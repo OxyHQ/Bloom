@@ -2,7 +2,7 @@
 // test turns true (a ref kept to the render's value is set the same way; `Ref` needs a package). A closure
 // typed by its declaration (`const f: F`, `useCallback<F>`) takes its parameters' types from it.
 
-import { logger, type Reporter, report } from "./reporter"
+import { logger, type OnUpdated, type Reporter, report } from "./reporter"
 
 public struct Band: View {
   let trends: [String]
@@ -14,10 +14,17 @@ public struct Band: View {
     if event != "impression" { return }
     onEvent(event, position)
   }
+  let onUpdated: OnUpdated = { id, arg1 in
+    let { cleared } = arg1
+    if cleared { logger.warn(id) }
+  }
 
   var body: some View {
     Text("\(trends.count)")
-    .onPress { onCard("press", 0) }
+    .onPress {
+      onCard("press", 0)
+      onUpdated("x", cleared: true)
+    }
     .task(id: failed) { if failed { logger.warn("Band: trends failed") } }
   }
 }

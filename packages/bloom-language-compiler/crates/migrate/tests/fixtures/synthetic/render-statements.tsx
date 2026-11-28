@@ -3,7 +3,7 @@
 // typed by its declaration (`const f: F`, `useCallback<F>`) takes its parameters' types from it.
 import { useCallback } from 'react';
 import { Text, view } from '@oxy.so/bloom-language';
-import { logger, type Reporter, report } from './reporter';
+import { logger, type OnUpdated, type Reporter, report } from './reporter';
 
 export const Band = view(function Band({ trends, failed }: { trends: string[]; failed: boolean }) {
   if (failed) {
@@ -16,5 +16,11 @@ export const Band = view(function Band({ trends, failed }: { trends: string[]; f
     if (event !== 'impression') return;
     onEvent(event, position);
   }, []);
-  return Text(`${trends.length}`).onPress(() => onCard('press', 0));
+  const onUpdated = useCallback<OnUpdated>((id, { cleared }) => {
+    if (cleared) logger.warn(id);
+  }, []);
+  return Text(`${trends.length}`).onPress(() => {
+    onCard('press', 0);
+    onUpdated('x', { cleared: true });
+  });
 });
