@@ -1,0 +1,14 @@
+// `{c && xs?.map((x) => …)}` in JSX: the rows of an optional list, drawn when `c` holds.
+
+public struct Roster: View {
+  let failed: Bool
+  var names: [String]? = none
+  var body: some View {
+    VStack {
+      Group {
+        if failed { RawText("Could not load") }
+        if !failed { for row in names?.map({ name in RawText(name).id(name) }) ?? [] { row } }
+      }
+    }
+  }
+}
