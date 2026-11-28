@@ -624,6 +624,10 @@ checked as such: `Identifiable` needs an `id`, `CaseIterable` an enum whose case
 Members and extensions (section 5) are statically dispatched: an instance member `m` of `T`
 compiles to the function `T$m(self, …)`, a static one to `T$$m`, and inside a member a name of
 one of `T`'s members that the body binds nowhere itself reads `self` (Swift's implicit `self`).
+A view's `static let x = v` is the type's constant `T$$x` too: `Card.fallback` reads it anywhere,
+and the view's own body reads it unqualified. A value type's `init` in an extension is
+`T$$init$<labels>` (`Regex$$init$_`), called by its labels beside the memberwise one, its body
+giving the value it makes; a class's `init` makes `self` (`T$$init`).
 
 ### 4.9 Classes and observable models
 

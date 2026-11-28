@@ -1,0 +1,45 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+
+export const Card$$fallback = "Untitled";
+
+const Plain$$spacing = 4;
+
+export interface CardProps {
+  readonly title: string | undefined;
+}
+export const Card = view(function Card(props: CardProps) {
+"use no memo";
+const $ = $c(2);
+const { title } = props;
+const fallback = Card$$fallback;
+let $t0;
+if ($[0] !== title) {
+$t0 = Text(title ?? Card$$fallback);
+$[0] = title;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
+export function cardLabel(title: string | undefined): string {
+return title ?? Card$$fallback;
+}
+
+export const Plain = view(function Plain() {
+"use no memo";
+const $ = $c(1);
+const spacing = Plain$$spacing;
+let $t1;
+if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+$t1 = Text(`${spacing}`);
+$[0] = $t1;
+} else {
+$t1 = $[0];
+}
+return $t1;
+});
+

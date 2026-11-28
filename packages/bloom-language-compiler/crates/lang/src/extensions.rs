@@ -264,6 +264,56 @@ fn lower_member(owner: &Owner, member: &TypeMember, ids: &mut Ids, out: &mut Vec
     out.push(Item { visibility, modifiers, kind, span: member.span });
 }
 
+/// A view's `static let x = v` (`struct Card: View { static let fallback = "…" }`): the type's
+/// constant `Card$$fallback`, which `Card.fallback` reads, as a struct's is; the view's own
+/// unqualified `fallback` reads it too.
+fn view_statics(file: &mut File, ids: &mut Ids) {
+    let mut consts = Vec::new();
+    for item in &mut file.items {
+        let ItemKind::View(v) = &mut item.kind else { continue };
+        let Some(surface) = v.surface.as_deref() else { continue };
+        for member in &surface.members {
+            let TypeMemberKind::Stored { name, ty, value: Some(_), mutable: false } = &member.kind else {
+                continue;
+            };
+            if !member.modifiers.is_static {
+                continue;
+            }
+            let Some(slot) = v.members.iter_mut().find_map(|m| match m {
+                Member::Let(l) if matches!(&l.pattern.kind, PatternKind::Bind(n) if n.name == name.name) => {
+                    Some(l)
+                }
+                _ => None,
+            }) else {
+                continue;
+            };
+            let constant = mangle(&v.name.name, &name.name, true);
+            let read = Expr { id: ids.next(), kind: ExprKind::Name(constant.clone()), span: slot.value.span };
+            let value = std::mem::replace(&mut slot.value, read);
+            consts.push(Item {
+                visibility: member.visibility,
+                modifiers: Modifiers {
+                    visibility_span: member.modifiers.visibility_span,
+                    ..Modifiers::default()
+                },
+                kind: ItemKind::Const(ConstDecl {
+                    mutable: false,
+                    name: Ident { name: constant, span: name.span },
+                    ty: ty.clone(),
+                    value,
+                    span: member.span,
+                }),
+                span: member.span,
+            });
+        }
+    }
+    // Before the views, so a view's body (and the module's functions) read them declared.
+    if !consts.is_empty() {
+        consts.append(&mut file.items);
+        file.items = consts;
+    }
+}
+
 /// The standard library's queues an actor's methods run through (to import as written
 /// names are: the source never spells them).
 pub fn actor_runners(file: &File) -> Vec<String> {
@@ -477,6 +527,7 @@ fn member_names(file: &File) -> Vec<(String, Vec<String>)> {
 /// Lowers `file`'s extensions, and the members of its structs, enums and classes, in place.
 pub fn lower(file: &mut File) {
     let mut ids = Ids(u32::MAX / 2);
+    view_statics(file, &mut ids);
     for item in &mut file.items {
         if let ItemKind::Class(c) = &mut item.kind
             && c.actor

@@ -6797,6 +6797,13 @@ impl<'o> Checker<'o> {
     }
 
     fn field(&mut self, expr: &Expr, object: &Expr, name: &Ident) -> Ty {
+        // `Card.fallback`: a view's `static let`, the type's constant `Card$$fallback`.
+        if let ExprKind::Name(type_name) = &object.kind
+            && self.lookup(type_name).is_some_and(|l| self.out.locals[l].kind == LocalKind::View)
+            && let Some(ty) = self.static_member(expr, type_name, name)
+        {
+            return ty;
+        }
         // `Type.case` and `Task.signal`, before values.
         if let ExprKind::Name(type_name) = &object.kind
             && self.lookup(type_name).is_none()
