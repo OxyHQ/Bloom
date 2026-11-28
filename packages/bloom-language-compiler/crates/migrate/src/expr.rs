@@ -1743,13 +1743,13 @@ impl Tr<'_> {
         // A spread child (`...xs.map(…)`) is a `for` line, which only a builder takes.
         // A spread of a name (`Text(...runs)`) stays a spread argument.
         let spread = children.iter().any(|a| match a {
-            Argument::SpreadElement(s) => match s.argument.without_parentheses() {
+            Argument::SpreadElement(s) => matches!(
+                s.argument.without_parentheses(),
                 Expression::CallExpression(_)
-                | Expression::ConditionalExpression(_)
-                | Expression::LogicalExpression(_)
-                | Expression::ArrayExpression(_) => true,
-                _ => false,
-            },
+                    | Expression::ConditionalExpression(_)
+                    | Expression::LogicalExpression(_)
+                    | Expression::ArrayExpression(_)
+            ),
             _ => false,
         });
         let builder =

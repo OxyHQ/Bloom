@@ -767,11 +767,7 @@ fn returns_to_element(statements: &[Statement], to_element: &dyn Fn(&str) -> boo
         })
         .collect();
     let value_ok = |e: &Expression| -> bool { element_value(e, to_element, &elements, 0) };
-    fn walk(
-        statements: &[Statement],
-        value_ok: &dyn Fn(&Expression) -> bool,
-        any: &mut bool,
-    ) -> bool {
+    fn walk(statements: &[Statement], value_ok: &dyn Fn(&Expression) -> bool, any: &mut bool) -> bool {
         for statement in statements {
             match statement {
                 Statement::ReturnStatement(r) => match &r.argument {
@@ -1540,7 +1536,9 @@ impl<'s> Tr<'s> {
                 _ => statement.as_declaration(),
             };
             let found: Option<(String, &oxc_ast::ast::FormalParameters)> = match declaration {
-                Some(Declaration::FunctionDeclaration(f)) => f.id.as_ref().map(|id| (id.name.to_string(), &*f.params)),
+                Some(Declaration::FunctionDeclaration(f)) => {
+                    f.id.as_ref().map(|id| (id.name.to_string(), &*f.params))
+                }
                 Some(Declaration::VariableDeclaration(v)) => v.declarations.first().and_then(|d| {
                     let BindingPattern::BindingIdentifier(id) = &d.id else { return None };
                     let mut init = d.init.as_ref()?;
@@ -1561,7 +1559,8 @@ impl<'s> Tr<'s> {
                 _ => None,
             };
             let Some((name, params)) = found else { continue };
-            let Some(BindingPattern::ObjectPattern(pattern)) = params.items.first().map(|p| &p.pattern) else {
+            let Some(BindingPattern::ObjectPattern(pattern)) = params.items.first().map(|p| &p.pattern)
+            else {
                 continue;
             };
             let defaults: Vec<(String, String)> = pattern
@@ -1571,7 +1570,9 @@ impl<'s> Tr<'s> {
                     let key = crate::view::key_name(&p.key)?;
                     let BindingPattern::AssignmentPattern(a) = &p.value else { return None };
                     let value = match a.right.without_parentheses() {
-                        Expression::StringLiteral(s) => crate::expr::quote(s.value.as_str().unwrap_or_default()),
+                        Expression::StringLiteral(s) => {
+                            crate::expr::quote(s.value.as_str().unwrap_or_default())
+                        }
                         Expression::BooleanLiteral(b) => b.value.to_string(),
                         Expression::NumericLiteral(n) => n.raw.as_ref()?.to_string(),
                         _ => return None,
@@ -2017,7 +2018,10 @@ impl<'s> Tr<'s> {
 
     /// The fields of an interface's bases when each is a plain type imported from another TS
     /// file the codemod can read (`interface A extends B, C`), in order; `None` otherwise.
-    pub fn imported_bases(&mut self, interface: &oxc_ast::ast::TSInterfaceDeclaration) -> Option<Vec<crate::props::Field>> {
+    pub fn imported_bases(
+        &mut self,
+        interface: &oxc_ast::ast::TSInterfaceDeclaration,
+    ) -> Option<Vec<crate::props::Field>> {
         let mut out: Vec<crate::props::Field> = Vec::new();
         for heritage in &interface.extends {
             let TSTypeName::IdentifierReference(base) = &heritage.type_name else { return None };
@@ -2039,7 +2043,9 @@ impl<'s> Tr<'s> {
                 return None;
             }
             let fields = self.external_props(base)?;
-            let fields = fields.into_iter().filter(|f| keys.as_ref().is_none_or(|(pick, k)| k.contains(&f.name) == *pick));
+            let fields = fields
+                .into_iter()
+                .filter(|f| keys.as_ref().is_none_or(|(pick, k)| k.contains(&f.name) == *pick));
             for field in fields.collect::<Vec<_>>() {
                 out.retain(|f| f.name != field.name);
                 out.push(field);

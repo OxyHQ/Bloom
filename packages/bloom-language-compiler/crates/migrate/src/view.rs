@@ -399,8 +399,12 @@ impl Tr<'_> {
                             let keep = |k: &str| keys.iter().any(|x| x == k) == pick;
                             if let Some(local) = local_object(module, &base.name) {
                                 members.extend(local.into_iter().filter(|m| match m {
-                                    TSSignature::TSPropertySignature(p) => key_name(&p.key).is_none_or(|k| keep(&k)),
-                                    TSSignature::TSMethodSignature(m) => key_name(&m.key).is_none_or(|k| keep(&k)),
+                                    TSSignature::TSPropertySignature(p) => {
+                                        key_name(&p.key).is_none_or(|k| keep(&k))
+                                    }
+                                    TSSignature::TSMethodSignature(m) => {
+                                        key_name(&m.key).is_none_or(|k| keep(&k))
+                                    }
                                     _ => !pick,
                                 }));
                             } else if self.imported.contains(base.name.as_str())
@@ -607,7 +611,10 @@ impl Tr<'_> {
             "ImageProps" => "ImageStyle",
             _ => return None,
         };
-        if !pick || keys != ["style"] || self.import_sources.get(base).map(String::as_str) != Some("react-native") {
+        if !pick
+            || keys != ["style"]
+            || self.import_sources.get(base).map(String::as_str) != Some("react-native")
+        {
             return None;
         }
         for ty in ["StyleProp", style] {
@@ -3197,7 +3204,11 @@ fn is_single_if(lines: &str) -> bool {
 /// The members of a module object type named `name` (an interface or an object alias).
 /// `Pick<Q, 'a' | 'b'>` or `Omit<Q, 'k'>` of an object type `Q` of this module: Q's members,
 /// those or but those.
-fn local_pick<'b, 'a>(module: &'b [Statement<'a>], part: &'b TSType<'a>, name: &str) -> Option<Vec<&'b TSSignature<'a>>> {
+fn local_pick<'b, 'a>(
+    module: &'b [Statement<'a>],
+    part: &'b TSType<'a>,
+    name: &str,
+) -> Option<Vec<&'b TSSignature<'a>>> {
     let TSType::TSTypeReference(r) = part else { return None };
     let TSTypeName::IdentifierReference(util) = &r.type_name else { return None };
     let pick = match util.name.as_str() {
@@ -3205,7 +3216,9 @@ fn local_pick<'b, 'a>(module: &'b [Statement<'a>], part: &'b TSType<'a>, name: &
         "Omit" => false,
         _ => return None,
     };
-    let [TSType::TSTypeReference(base), keys] = r.type_arguments.as_ref()?.params.as_slice() else { return None };
+    let [TSType::TSTypeReference(base), keys] = r.type_arguments.as_ref()?.params.as_slice() else {
+        return None;
+    };
     let TSTypeName::IdentifierReference(base) = &base.type_name else { return None };
     if base.name == name {
         return None;
@@ -3228,7 +3241,10 @@ fn local_pick<'b, 'a>(module: &'b [Statement<'a>], part: &'b TSType<'a>, name: &
 }
 
 /// The interface `name` declared in this module.
-fn local_interface<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<&'b oxc_ast::ast::TSInterfaceDeclaration<'a>> {
+fn local_interface<'b, 'a>(
+    module: &'b [Statement<'a>],
+    name: &str,
+) -> Option<&'b oxc_ast::ast::TSInterfaceDeclaration<'a>> {
     module.iter().find_map(|statement| {
         let declaration = match statement {
             Statement::ExportDeclaration(e) => Some(&e.declaration),
