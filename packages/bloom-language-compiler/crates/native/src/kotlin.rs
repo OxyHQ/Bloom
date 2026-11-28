@@ -121,6 +121,12 @@ struct Emitter<'a> {
     return_label: Option<String>,
     /// The type parameters of the type whose members are being emitted.
     owner_generics: Vec<String>,
+    /// The Kotlin package of the file being emitted.
+    package: String,
+    /// In a function with `Codable` witnesses: each type parameter's codec parameter.
+    codecs: HashMap<String, String>,
+    /// The view's `@Binding` props: a read is `.value`, a write `.set(…)`, `$x` the binding.
+    binding_props: std::collections::HashSet<String>,
 }
 
 /// A view expression unwound: the node or view call at its base, and the modifiers on it
@@ -159,6 +165,7 @@ const NODES: &[&str] = &[
     "Spacer",
     "ProgressView",
     "Toggle",
+    "TextField",
     "Button",
     "VStack",
     "HStack",
@@ -195,8 +202,8 @@ fn universal(name: &str) -> bool {
 fn token_class(node: &str, param: &str) -> &'static str {
     match (node, param) {
         (_, "spacing") => "Space",
-        ("HStack", "alignment") => "VAlign",
-        ("VStack", "alignment") => "HAlign",
+        ("HStack", "alignment" | "align") => "VAlign",
+        ("VStack", "alignment" | "align") => "HAlign",
         ("ZStack", "alignment") => "Align",
         (_, "font") => "Font",
         (_, "foregroundStyle") | (_, "foreground") | (_, "background") => "Colors",
@@ -228,6 +235,9 @@ impl<'a> Emitter<'a> {
             actor: false,
             return_label: None,
             owner_generics: Vec::new(),
+            binding_props: Default::default(),
+            package: String::new(),
+            codecs: HashMap::new(),
         }
     }
 
@@ -267,6 +277,7 @@ impl<'a> Emitter<'a> {
     }
 
     fn file(&mut self, package: &str, packages: &[String]) -> String {
+        self.package = package.to_string();
         let mut out = String::new();
         let _ = writeln!(
             out,
@@ -309,7 +320,8 @@ impl<'a> Emitter<'a> {
             TypeKind::Named { name, args } => {
                 let base = match name.name.as_str() {
                     "Bool" => "Boolean".to_string(),
-                    "Int" => "Int".to_string(),
+                    // `Int` is 64-bit in the language (ADR 0003), as Swift's is.
+                    "Int" => "Long".to_string(),
                     "Float" | "Double" => "Double".to_string(),
                     "String" | "Character" => "String".to_string(),
                     "Void" | "Unit" => "Unit".to_string(),
@@ -330,7 +342,16 @@ impl<'a> Emitter<'a> {
             }
             TypeKind::List(inner) => format!("List<{}>", self.ty(inner)),
             TypeKind::Map(k, v) => format!("Map<{}, {}>", self.ty(k), self.ty(v)),
-            TypeKind::Optional(inner) => format!("{}?", self.ty(inner)),
+            TypeKind::Optional(inner) => {
+                let inner = self.ty(inner);
+                // `(() -> Unit)?`: a function type takes parentheses before its `?`.
+                if inner.contains("->") { format!("({inner})?") } else { format!("{inner}?") }
+            }
+            // `() -> View`: a builder, drawn where it is called.
+            TypeKind::Fn { params, ret, .. } if Self::is_view_type(ret) => {
+                let params: Vec<String> = params.iter().map(|p| self.ty(p)).collect();
+                format!("@Composable ({}) -> Unit", params.join(", "))
+            }
             TypeKind::Fn { is_async, params, ret } => {
                 let params: Vec<String> = params.iter().map(|p| self.ty(p)).collect();
                 let ret = self.ty(ret);
@@ -685,17 +706,35 @@ impl<'a> Emitter<'a> {
         let vis = Self::visibility(m.visibility);
         let receiver = match ty {
             "String" => "String".to_string(),
-            "Int" => "Int".to_string(),
+            "Int" => "Long".to_string(),
             "Double" | "Float" => "Double".to_string(),
             "Bool" => "Boolean".to_string(),
             "Array" => "List<Element>".to_string(),
             other => other.to_string(),
         };
         let generic = if ty == "Array" { "<Element> " } else { "" };
+        // A static member of a built-in type: an extension of its companion (`String.Companion`;
+        // Kotlin's `String`, `Long`, `Double` and `Boolean` have one, its collections do not).
+        let companion = matches!(ty, "String" | "Int" | "Double" | "Float" | "Bool")
+            .then(|| format!("{receiver}.Companion"));
         match &m.kind {
-            TypeMemberKind::Func(f) if m.modifiers.is_static => {
-                self.unsupported(f.name.span, format!("a static member of `{ty}`"));
-                String::new()
+            TypeMemberKind::Func(f) if m.modifiers.is_static => match &companion {
+                Some(c) => self.func(vis, f, Some(c), 0),
+                None => {
+                    self.unsupported(f.name.span, format!("a static member of `{ty}`"));
+                    String::new()
+                }
+            },
+            TypeMemberKind::Stored { name, ty: t, value: Some(v), mutable: false }
+                if m.modifiers.is_static && companion.is_some() =>
+            {
+                let t = t.as_ref().map(|t| format!(": {}", self.ty(t))).unwrap_or_default();
+                let v = self.expr(v);
+                format!(
+                    "{vis}val {}.{}{t}\n  get() = {v}\n",
+                    companion.as_deref().unwrap_or_default(),
+                    kw(&name.name)
+                )
             }
             TypeMemberKind::Func(f) => {
                 let text = self.func(vis, f, Some(&receiver), 0);
@@ -843,7 +882,15 @@ impl<'a> Emitter<'a> {
         let composable = if returns_view { "@Composable " } else { "" };
         let recv = receiver.map(|r| format!("{r}.")).unwrap_or_default();
         let (type_params, where_clause) = self.type_params(f);
-        let params = self.params(&f.params, f.func);
+        let mut params = self.params(&f.params, f.func);
+        let saved_codecs = std::mem::take(&mut self.codecs);
+        for (name, ty) in self.codec_params(f) {
+            if !params.is_empty() {
+                params.push_str(", ");
+            }
+            let _ = write!(params, "{name}: Codec<{ty}>");
+            self.codecs.insert(ty, name);
+        }
         let mut scope = HashMap::new();
         for p in &f.params {
             if let TypeKind::Named { name, .. } = &p.ty.kind {
@@ -861,11 +908,41 @@ impl<'a> Emitter<'a> {
         let mut body = self.rebinds(&f.params, f.func, indent + 1);
         body.push_str(&self.block(&f.body.stmts, indent + 1, mode));
         self.locals.pop();
+        self.codecs = saved_codecs;
         let p = pad(indent);
         format!(
             "{p}{composable}{vis}{suspend}fun {type_params}{recv}{}({params}){ret}{where_clause} {{\n{body}{p}}}\n",
             kw(&f.name.name)
         )
+    }
+
+    /// A generic function's `Codable` witnesses, as the checker names them (`$w_T_Codable`):
+    /// each one's Kotlin parameter name and the type parameter it is the codec of. A call
+    /// passes them after its arguments (`witness_args`), and `T.self` reads them.
+    fn codec_params(&self, f: &FnDecl) -> Vec<(String, String)> {
+        let Some(params) = self.file.checked.witness_params.get(&f.span) else { return Vec::new() };
+        params
+            .iter()
+            .filter(|(_, _, bound)| matches!(bound, bloom_lang::backend::Bound::Codable))
+            .filter_map(|(name, index, _)| {
+                let ty = f.generics.get(*index as usize)?.name.clone();
+                Some((witness_name(name), ty))
+            })
+            .collect()
+    }
+
+    /// The witnesses a generic call passes after its arguments: its codecs.
+    fn witness_args(&self, call_id: bloom_lang::backend::ExprId) -> Vec<String> {
+        use bloom_lang::backend::WitnessArg;
+        let Some(args) = self.file.checked.witness_args.get(&call_id) else { return Vec::new() };
+        args.iter()
+            .flatten()
+            .filter_map(|w| match w {
+                WitnessArg::Codec(text) => Some(text.replace("$$", ".")),
+                WitnessArg::Param(name) if name.contains("Codable") => Some(witness_name(name)),
+                _ => None,
+            })
+            .collect()
     }
 
     /// A generic function's type parameters and their bounds: `<T : Titled> `, and a
@@ -884,9 +961,9 @@ impl<'a> Emitter<'a> {
                 match crate::type_name(bound).as_deref() {
                     Some("Equatable" | "Hashable" | "Sendable") => {}
                     Some("Comparable") => bounds.push(format!("Comparable<{}>", g.name)),
-                    Some("Codable" | "Encodable" | "Decodable") => {
-                        self.unsupported(bound.span, "a `Codable` bound (a type's witness)");
-                    }
+                    // A codec is passed as a witness parameter (`codec_params`), as the
+                    // TypeScript backend passes it: no Kotlin bound.
+                    Some("Codable" | "Encodable" | "Decodable") => {}
                     _ => bounds.push(self.ty(bound)),
                 }
             }
@@ -917,6 +994,10 @@ impl<'a> Emitter<'a> {
             props.push(format!("{}: {ty}{default}", kw(&p.name.name)));
             if let TypeKind::Named { name, .. } = &p.ty.kind {
                 scope.insert(p.name.name.clone(), name.name.clone());
+                // `@Binding var isOn: Bool`: read through `.value`, written through `.set`.
+                if name.name == "Binding" {
+                    self.binding_props.insert(p.name.name.clone());
+                }
             }
         }
         props.push("modifier: Modifier = Modifier".into());
@@ -932,6 +1013,34 @@ impl<'a> Emitter<'a> {
                         "  var {} by remember {{ mutableStateOf{ty}({value}) }}",
                         kw(&s.name.name)
                     );
+                }
+                // `@Environment(\.k) var k`: the value in scope. A built-in one is the runtime's
+                // (`Environment.disabled`); an app's `EnvironmentKey` is read from its key,
+                // named by its package, since the local takes the key's own name.
+                Member::State(s) if s.attr == StateAttr::Env => {
+                    let key = match &s.value.kind {
+                        ExprKind::KeyPath { root: None, path } if path.len() == 1 => {
+                            Some(path[0].name.clone())
+                        }
+                        _ => None,
+                    };
+                    match key {
+                        Some(k) if self.decls.env_keys.contains(&k) => {
+                            let _ = writeln!(
+                                body,
+                                "  val {} = {}.{}.current",
+                                kw(&s.name.name),
+                                self.package,
+                                kw(&k)
+                            );
+                        }
+                        Some(k) => {
+                            let _ = writeln!(body, "  val {} = Environment.{}", kw(&s.name.name), kw(&k));
+                        }
+                        None => {
+                            self.unsupported(s.value.span, "this environment key");
+                        }
+                    }
                 }
                 Member::State(s) => {
                     self.unsupported(s.span, format!("`@{}`", s.attr.word()));
@@ -1017,8 +1126,12 @@ impl<'a> Emitter<'a> {
                     AssignOp::Set => value,
                     op => format!("{} {} {value}", self.expr(&a.target), op.text().trim_end_matches('=')),
                 };
+                let root = Self::place_root(&a.target);
                 let (place, rebuilt) = self.place(&a.target, value);
-                format!("{p}{place} = {rebuilt}\n")
+                match root {
+                    Some(n) if self.binding_props.contains(n) => format!("{p}{}.set({rebuilt})\n", kw(n)),
+                    _ => format!("{p}{place} = {rebuilt}\n"),
+                }
             }
             StmtKind::Return(Some(e)) => {
                 let label = self.return_label.as_ref().map(|l| format!("@{l}")).unwrap_or_default();
@@ -1100,7 +1213,33 @@ impl<'a> Emitter<'a> {
 
     fn if_stmt(&mut self, i: &IfExpr, indent: usize, mode: Mode, modifier: Option<&str>) -> String {
         let p = pad(indent);
+        // `if let x = v { … }`: `run { val x = v; if (x != null) { … } }`, so `x` is the
+        // smart-cast value inside and nothing outside (Swift's scoping), and `v` is read once.
+        if let Cond::Let(pat, value) = &i.cond {
+            let PatternKind::Bind(n) = &pat.kind else {
+                return format!("{p}{}\n", self.unsupported(pat.span, "this `if let` pattern"));
+            };
+            let v = self.expr(value);
+            let name = kw(&n.name);
+            let inner =
+                self.if_branches(format!("{name} != null"), String::new(), i, indent + 1, mode, modifier);
+            return format!("{p}run {{\n{p}  val {name} = {v}\n{inner}{p}}}\n");
+        }
         let (head, bind) = self.cond(&i.cond, indent + 1);
+        self.if_branches(head, bind, i, indent, mode, modifier)
+    }
+
+    /// An `if`'s test, then its branches.
+    fn if_branches(
+        &mut self,
+        head: String,
+        bind: String,
+        i: &IfExpr,
+        indent: usize,
+        mode: Mode,
+        modifier: Option<&str>,
+    ) -> String {
+        let p = pad(indent);
         let then = if mode == Mode::View {
             self.view_block(&i.then.stmts, indent + 1, modifier)
         } else {
@@ -1152,6 +1291,15 @@ impl<'a> Emitter<'a> {
                 self.place(base, rebuilt)
             }
             _ => (self.expr(target), value),
+        }
+    }
+
+    /// The name a place starts from (`posts` in `posts[i].likes`).
+    fn place_root(target: &Expr) -> Option<&str> {
+        match &target.kind {
+            ExprKind::Name(n) => Some(n),
+            ExprKind::Field(base, _) | ExprKind::Index(base, _) => Self::place_root(base),
+            _ => None,
         }
     }
 
@@ -1307,6 +1455,10 @@ impl<'a> Emitter<'a> {
             ExprKind::Name(n) if matches!(self.ty_of(e), Some(Ty::View(_))) => format!("{p}{}()\n", kw(n)),
             _ => match self.view_expr(e, indent, modifier) {
                 Some(text) => text,
+                // A call that draws (`rows()`, `names(xs)`): a composable call, as it is.
+                None if matches!(e.kind, ExprKind::Call(_)) && matches!(self.ty_of(e), Some(Ty::View(_))) => {
+                    format!("{p}{}\n", self.expr(e))
+                }
                 None => format!("{p}{}\n", self.unsupported(e.span, "this expression as a view")),
             },
         }
@@ -1412,6 +1564,18 @@ impl<'a> Emitter<'a> {
 
     /// An argument that may be a token (`.lg`): the runtime's token constant, by where it is.
     fn token_or_expr(&mut self, node: &str, param: &str, value: &Expr) -> String {
+        // The checker's token for a Swift-named one (`.xxl` is "2xl", `.caption1` "caption-1",
+        // `.muted.opacity(0.1)` "muted/10").
+        if let Some(token) = self.file.checked.swift_tokens.get(&value.id).cloned() {
+            let class = token_class(node, param);
+            return match token.split_once('/') {
+                Some((role, pct)) => {
+                    let alpha = pct.parse::<f64>().unwrap_or(100.0) / 100.0;
+                    format!("{class}.{}.copy(alpha = {alpha}f)", token_name(role))
+                }
+                None => format!("{class}.{}", token_name(&token)),
+            };
+        }
         match &value.kind {
             ExprKind::ImplicitMember(m) => format!("{}.{}", token_class(node, param), token_name(&m.name)),
             _ => self.expr(value),
@@ -1453,7 +1617,9 @@ impl<'a> Emitter<'a> {
                 ("NavigationStack", Some("root")) => format!("root = {}", self.expr(&a.value)),
                 (_, Some(l)) => format!("{} = {}", kw(l), self.expr(&a.value)),
                 // A view passed to a node (`Button(Text("Like"))`): a composable lambda.
-                (_, None) if matches!(self.ty_of(&a.value), Some(Ty::View(_))) => self.view_arg(&a.value, indent),
+                (_, None) if matches!(self.ty_of(&a.value), Some(Ty::View(_))) => {
+                    self.view_arg(&a.value, indent)
+                }
                 (_, None) => self.expr(&a.value),
             };
             if label.is_none() {
@@ -1481,6 +1647,7 @@ impl<'a> Emitter<'a> {
             let param = match *name {
                 "foregroundStyle" => "foreground",
                 "lineLimit" => "lines",
+                "align" => "alignment",
                 "controlSize" => "size",
                 other => other,
             };
@@ -1586,12 +1753,33 @@ impl<'a> Emitter<'a> {
             }
         }
         if let Some(c) = call.trailing.as_deref() {
-            out.push(self.closure(c));
+            let closure = self.closure(c);
+            // Swift's rule: the unlabelled trailing closure fills the first parameter no
+            // argument named (`row { } label: { }` is `row(action: { }, label: { })`).
+            match params {
+                Some(params) => {
+                    let given: Vec<Option<String>> =
+                        call.args.iter().map(|a| a.label.as_ref().map(|l| l.name.clone())).collect();
+                    let slot = params.iter().position(|p| p.label.is_some() && !given.contains(&p.label));
+                    match slot {
+                        Some(i) if named || i != out.len() => {
+                            let name = params[i].label.clone().unwrap_or(params[i].name.clone());
+                            out.push(format!("{} = {closure}", kw(&name)));
+                        }
+                        _ => out.push(closure),
+                    }
+                }
+                None => out.push(closure),
+            }
         }
         out
     }
 
     fn closure(&mut self, c: &Closure) -> String {
+        // A builder (`{ Text("a"); Text("b") }` where a `() -> View` goes): its lines are drawn.
+        if self.file.checked.closures.get(&c.span).is_some_and(|i| i.builder) {
+            return self.view_closure(c, 1);
+        }
         let shorthand = !c.has_in && c.params.len() == 1 && c.params[0].name.name == "$0";
         let saved = self.shorthand_it;
         self.shorthand_it = shorthand;
@@ -1656,7 +1844,11 @@ impl<'a> Emitter<'a> {
 
     fn expr(&mut self, e: &Expr) -> String {
         match &e.kind {
-            ExprKind::Int(n) => n.to_string(),
+            // An integer literal is a `Long` (`Int` is 64-bit), or a `Double` where one is expected.
+            ExprKind::Int(n) => match self.ty_of(e) {
+                Some(Ty::Float) => format!("{n}.0"),
+                _ => format!("{n}L"),
+            },
             ExprKind::Float(f) => {
                 let s = f.to_string();
                 if s.contains('.') || s.contains('e') { s } else { format!("{s}.0") }
@@ -1664,11 +1856,23 @@ impl<'a> Emitter<'a> {
             ExprKind::Bool(b) => b.to_string(),
             ExprKind::None => "null".into(),
             ExprKind::Unit => "Unit".into(),
+            // `"xs"` where a token goes (a space, a colour): the runtime's token constant.
+            ExprKind::Str { parts, .. }
+                if let [StrPart::Text(t)] = parts.as_slice()
+                    && let Some(Ty::Strings(set)) = self.ty_of(e)
+                    && set.token =>
+            {
+                format!("{}.{}", token_set_class(&set.name), token_name(t))
+            }
             ExprKind::Str { parts, .. } => self.string(parts),
             ExprKind::Name(n) if n == "self" => "this".into(),
             ExprKind::Name(n) if n == "$0" && self.shorthand_it => "it".into(),
+            ExprKind::Name(n) if self.binding_props.contains(n) => format!("{}.value", kw(n)),
             ExprKind::Name(n) => kw(&n.replace('$', "p")),
             ExprKind::ImplicitMember(name) => self.implicit(e, name),
+            ExprKind::Binding(path) if path.len() == 1 && self.binding_props.contains(&path[0].name) => {
+                kw(&path[0].name)
+            }
             ExprKind::Binding(path) => {
                 let place: Vec<String> = path.iter().map(|i| kw(&i.name)).collect();
                 let place = place.join(".");
@@ -1775,6 +1979,13 @@ impl<'a> Emitter<'a> {
     /// `x.count`, `xs.isEmpty`: the standard library's properties that are Kotlin functions
     /// or other names; a computed property of the app's extension stays a property.
     fn field(&mut self, base: &Expr, field: &Ident) -> String {
+        // `T.self` of a `Codable` type parameter: its codec, passed as a witness.
+        if field.name == "self"
+            && let ExprKind::Name(n) = &base.kind
+            && let Some(codec) = self.codecs.get(n)
+        {
+            return codec.clone();
+        }
         let ty = self.receiver_type(base).unwrap_or_default();
         let b = self.expr(base);
         let list = ty.starts_with('[');
@@ -1792,8 +2003,8 @@ impl<'a> Emitter<'a> {
             }
         }
         match field.name.as_str() {
-            "count" if list => format!("{b}.size"),
-            "count" if string => format!("{b}.length"),
+            // `count` is the runtime's: a `Long`, and a string's counts grapheme clusters.
+            "count" if list || string => format!("{b}.count"),
             "isEmpty" if list || string => format!("{b}.isEmpty()"),
             "first" if list => format!("{b}.firstOrNull()"),
             "last" if list => format!("{b}.lastOrNull()"),
@@ -1806,6 +2017,15 @@ impl<'a> Emitter<'a> {
             ExprKind::Name(n) => {
                 let n = n.as_str();
                 // `Binding(get: v, set: f)`: a value and its setter.
+                // `Task { … }` in a handler: launched on the view's scope.
+                if n == "Task"
+                    && call.args.is_empty()
+                    && let Some(c) = call.trailing.as_deref()
+                {
+                    self.needs_scope = true;
+                    let body = self.block(&c.body, 2, Mode::Unit);
+                    return format!("scope.launch {{\n{body}  }}");
+                }
                 if n == "Binding" {
                     let get = call.args.iter().find(|a| a.label.as_ref().is_some_and(|l| l.name == "get"));
                     let set = call.args.iter().find(|a| a.label.as_ref().is_some_and(|l| l.name == "set"));
@@ -1813,7 +2033,8 @@ impl<'a> Emitter<'a> {
                     let set = set.map(|a| self.expr(&a.value)).unwrap_or_default();
                     return format!("Binding({{ {get} }}, {set})");
                 }
-                let args = self.call_args(n, call);
+                let mut args = self.call_args(n, call);
+                args.extend(self.witness_args(_e.id));
                 format!("{}({})", kw(n), args.join(", "))
             }
             ExprKind::Field(base, method) => {
@@ -1829,14 +2050,15 @@ impl<'a> Emitter<'a> {
                 let recv_ty = recv_ty.trim_end_matches('?').to_string();
                 let params = self.decls.methods.get(&(recv_ty.clone(), method.name.clone())).cloned();
                 let b = self.expr(base);
-                let args = self.args_by(params.as_deref(), call);
+                let mut args = self.args_by(params.as_deref(), call);
+                args.extend(self.witness_args(_e.id));
                 // Swift's `reduce(_ initial:, _ next:)` is Kotlin's `fold`.
                 if method.name == "reduce" && call.args.len() + usize::from(call.trailing.is_some()) == 2 {
                     let args = self.args_by(None, call);
                     return format!("{b}.fold({})", args.join(", "));
                 }
                 if method.name == "enumerated" && call.args.is_empty() {
-                    return format!("{b}.withIndex()");
+                    return format!("{b}.enumerated()");
                 }
                 let name = match (recv_ty.starts_with('['), recv_ty == "String", method.name.as_str()) {
                     (_, true, "lowercased") => "lowercase",
@@ -1854,6 +2076,11 @@ impl<'a> Emitter<'a> {
             }
         }
     }
+}
+
+/// A checker witness name (`$w_T_Codable`) as a Kotlin identifier.
+fn witness_name(name: &str) -> String {
+    name.replace('$', "_")
 }
 
 /// The runtime's class for one of the spec's token sets, by the set's name.
@@ -1874,11 +2101,12 @@ fn is_edge(name: &str) -> bool {
     matches!(name, "all" | "horizontal" | "vertical" | "top" | "bottom" | "leading" | "trailing")
 }
 
-/// A token's Kotlin name: `2xl` is not an identifier.
+/// A token's Kotlin name: `2xl` is not an identifier (`_2xl`), nor is `caption-1` (`caption1`).
 fn token_name(name: &str) -> String {
+    let name = name.replace('-', "");
     match name.chars().next() {
         Some(c) if c.is_ascii_digit() => format!("_{name}"),
-        _ => kw(name),
+        _ => kw(&name),
     }
 }
 

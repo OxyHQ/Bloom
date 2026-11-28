@@ -11,11 +11,11 @@ import so.oxy.bloom.std.*
 
 @Immutable
 data class Event(
-  val revision: Int,
+  val revision: Long,
   val title: String?,
 )
 
-fun revision(event: Event?): Int {
+fun revision(event: Event?): Long {
   return event!!.revision
 }
 
@@ -23,7 +23,7 @@ fun title(event: Event): String {
   return event.title!!.uppercase()
 }
 
-fun sum(a: Int?, b: Int?): Int {
+fun sum(a: Long?, b: Long?): Long {
   return a!! + b!!
 }
 
@@ -31,7 +31,7 @@ fun not(flag: Boolean?): Boolean {
   return !flag!!
 }
 
-fun differs(a: Int?, b: Int): Boolean {
+fun differs(a: Long?, b: Long): Boolean {
   return a!! != b
 }
 

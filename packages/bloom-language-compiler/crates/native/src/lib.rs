@@ -147,6 +147,8 @@ pub struct Decls {
     pub inherits: BTreeMap<String, Vec<String>>,
     /// The classes (reference types: their fields are written in place).
     pub classes: BTreeSet<String>,
+    /// The app's environment keys (`let session = EnvironmentKey(…)`).
+    pub env_keys: BTreeSet<String>,
 }
 
 /// A written type's name (`Titled` in `extension Post: Titled`).
@@ -225,6 +227,12 @@ impl Decls {
                         f.name.name.clone(),
                         f.params.iter().map(|p| param_info(p, f.func)).collect(),
                     );
+                }
+                ItemKind::Const(c)
+                    if matches!(&c.value.kind, ExprKind::Call(call)
+                        if matches!(&call.callee.kind, ExprKind::Name(n) if n == "EnvironmentKey")) =>
+                {
+                    self.env_keys.insert(c.name.name.clone());
                 }
                 ItemKind::View(v) => {
                     let props = v.params.iter().flatten().map(|p| param_info(p, false)).collect();

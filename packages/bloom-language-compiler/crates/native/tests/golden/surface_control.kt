@@ -13,13 +13,13 @@ import so.oxy.bloom.std.*
 sealed interface Load {
   data object Loading : Load
   data class Failed(val message: String) : Load
-  data class Ready(val count: Int) : Load
+  data class Ready(val count: Long) : Load
 }
 
 @Immutable
 sealed interface APIError {
   data object Offline : APIError
-  data class Status(val code: Int) : APIError
+  data class Status(val code: Long) : APIError
 }
 
 fun describe(load: Load): String {
@@ -31,7 +31,7 @@ fun describe(load: Load): String {
       val message = s1.message
       "failed: ${message}"
     }
-    is Load.Ready if (run { val count = s1.count; count == 0 }) -> {
+    is Load.Ready if (run { val count = s1.count; count == 0L }) -> {
       val count = s1.count
       "empty"
     }
@@ -49,26 +49,26 @@ fun first(names: List<String>): String {
   return name
 }
 
-fun total(counts: List<Int>): Int {
-  var sum = 0
+fun total(counts: List<Long>): Long {
+  var sum = 0L
   for (count in counts) {
     sum = sum + count
   }
-  var left = 3
-  while (left > 0) {
-    left = left - 1
+  var left = 3L
+  while (left > 0L) {
+    left = left - 1L
   }
   return sum
 }
 
-fun check(code: Int): Int {
-  if (code >= 500) {
+fun check(code: Long): Long {
+  if (code >= 500L) {
     throw BloomError(APIError.Status(code = code))
   }
   return code
 }
 
-fun status(code: Int): String {
+fun status(code: Long): String {
   try {
     val ok = check(code)
     return "ok ${ok}"
@@ -77,7 +77,7 @@ fun status(code: Int): String {
   }
 }
 
-fun maybe(code: Int): Int? {
+fun maybe(code: Long): Long? {
   return runCatching { check(code) }.getOrNull()
 }
 
