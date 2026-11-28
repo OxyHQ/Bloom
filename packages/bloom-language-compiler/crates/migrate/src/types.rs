@@ -160,6 +160,13 @@ impl Tr<'_> {
                 }
                 match (name.as_str(), args.as_slice()) {
                     ("Array" | "ReadonlyArray", [element]) => format!("[{element}]"),
+                    // A read-only set or map is the value-semantics `Set`/`Map` (no one writes through it).
+                    ("ReadonlySet", [element]) if !self.imported.contains("ReadonlySet") => {
+                        format!("Set<{element}>")
+                    }
+                    ("ReadonlyMap", [key, value]) if !self.imported.contains("ReadonlyMap") => {
+                        format!("Map<{key}, {value}>")
+                    }
                     // `Readonly<T>`: a Bloom value is not written through a `let`, so it is `T`.
                     ("Readonly", [inner])
                         if !self.objects.contains(&name) && !self.imported.contains("Readonly") =>

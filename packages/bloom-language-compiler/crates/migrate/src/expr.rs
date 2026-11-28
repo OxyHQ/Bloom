@@ -1371,14 +1371,25 @@ impl Tr<'_> {
                             Expression::AwaitExpression(a) => &a.argument,
                             other => other,
                         };
-                        let value = self.expr(value);
+                        // `() => c ? f() : g()`: each branch awaited (`c ? try await f() : try await g()`).
+                        let value = match value.without_parentheses() {
+                            Expression::ConditionalExpression(c) => {
+                                let head = std::mem::replace(&mut self.head, false);
+                                let test = self.test(&c.test, false);
+                                self.head = head;
+                                let a = self.expr(&c.consequent);
+                                let b = self.expr(&c.alternate);
+                                format!("{test} ? try await {a} : try await {b}")
+                            }
+                            other => format!("try await {}", self.expr(other)),
+                        };
                         match (infinite, arrow.params.items.is_empty()) {
-                            (false, _) => format!("{{ try await {value} }}"),
-                            (true, true) => format!("{{ _ in try await {value} }}"),
+                            (false, _) => format!("{{ {value} }}"),
+                            (true, true) => format!("{{ _ in {value} }}"),
                             // `({ pageParam }) => f(pageParam)`: the page's context, its cursor read.
-                            (true, false) => format!(
-                                "{{ page in\nlet pageParam = page.pageParam\nreturn try await {value}\n}}"
-                            ),
+                            (true, false) => {
+                                format!("{{ page in\nlet pageParam = page.pageParam\nreturn {value}\n}}")
+                            }
                         }
                     }
                     // `undefined as string | undefined`: no first cursor.
