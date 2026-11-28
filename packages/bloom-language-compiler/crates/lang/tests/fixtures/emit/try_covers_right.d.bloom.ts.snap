@@ -1,0 +1,5 @@
+export declare function sum(a: number, b: number): number;
+export declare function chain(a: number): number;
+export declare function pick(a: number): number;
+export declare function same(a: number): boolean;
+export declare function opt(a: number): number;

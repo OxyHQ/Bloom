@@ -806,7 +806,9 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   plain `raw as Tab`, at no cost, as `x!` is. `as!` to anything else, and a cast of a
   non-string to a literal union, are B0213. `as?` to a type with no `cast` is B0213; an `Error`'s own members are `message` and `httpStatus`/`httpBody`. A function's last statement may be a `do` whose body and catches all return.
   A call of a function that `throws` is written under a `try` (`try f()`, `try await f()`,
-  `try?`, `try!`; one `try` covers the whole expression to its right), or it is B0223. A plain
+  `try?`, `try!`; one `try` or `try!` covers the whole expression to its right: `try g(a) + h(b)`,
+  `try ok() ? a() : b()`), or it is B0223. A `try?` covers its operand only, so `try? f() ?? x` is
+  `(try? f()) ?? x`. A plain
   `try` is caught: in a function that `throws`, inside `do { … } catch`, or in a closure;
   elsewhere it is B0224 (write `try?`, or handle it). In a `func … throws(E)`, a `throw` outside a
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
