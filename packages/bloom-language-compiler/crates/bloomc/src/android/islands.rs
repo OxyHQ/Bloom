@@ -34,6 +34,8 @@ pub const PACKAGE: &str = "so.oxy.bloom.islands";
 /// Compose, as the native backend's own Android project pins it.
 pub const COMPOSE: &str = "1.12.1";
 pub const COROUTINES: &str = "1.10.2";
+/// Media3 for the runtime's `Video`: the version expo-video ships, so an app has one ExoPlayer.
+const MEDIA3: &str = "1.9.1";
 /// The standard library modules an island may use, compiled through the backend.
 pub const STD: &str = "JSON,Core";
 
@@ -556,6 +558,8 @@ dependencies {{
   implementation("androidx.compose.ui:ui:{COMPOSE}")
   implementation("androidx.compose.foundation:foundation:{COMPOSE}")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:{COROUTINES}")
+  implementation("androidx.media3:media3-exoplayer:{MEDIA3}")
+  implementation("androidx.media3:media3-exoplayer-hls:{MEDIA3}")
 {lens}}}
 "#,
         kotlin = super::quote(&kotlin.to_string_lossy()),
