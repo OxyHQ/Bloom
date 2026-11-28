@@ -5,6 +5,12 @@
 
 private let MAX = 80
 
+// A JS regex literal is Swift's `try! Regex("…")`, its methods Swift's.
+private func tidy(_ s: String) -> String {
+  let spaced = s.replacing(try! Regex("\\s+"), with: " ")
+  try! Regex("^[a-z ]+\$").isMatch(spaced) ? try! Regex(" ").split(spaced).joined("-") : spaced
+}
+
 private func clip(_ s: String) -> String { s.utf16.count > MAX ? "\(s.utf16.slice(0, MAX))…" : s }
 
 public struct Search: View {
@@ -13,7 +19,7 @@ public struct Search: View {
 
   var body: some View {
     VStack {
-      Text(clip(term))
+      Text(clip(tidy(term)))
       Text("\(term.utf16.count)".utf16.paddingStart(to: 3, with: "0"))
     }
     .task(id: query) {

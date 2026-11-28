@@ -16,7 +16,7 @@ async function resolveUrl(id: string): Promise<string> {
 /** Outside a `try`, a rejection stops the block; a global regex is the stdlib `Regex`. */
 async function warm(id: string): Promise<void> {
   const { data } = await load(id);
-  saveLogger.debug(data.url.replace(/^https?:\/\//g, ''));
+  saveLogger.debug(data.url.trim());
 }
 
 async function confirmUnsave(id: string): Promise<void> {

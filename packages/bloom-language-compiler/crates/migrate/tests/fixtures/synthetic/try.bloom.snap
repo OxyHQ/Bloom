@@ -16,7 +16,7 @@ private func warm(_ id: String) async {
   switch await load(id) {
   case let .ok(value):
     let { data } = value
-    saveLogger.debug(Regex(pattern: "^https?:\\/\\/").replacing(in: data.url, with: ""))
+    saveLogger.debug(data.url.trimmed())
   case .err(_):
     break
   }

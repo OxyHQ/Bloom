@@ -1141,8 +1141,10 @@ impl Tr<'_> {
         text
     }
 
-    /// A JS regex's methods as the stdlib `Regex`'s: `/p/.test(s)` is `isMatch(s)`, `s.replace(/p/g,
-    /// r)` (or a `/^p/` that matches once) `replacing(in: s, with: r)`, `s.split(/p/)` `split(s)`.
+    /// A JS regex's methods in Swift's spelling: `/p/.test(s)` is `s.firstMatch(of: r) != none`
+    /// (`s.contains(r)` once bloomc picks that overload: repros/mention16/string-contains-regex),
+    /// `s.replace(/p/g, w)` (or a `/^p/` that matches once) `s.replacing(r, with: w)`, `s.split(/p/)`
+    /// `s.split(separator: r)`.
     /// A replacement function, a `replace` of the first of several matches, and `exec`/`match`
     /// on a literal stay as they were.
     fn regex_call(&mut self, call: &CallExpression) -> Option<String> {
@@ -1159,8 +1161,13 @@ impl Tr<'_> {
                 if flags.contains(['g', 'y']) || m.optional {
                     return None;
                 }
+                let swift = self.is_bloom_string(text);
                 let text = self.expr(text);
-                Some(format!("{}.isMatch({text})", regex_value(r)))
+                if !swift {
+                    return Some(format!("{}.isMatch({text})", regex_value(r)));
+                }
+                let text = if is_postfix_text(&text) { text } else { format!("({text})") };
+                Some(format!("({text}.firstMatch(of: {}) != none)", regex_value(r)))
             }
             ("replace" | "split", [pattern, ..])
                 if args.len() == if m.property.name == "replace" { 2 } else { 1 } =>
@@ -1189,13 +1196,28 @@ impl Tr<'_> {
                     return None;
                 }
                 let regex = regex_value(r);
+                let swift = self.is_bloom_string(&m.object);
                 let object = self.expr(&m.object);
                 let receiver = if m.optional { format!("{object}!") } else { object.clone() };
-                let text = if let Some(with) = with {
-                    let with = self.expr(with);
-                    format!("{regex}.replacing(in: {receiver}, with: {with})")
-                } else {
-                    format!("{regex}.split({receiver})")
+                let text = match (with, swift) {
+                    // On a value the file types `String`, Swift's spelling; on a TS value (a
+                    // `Foreign` receiver bloomc calls as JS), the regex's own method.
+                    (Some(with), true) => {
+                        let with = self.expr(with);
+                        let receiver =
+                            if is_postfix_text(&receiver) { receiver } else { format!("({receiver})") };
+                        format!("{receiver}.replacing({regex}, with: {with})")
+                    }
+                    (None, true) => {
+                        let receiver =
+                            if is_postfix_text(&receiver) { receiver } else { format!("({receiver})") };
+                        format!("{receiver}.split(separator: {regex})")
+                    }
+                    (Some(with), false) => {
+                        let with = self.expr(with);
+                        format!("{regex}.replacing(in: {receiver}, with: {with})")
+                    }
+                    (None, false) => format!("{regex}.split({receiver})"),
                 };
                 if !m.optional {
                     return Some(text);
@@ -1207,6 +1229,15 @@ impl Tr<'_> {
                 Some(format!("({object} != none ? {text} : none)"))
             }
             _ => None,
+        }
+    }
+
+    /// Whether the file types `e` a Bloom `String`: a string literal or template, or a name or
+    /// prop declared `String`/`String?` (not a TS value, whose members bloomc calls as JS's).
+    fn is_bloom_string(&self, e: &Expression) -> bool {
+        match e.without_parentheses() {
+            Expression::StringLiteral(_) | Expression::TemplateLiteral(_) => true,
+            other => self.declared_type(other).is_some_and(|t| t.trim_end_matches('?') == "String"),
         }
     }
 
@@ -2977,12 +3008,14 @@ pub fn object_tests(src: &str, l: &oxc_ast::ast::LogicalExpression) -> Vec<u32> 
     found
 }
 
-/// `/p/f` as the stdlib's `Regex(pattern: "p", flags: "f")`, `g` and `y` left to its methods.
+/// `/p/f` as the stdlib's Regex, `g` and `y` left to its methods: Swift's `try! Regex("p")` (a
+/// literal is a valid pattern, as JS checked it at parse time), or `Regex(pattern: "p", flags: "f")`
+/// with flags (the stdlib has no Swift modifier for them yet).
 fn regex_value(r: &oxc_ast::ast::RegExpLiteral) -> String {
     let pattern = quote(r.regex.pattern.text.as_str());
     let flags: String = r.regex.flags.to_string().chars().filter(|c| !matches!(c, 'g' | 'y')).collect();
     if flags.is_empty() {
-        format!("Regex(pattern: {pattern})")
+        format!("try! Regex({pattern})")
     } else {
         format!("Regex(pattern: {pattern}, flags: {})", quote(&flags))
     }
