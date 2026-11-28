@@ -82,6 +82,12 @@ fun <T> List<T>.appending(element: T): List<T> = ArrayList<T>(size + 1).also { i
 fun <T> List<T>.inserting(element: T, at: Long): List<T> =
   ArrayList(this).also { it.add(at.toInt().coerceIn(0, size), element) }
 
+/** `xs[i] = x` with value semantics (the emitter's write to a list's element): a copy with it replaced. */
+fun <T> List<T>.replacing(index: Long, element: T): List<T> = ArrayList(this).also { it[index.toInt()] = element }
+
+/** Swift's `sorted(by:)`: a stable sort, `before(a, b)` when `a` goes first (the TypeScript's `$sorted`). */
+fun <T> List<T>.sorted(by: (T, T) -> Boolean): List<T> = sortedWith { a, b -> if (by(a, b)) -1 else if (by(b, a)) 1 else 0 }
+
 fun <T> List<T>.removing(at: Long): List<T> =
   if (at in 0 until size) ArrayList(this).also { it.removeAt(at.toInt()) } else this
 
