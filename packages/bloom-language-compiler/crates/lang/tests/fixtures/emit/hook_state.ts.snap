@@ -1,0 +1,57 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Button, Text, VStack, inlineView, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+import type { Binding } from "@oxy.so/bloom-language";
+
+export function useCounter(start: number): readonly [number, () => void, Binding<number>] {
+"use no memo";
+const $ = $c(2);
+const [count, setCount] = useState<number>(start);
+const [presses, setPresses] = useState<number>(0);
+let bump;
+if ($[0] !== presses) {
+bump = () => {
+setCount((count) => count + (1));
+setPresses((presses) => presses + 1);
+};
+$[0] = presses;
+$[1] = bump;
+} else {
+bump = $[1];
+}
+return [(count * 10) + presses, bump, [count, setCount] as const] as const;
+}
+
+const $view0 = Button(Text("Add"));
+export interface CounterProps {
+  readonly start: number;
+}
+export const Counter = view(function Counter(props: CounterProps) {
+"use no memo";
+const $ = $c(2);
+const { start } = props;
+const counter = useCounter(start);
+let $t0;
+if ($[0] !== counter) {
+$t0 = VStack(Text(`${counter[0]}`), $view0.onPress(counter[1]), Resetter({ value: counter[2] }));
+$[0] = counter;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
+const $view1 = Button(Text("Reset"));
+export interface ResetterProps {
+  readonly value: Binding<number>;
+}
+export const Resetter = inlineView(function Resetter(props: ResetterProps) {
+"use no memo";
+const { value } = props;
+return $view1.onPress(() => {
+value[1](0);
+});
+});
+

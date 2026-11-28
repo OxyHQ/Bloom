@@ -2344,7 +2344,21 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
                 self.expect(P::Eq, "`=` and the value");
                 let value = self.expr(Ctx::Normal);
-                StmtKind::Var(VarStmt { name, ty, span: start.to(value.span), value })
+                StmtKind::Var(VarStmt { name, ty, span: start.to(value.span), value, state: None })
+            }
+            // `@State var x = v` (2.0): a hook function's state.
+            Tok::P(P::At)
+                if matches!(self.nth(1), Tok::Ident(n) if n == "State")
+                    && *self.nth(2) == Tok::Kw(Kw::Var) =>
+            {
+                let at = self.bump();
+                let attr = at.to(self.bump());
+                self.bump();
+                let name = self.ident("the state's name");
+                let ty = if self.eat(P::Colon) { Some(self.type_expr()) } else { None };
+                self.expect(P::Eq, "`=` and the initial value");
+                let value = self.expr(Ctx::Normal);
+                StmtKind::Var(VarStmt { name, ty, span: start.to(value.span), value, state: Some(attr) })
             }
             Tok::Kw(Kw::Return) => {
                 self.bump();

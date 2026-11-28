@@ -1432,6 +1432,22 @@ impl<'a> Emitter<'a> {
                 line.f(value).s(";");
                 self.push_stmt(line);
             }
+            // `@State var x = v` in a hook function: one `useState`, its setter what `x = …` calls.
+            StmtKind::Var(v) if let Some(&local) = self.ck.hook_states.get(&v.span) => {
+                let name = self.bound_name(&v.name);
+                let plain = format!("set{}", capitalised(&self.ck.locals[local].name));
+                let setter = if self.names.contains(&plain) { format!("${plain}") } else { plain };
+                if let Some(view) = self.view.as_mut() {
+                    view.setters.insert(local, setter.clone());
+                }
+                self.import_name("react", "useState");
+                let ty = self.ck.locals[local].ty.clone();
+                let ty = self.ts_type(&ty);
+                let value = self.value_expr(&v.value);
+                let mut line = Frag::at(stmt.span, format!("const [{name}, {setter}] = useState<{ty}>("));
+                line.f(value).s(");");
+                self.push_stmt(line);
+            }
             StmtKind::Var(v) => {
                 let annotation = v.ty.as_ref().and_then(|t| self.ck.type_exprs.get(&t.span).cloned());
                 let annotation = annotation.map(|ty| format!(": {}", self.ts_type(&ty))).unwrap_or_default();

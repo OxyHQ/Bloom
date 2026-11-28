@@ -877,7 +877,10 @@ impl<'a> Formatter<'a> {
     fn stmt(&mut self, stmt: &Stmt) -> Doc {
         match &stmt.kind {
             StmtKind::Let(l) => self.let_stmt(l),
-            StmtKind::Var(v) => self.binding_decl("var ", text(v.name.name.clone()), v.ty.as_ref(), &v.value),
+            StmtKind::Var(v) => {
+                let keyword = if v.state.is_some() { "@State var " } else { "var " };
+                self.binding_decl(keyword, text(v.name.name.clone()), v.ty.as_ref(), &v.value)
+            }
             StmtKind::Assign(a) => {
                 concat(vec![self.expr(&a.target), text(format!(" {} ", a.op.text())), self.expr(&a.value)])
             }

@@ -330,6 +330,9 @@ pub struct CheckResult {
     /// `RawText(c ? Text("v") : s)`: a text run that is a view in one branch and a string in
     /// the other, emitted as is (one Text host whose child is either).
     pub mixed_runs: HashSet<ExprId>,
+    /// `@State var x = v` in a hook function's body, by the statement's span: its local (one
+    /// `useState`; `x = …` is `AssignRes::State`, `$x` its binding).
+    pub hook_states: HashMap<Span, LocalId>,
     /// Pattern span → the type it matches; binding span → its local.
     pub pattern_tys: HashMap<Span, Ty>,
     pub pattern_locals: HashMap<Span, LocalId>,
@@ -3027,6 +3030,23 @@ impl<'o> Checker<'o> {
                     }
                 }
             }
+            // `@State var x = v` in a hook function's body: its state, as a view's `@State` is.
+            StmtKind::Var(v) if let Some(attr) = v.state => {
+                let declared = v.ty.as_ref().map(|t| self.resolve_type(t));
+                let ty = self.expr(&v.value, declared.as_ref());
+                if self.hook_body != Some(self.scopes.len()) {
+                    self.report(
+                        Diagnostic::error("B0420", attr.to(v.name.span), format!("`@State var {}` is outside a hook function's body", v.name.name))
+                            .label("a state is a hook: it is kept across renders, in the same order")
+                            .help("declare it at the top of a hook function (`func useX`), or as a view's `@State private var`")
+                            .spec("73-reactivity-compile-time"),
+                    );
+                }
+                self.binding_stmt = true;
+                let local = self.declare(&v.name, ty, LocalKind::State);
+                self.binding_stmt = false;
+                self.out.hook_states.insert(v.span, local);
+            }
             StmtKind::Var(v) => {
                 let declared = v.ty.as_ref().map(|t| self.resolve_type(t));
                 let ty = self.expr(&v.value, declared.as_ref());
@@ -3497,7 +3517,10 @@ impl<'o> Checker<'o> {
         if info.kind == LocalKind::Ref && self.frames.last().is_some_and(|f| f.render) {
             self.ref_in_render(name, a.target.span);
         }
-        if info.kind == LocalKind::State && self.frames.last().is_some_and(|f| f.render) {
+        if info.kind == LocalKind::State
+            && (self.frames.last().is_some_and(|f| f.render)
+                || self.hook_frame == Some(self.frames.len() - 1))
+        {
             self.report(
                 Diagnostic::error(
                     "B0401",

@@ -572,6 +572,9 @@ pub struct VarStmt {
     pub ty: Option<TypeExpr>,
     pub value: Expr,
     pub span: Span,
+    /// `@State var x = v` in a hook function's body (2.0): the attribute's span. The variable is
+    /// the function's state (one `useState`): read as `x`, written as `x = …`, `$x` its binding.
+    pub state: Option<Span>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
