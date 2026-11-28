@@ -541,6 +541,8 @@ fn check_value(
     }
     match param {
         "value" | "children" | "namespace" => Ok(()),
+        // `[dialogButton]`: a list of a typed object, which TypeScript checks.
+        param if param.starts_with('[') => Ok(()),
         param if NO_TOKEN.contains(&param) => check_no_token(modifier, param, value, Doc::modifier(modifier)),
         "variant" => check_variant(value, spec, module, scoping),
         // A phase's build: the chain on its view sets geometry and opacity only.

@@ -107,6 +107,7 @@ type S = {
   "cornerSide": "all" | "top" | "bottom" | "leading" | "trailing" | "top-leading" | "top-trailing" | "bottom-leading" | "bottom-trailing" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
   "dividerStyle": "single" | "double" | "fill";
   "dialogPlacement": "center" | "left" | "right" | "start" | "end" | "bottom";
+  "dialogActionColor": "default" | "cancel" | "destructive";
   "alertDefault": "confirm" | "cancel";
   "floatingSide": "top" | "bottom" | "left" | "right";
   "floatingAlign": "start" | "center" | "end";
@@ -630,6 +631,7 @@ type alertChecks = [
 ];
 
 type dialogChecks = [
+  Expect<"dialog.buttons arity", Same<Lengths<View<'Dialog'>['buttons']>, 1>>,
   Expect<"dialog.presentAt(dialogPlacement)", Ok<At<View<'Dialog'>['presentAt'], '0'>, S['dialogPlacement']>>,
   Expect<"dialog.padding arity", Same<Lengths<View<'Dialog'>['padding']>, 1>>,
   Expect<"dialog.padding(space)", Ok<At<View<'Dialog'>['padding'], '0'>, S['space']>>,

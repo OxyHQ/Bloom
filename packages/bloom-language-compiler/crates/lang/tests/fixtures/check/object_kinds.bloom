@@ -1,0 +1,21 @@
+// A spec object parameter checks the literal given to it: a typed object's required key, its
+// keys, and each key's type and tokens (`dialogButton`), and a free object's keys.
+import Bloom
+
+public struct Confirm: View {
+  @State private var open = false
+
+  var body: some View {
+    VStack {
+      Text("Saved")
+        .accessibilityValue({ now: 1, step: 2 })
+      Dialog()
+        .buttons([
+          { color: "cancel" },
+          { label: "Go", color: "danger", hidden: true },
+          { label: 1, onPress: { open = false } },
+        ])
+        .presented($open)
+    }
+  }
+}

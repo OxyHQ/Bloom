@@ -615,6 +615,7 @@
     ],
     "dividerStyle": ["single", "double", "fill"],
     "dialogPlacement": ["center", "left", "right", "start", "end", "bottom"],
+    "dialogActionColor": ["default", "cancel", "destructive"],
     "alertDefault": ["confirm", "cancel"],
     "floatingSide": ["top", "bottom", "left", "right"],
     "floatingAlign": ["start", "center", "end"],
@@ -1238,7 +1239,20 @@
     ["shadow"]
   ],
   "objects": {
-    "$comment": "The object parameters: the keys each takes, and the token set of every value (value: a number or a text, no token, as React Native takes it); orToken: one token of the set on its own is the object too.",
+    "$comment": "The object parameters: the keys each takes, and the token set of every value (value: a number or a text, no token, as React Native takes it); orToken: one token of the set on its own is the object too. A typed object declares fields in place of keys: each key's type (string, number, boolean, action: a closure that takes nothing, value: anything, or a token set), `?` when it may be left out. A parameter `[name]` is a list of that object. A literal given to an object parameter is typed by it, each list element and ternary branch on its own, as Swift checks a literal against its context.",
+    "dialogButton": {
+      "$comment": "A dialog's button: Bloom's DialogAction.",
+      "fields": {
+        "label": "string",
+        "color": "dialogActionColor?",
+        "onPress": "action?",
+        "disabled": "boolean?",
+        "loading": "boolean?",
+        "shouldCloseOnPress": "boolean?",
+        "initialFocus": "boolean?",
+        "testID": "string?"
+      }
+    },
     "refresh": {
       "keys": ["refreshing", "onRefresh"],
       "tokens": "value"
@@ -2575,7 +2589,7 @@
         "panelFrame",
         "id"
       ],
-      "params": { "padding": ["space"] }
+      "params": { "padding": ["space"], "buttons": ["[dialogButton]"] }
     },
     "popover": {
       "constructors": ["Popover"],
