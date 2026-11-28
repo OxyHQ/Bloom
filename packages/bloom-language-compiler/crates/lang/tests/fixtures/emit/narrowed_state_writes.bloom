@@ -1,0 +1,25 @@
+// A narrowed `@State` (`if report != none`, `if step == "review"`) narrows its reads only: a write
+// and `$report` there are the state's, typed as declared, `$report` a binding of the narrowed type.
+public struct ReportBox: View {
+  @State private var report: String? = none
+
+  var body: some View {
+    VStack {
+      Button(Text("Report")).onPress { report = "" }
+      if report != none {
+        TextEditor($report)
+        Button(Text("Send")).disabled(report.trimmed().isEmpty).onPress { report = none }
+      }
+    }
+  }
+}
+
+// A literal union narrowed by `==` (`step` is `"review"` in the branch) is written as declared.
+public struct Steps: View {
+  @State private var step: "edit" | "review" = "edit"
+
+  var body: some View {
+    Text(step)
+      .onPress { if step == "review" { step = "edit" } else { step = "review" } }
+  }
+}

@@ -247,7 +247,8 @@ code): `let s: Style = { transform: [{ scale: 0.5 }, { translateY: y }] }`. A li
 promoted to `T?` where a `T?` is expected (never the reverse; unwrap with `if let`, `??`,
 `?.`, `match` or `?`). In `if x != none { … }` (also `none != x`, and each side of `&&`) a
 local, parameter, prop or `@State` `x` is present in the block, as TS narrows it (a state's value
-is the render's, as a `let`'s is): `if onEnd != none {
+is the render's, as a `let`'s is; only its reads narrow, so `x = none` and `$x` there are the
+state's, `$x` a binding of the narrowed type): `if onEnd != none {
 onEnd() }`. So it is on the right of `&&` (`name != none && !name.isEmpty`) and, for `x == none`,
 on the right of `||` (`x == none || x.isEmpty`); in the branch of `?:` that knows (`p != none ?
 p.x : d`, `p == none ? d : p.x`); and after a guard
