@@ -88,7 +88,27 @@ pub fn migrate(paths: &[PathBuf], options: &MigrateOptions) -> Result<bool, Stri
     });
     let mut entries = Vec::new();
     for (path, result) in files.iter().zip(results) {
-        entries.push(Entry { path: shown(path), migration: result? });
+        let mut migration = result?;
+        // A route (under `app/`) keeps its default export, its screen; any other module's default
+        // is renamed in its importers, which the fork beside it would not follow.
+        let route = path.components().any(|c| c.as_os_str() == "app");
+        let renamed_default = migration.default_export.is_some() && !route;
+        if migration.status != Status::Skipped
+            && renamed_default
+            && let Some(fork) = platform_fork(path)
+        {
+            migration.status = Status::Refused;
+            migration.reasons.push(bloom_migrate::Reason {
+                code: "module:platform-fork".into(),
+                detail: format!(
+                    "`{}` is this module's platform fork: its importers name what both export (TS's \
+                     default), so the two move to Bloom together",
+                    fork.file_name().map(|n| n.to_string_lossy()).unwrap_or_default()
+                ),
+                line: 0,
+            });
+        }
+        entries.push(Entry { path: shown(path), migration });
     }
     let mut ok = true;
     for (path, entry) in files.iter().zip(&entries) {
@@ -252,6 +272,10 @@ pub(crate) fn rewrite_importers(
             })
         })
         .collect();
+    // A module with a platform fork beside it (`ProfileHoverCard/index.tsx` and `index.web.tsx`)
+    // keeps its importers' bare path: Metro and Jest resolve the platform's file first and `.bloom`
+    // after, so `X.bloom` would draw this module on every platform.
+    let forked: Vec<bool> = migrated.iter().map(|(p, _)| platform_fork(&root.join(p)).is_some()).collect();
     let mut notes = rewrite_bloom_importers(root, migrated, &stems)?;
     for file in modules(&[root.to_path_buf()], true)? {
         let Ok(source) = std::fs::read_to_string(&file) else { continue };
@@ -300,9 +324,12 @@ pub(crate) fn rewrite_importers(
                     && head.ends_with("from")
                 {
                     named_default_import(&mut out, name);
+                    named_default_export(&mut out, name);
                 }
                 out.push_str(bare);
-                out.push_str(".bloom");
+                if !forked[index] {
+                    out.push_str(".bloom");
+                }
                 changed = true;
                 if head.ends_with("jest.mock(") {
                     let after = &rest[i + 1 + len + 1..];
@@ -324,6 +351,18 @@ pub(crate) fn rewrite_importers(
                             continue;
                         }
                     }
+                }
+                // `lazy(() => import('./X'))` reads the module's default: 2.0 exports it by name,
+                // so the import hands it on as the default `lazy` takes.
+                if let Some(name) = name
+                    && head.ends_with("import(")
+                    && rest[i + 1 + len + 1..].starts_with(')')
+                    && !rest[i + 1 + len + 2..].trim_start().starts_with(".then")
+                {
+                    out.push(quote);
+                    out.push_str(&format!(").then((m) => ({{ default: m.{name} }}))"));
+                    rest = &rest[i + 1 + len + 2..];
+                    continue;
                 }
                 let statement = &head[head.rfind("import").unwrap_or(head.len())..];
                 let mut names = imported_names(statement);
@@ -537,6 +576,49 @@ fn named_default_import(out: &mut String, name: &str) {
     out.replace_range(start..from, &format!("import {clause} "));
 }
 
+/// A sibling of `path` for another platform (`CameraPage.web.tsx` beside `CameraPage.tsx`, or
+/// the other way round). Metro and Jest resolve `X` to the platform's file first.
+fn platform_fork(path: &Path) -> Option<PathBuf> {
+    const PLATFORMS: [&str; 4] = ["web", "native", "ios", "android"];
+    const EXTS: [&str; 4] = ["tsx", "ts", "jsx", "js"];
+    let dir = path.parent()?;
+    let name = path.file_name()?.to_str()?;
+    let (stem, _) = name.rsplit_once('.')?;
+    let (base, own) = match stem.rsplit_once('.') {
+        Some((base, platform)) if PLATFORMS.contains(&platform) => (base, Some(platform)),
+        _ => (stem, None),
+    };
+    let candidates = PLATFORMS
+        .iter()
+        .filter(|p| Some(**p) != own)
+        .flat_map(|p| EXTS.iter().map(move |ext| format!("{base}.{p}.{ext}")))
+        .chain(own.into_iter().flat_map(|_| EXTS.iter().map(|ext| format!("{base}.{ext}"))));
+    candidates.map(|c| dir.join(c)).find(|c| c.is_file())
+}
+
+/// `export { default } from` (a route re-exporting its page) as `export { Name as default } from`;
+/// `export { default as X }` as `export { Name as X }`.
+fn named_default_export(out: &mut String, name: &str) {
+    let Some(start) = out.rfind("export") else { return };
+    let Some(from) = out[start..].rfind("from").map(|i| start + i) else { return };
+    if out[start..from].contains("import") {
+        return;
+    }
+    let clause = out[start + "export".len()..from].trim();
+    let Some(inner) = clause.strip_prefix('{').and_then(|c| c.strip_suffix('}')) else { return };
+    let items: Vec<String> = inner
+        .split(',')
+        .map(str::trim)
+        .filter(|item| !item.is_empty())
+        .map(|item| match item.strip_prefix("default") {
+            Some("") => format!("{name} as default"),
+            Some(rest) if rest.starts_with(' ') => format!("{name}{rest}"),
+            _ => item.to_string(),
+        })
+        .collect();
+    out.replace_range(start..from, &format!("export {{ {} }} ", items.join(", ")));
+}
+
 /// The local names an `import … from` statement binds (`import X`, `{ A, B as C }`).
 fn imported_names(statement: &str) -> Vec<String> {
     let Some(clause) = statement.strip_prefix("import") else { return Vec::new() };
@@ -580,6 +662,33 @@ fn normalize(path: &Path) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_re_exported_default_is_exported_by_name() {
+        let mut out = "export { default } from ".to_string();
+        named_default_export(&mut out, "CameraPage");
+        assert_eq!(out, "export { CameraPage as default } from ");
+        let mut out = "import X from './a';\nexport { default as Page, other } from ".to_string();
+        named_default_export(&mut out, "CameraPage");
+        assert_eq!(out, "import X from './a';\nexport { CameraPage as Page, other } from ");
+        // An import after the last export is not an export.
+        let mut out = "export const a = 1;\nimport X from ".to_string();
+        named_default_export(&mut out, "CameraPage");
+        assert_eq!(out, "export const a = 1;\nimport X from ");
+    }
+
+    #[test]
+    fn a_platform_sibling_is_a_fork() {
+        let root = std::env::temp_dir().join(format!("bloomc-forks-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        for name in ["Camera.tsx", "Camera.web.tsx", "Alone.tsx"] {
+            std::fs::write(root.join(name), "").unwrap();
+        }
+        assert_eq!(platform_fork(&root.join("Camera.tsx")), Some(root.join("Camera.web.tsx")));
+        assert_eq!(platform_fork(&root.join("Camera.web.tsx")), Some(root.join("Camera.tsx")));
+        assert_eq!(platform_fork(&root.join("Alone.tsx")), None);
+        std::fs::remove_dir_all(&root).unwrap();
+    }
 
     #[test]
     fn a_0x_default_export_is_imported_and_mocked_by_name() {

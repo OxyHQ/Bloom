@@ -121,7 +121,12 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
         _ => filename.to_string(),
     };
     let mut translated = module::translate(source, filename, &path);
-    let default_export = named_default(&mut translated.text);
+    let mut default_export = named_default(&mut translated.text);
+    // A `screen()` exported as the default of a module outside `app/` (CameraPage, BoostScreen) is
+    // no route: 2.0 exports it by name, so its importers import it by name too.
+    if default_export.is_none() && !Path::new(filename).components().any(|c| c.as_os_str() == "app") {
+        default_export = named_default_screen(&mut translated.text);
+    }
     let reviews = translated.text.matches(REVIEW_MARKER).count();
     if !translated.reasons.is_empty() {
         return Migration {
@@ -176,6 +181,16 @@ pub fn migrate(source: &str, filename: &str, options: &bloom_lang::Options) -> M
         }
         formatted = reformatted;
         compiled = bloom_lang::compile(&formatted, &target, options);
+    }
+    // `Boolean(x)`'s `!!x` is `x` where `x` is a `Bool`; on a TS value it stays JS's truthiness.
+    if let Some(dropped) = typed::double_negations(&formatted, &target, options)
+        && let Ok(reformatted) = bloom_fmt::format(&dropped, &target)
+    {
+        let again = bloom_lang::compile(&reformatted, &target, options);
+        if again.diagnostics.len() <= compiled.diagnostics.len() {
+            formatted = reformatted;
+            compiled = again;
+        }
     }
     // A renamed JS member on a `Foreign` receiver is TS's own: written back as JS wrote it.
     if compiled.diagnostics.is_empty()
@@ -299,6 +314,19 @@ pub fn named_default(text: &mut String) -> Option<String> {
         return Some(name);
     }
     None
+}
+
+/// `pub default screen X` as `pub screen X`, and `X`.
+fn named_default_screen(text: &mut String) -> Option<String> {
+    let marker = "pub default screen ";
+    let at = text
+        .match_indices(marker)
+        .map(|(at, _)| at)
+        .find(|&at| at == 0 || text.as_bytes()[at - 1] == b'\n')?;
+    let name: String =
+        text[at + marker.len()..].chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
+    text.replace_range(at..at + marker.len(), "pub screen ");
+    Some(name)
 }
 
 /// A rewrite of the 2.0 text, kept when the file still checks.
