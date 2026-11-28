@@ -1,0 +1,10 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface Person {
+  readonly id: string;
+  readonly name: string;
+}
+export interface PeopleProps {
+  readonly people: readonly Person[];
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(People())`), or from TSX as `toElement(People())`. */
+export declare const People: (props: PeopleProps) => ComposedView;

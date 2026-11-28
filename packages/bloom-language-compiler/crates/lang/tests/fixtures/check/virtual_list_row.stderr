@@ -1,0 +1,8 @@
+error[B0205]: `VirtualListRow<Person>` has no field `name`
+  --> check/virtual_list_row.bloom:10:49
+   |
+10 |     VirtualList(people, { person in Text(person.name) })
+   |                                                 ^^^^ no such field
+   |
+help: a row is `{ item, index }`: the item's `name` is `.item.name`
+   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#44-structs

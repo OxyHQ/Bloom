@@ -1,0 +1,12 @@
+// A VirtualList's row closure is handed FlashList's `{ item, index }`: `row.item` is the item.
+public struct Person: Identifiable {
+  public let id: String
+  public let name: String
+}
+
+public struct People: View {
+  let people: [Person]
+  var body: some View {
+    VirtualList(people, { row in Text("\(row.index + 1). \(row.item.name)") })
+  }
+}
