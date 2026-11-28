@@ -50,7 +50,14 @@ env:
 jobs:
   build:
     name: Build ${{ matrix.target }}
-    runs-on: ${{ matrix.runner }}
+    # The two x86-64 Linux builds (gnu and the WASI fallback) take the
+    # self-hosted seldon-ci pool under Seldon-first routing (validate.yml's
+    # comment; OxyHQ/oxy docs/engineering/build-and-deploy.md): only while the
+    # org variable SELDON_CI_ROUTE reads `seldon-ci`, on a same-repository pull
+    # request's first attempt. A re-run, the release's call (a push) and every
+    # other platform run hosted, so "Re-run failed jobs" retries a Seldon
+    # failure hosted. Pack and install stay hosted: they are short.
+    runs-on: ${{ matrix.runner == 'ubuntu-24.04' && vars.SELDON_CI_ROUTE == 'seldon-ci' && github.run_attempt == 1 && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && 'seldon-ci' || matrix.runner }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
