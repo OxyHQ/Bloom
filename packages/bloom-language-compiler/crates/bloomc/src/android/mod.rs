@@ -821,7 +821,7 @@ dependencies {{
     write(
         &kotlin_dir.join("MainActivity.kt"),
         &format!(
-            "{header}package {id}\n\nimport android.os.Bundle\nimport com.facebook.react.ReactActivity\nimport com.facebook.react.ReactActivityDelegate\nimport com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled\nimport com.facebook.react.defaults.DefaultReactActivityDelegate\n\nclass MainActivity : ReactActivity() {{\n  override fun onCreate(savedInstanceState: Bundle?) {{\n    // The app's theme replaces the launch theme (the splash) with the first frame. A saved\n    // state is not restored: react-native-screens rebuilds its fragments from JS.\n    setTheme(R.style.AppTheme)\n    super.onCreate(null)\n  }}\n\n  override fun getMainComponentName(): String = \"main\"\n\n  override fun createReactActivityDelegate(): ReactActivityDelegate =\n    DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)\n}}\n"
+            "{header}package {id}\n\nimport android.os.Bundle\nimport com.facebook.react.ReactActivity\nimport com.facebook.react.ReactActivityDelegate\nimport com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled\nimport com.facebook.react.defaults.DefaultReactActivityDelegate\n\nclass MainActivity : ReactActivity() {{\n  override fun onCreate(savedInstanceState: Bundle?) {{\n    // The app's theme replaces the launch theme (the splash) with the first frame. A saved\n    // state is not restored: react-native-screens rebuilds its fragments from JS.\n    setTheme(R.style.AppTheme)\n    super.onCreate(null)\n    // No frame before the first content (or the app's `Splash.hide()`): the splash stays.\n    so.oxy.bloom.splash.SplashHold.install(this)\n  }}\n\n  override fun getMainComponentName(): String = \"main\"\n\n  override fun createReactActivityDelegate(): ReactActivityDelegate =\n    DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)\n}}\n"
         ),
     )?;
     let mut permissions = vec!["android.permission.INTERNET".to_string()];
@@ -1091,7 +1091,7 @@ mod tests {
         let natives = native_modules(&package).unwrap();
         assert_eq!(
             natives.iter().map(|n| n.module.name.as_str()).collect::<Vec<_>>(),
-            ["BloomStorage", "BloomImage", "BloomVideo"]
+            ["BloomStorage", "BloomImage", "BloomVideo", "BloomSplash"]
         );
         assert!(
             natives[0].kotlin.join("so/oxy/bloom/storage/BloomStorageModule.kt").is_file(),

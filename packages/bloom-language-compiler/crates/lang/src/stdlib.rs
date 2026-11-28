@@ -26,6 +26,7 @@ pub const SOURCES: &[(&str, &str)] = &[
     ("Storage.bloom", include_str!("../../../stdlib/Bloom/Storage.bloom")),
     ("Image.bloom", include_str!("../../../stdlib/Bloom/Image.bloom")),
     ("Video.bloom", include_str!("../../../stdlib/Bloom/Video.bloom")),
+    ("Splash.bloom", include_str!("../../../stdlib/Bloom/Splash.bloom")),
     ("Concurrency.bloom", include_str!("../../../stdlib/Bloom/Concurrency.bloom")),
     ("Regex.bloom", include_str!("../../../stdlib/Bloom/Regex.bloom")),
     ("Logger.bloom", include_str!("../../../stdlib/Bloom/Logger.bloom")),
@@ -119,6 +120,22 @@ pub const NATIVE_SOURCES: &[(&str, &str)] = &[
     (
         "Native/BloomVideo/android/so/oxy/bloom/video/Players.kt",
         include_str!("../../../stdlib/Bloom/Native/BloomVideo/android/so/oxy/bloom/video/Players.kt"),
+    ),
+    (
+        "Native/BloomSplash/android/so/oxy/bloom/splash/BloomSplashModule.kt",
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomSplash/android/so/oxy/bloom/splash/BloomSplashModule.kt"
+        ),
+    ),
+    (
+        "Native/BloomSplash/android/so/oxy/bloom/splash/BloomSplashPackage.kt",
+        include_str!(
+            "../../../stdlib/Bloom/Native/BloomSplash/android/so/oxy/bloom/splash/BloomSplashPackage.kt"
+        ),
+    ),
+    (
+        "Native/BloomSplash/android/so/oxy/bloom/splash/SplashHold.kt",
+        include_str!("../../../stdlib/Bloom/Native/BloomSplash/android/so/oxy/bloom/splash/SplashHold.kt"),
     ),
 ];
 
