@@ -19,6 +19,7 @@ const RUNTIME: &[(&str, &str)] = &[
         include_str!("../runtime/android/so/oxy/bloom/ui/BloomTheme.generated.kt"),
     ),
     ("so/oxy/bloom/ui/Views.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Views.kt")),
+    ("so/oxy/bloom/ui/FlexRow.kt", include_str!("../runtime/android/so/oxy/bloom/ui/FlexRow.kt")),
     ("so/oxy/bloom/ui/Modifiers.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Modifiers.kt")),
     ("so/oxy/bloom/ui/Image.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Image.kt")),
     ("so/oxy/bloom/ui/Icons.kt", include_str!("../runtime/android/so/oxy/bloom/ui/Icons.kt")),

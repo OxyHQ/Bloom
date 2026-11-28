@@ -37,3 +37,22 @@ public struct PostRow: View, Equatable {
 
   static func == (a: Self, b: Self) -> Bool { a.post == b.post }
 }
+
+/// A post's body with its links and tags in the primary ink (Mention's linkified text): runs of
+/// one text, each a string or a styled `Text`.
+struct LinkedBody: View {
+  let words: [String]
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: .xs) {
+      // A name line: the handle gives way first, then the name; the time never does.
+      HStack(spacing: .none) {
+        Text("A long display name").weight(.bold).lineLimit(1).shrink(.normal)
+        Text(" @a.long.handle").foregroundStyle(.muted).lineLimit(1).shrink(.first)
+        Text(" · 5m").foregroundStyle(.muted)
+      }
+      Text("Read ", Text("this").foregroundStyle(.primary).weight(.semibold), " and ")
+      Text(..words.map { w in w.hasPrefix("#") ? Text(w).foregroundStyle(.primary) : Text(w) })
+    }
+  }
+}
