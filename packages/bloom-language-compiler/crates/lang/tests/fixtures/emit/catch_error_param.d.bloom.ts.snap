@@ -1,0 +1,2 @@
+export declare function count(s: string): number;
+export declare function named(s: string): boolean;

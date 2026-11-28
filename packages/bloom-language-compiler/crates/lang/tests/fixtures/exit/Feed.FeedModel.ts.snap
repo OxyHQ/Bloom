@@ -61,10 +61,13 @@ self.$set("posts", $at(self.posts, $t0, { ...self.posts[$t0]!, isLiked: true }))
 self.$set("posts", $at(self.posts, $t0, { ...self.posts[$t0]!, likes: self.posts[$t0]!.likes + (1) }));
 try {
 await (MentionAPI$post(self.api, `/posts/${post.id}/like`));
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
+{
 self.$set("posts", $at(self.posts, $t0, { ...self.posts[$t0]!, isLiked: false }));
 self.$set("posts", $at(self.posts, $t0, { ...self.posts[$t0]!, likes: self.posts[$t0]!.likes - (1) }));
 toast("feed.likeFailed");
+}
 }
 }
 

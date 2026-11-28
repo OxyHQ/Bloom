@@ -41,8 +41,11 @@ return [a, b, c, strict("7"), lenient("8"), later(), mapped[0]!, mapped[1]!];
 export function caught(s: string): number {
 try {
 return runThrowing(parsed, s);
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
+{
 return -1;
+}
 }
 }
 

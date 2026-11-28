@@ -48,7 +48,7 @@ const e = JSError$$cast($error)!;
 return e.stack ?? e.message;
 }
 } else {
-const error = $error;
+const error = $error as Error;
 {
 return "other";
 }

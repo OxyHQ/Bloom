@@ -972,7 +972,11 @@ fn a_tasks_request_is_cancelled_with_it_and_runs_no_catch() {
     let out = compile(TASK_HTTP, &path.to_string_lossy(), &Options::default());
     assert!(out.diagnostics.is_empty(), "{}", rendered(&out));
     assert!(out.code.contains("path, undefined, undefined, $signal)"), "{}", out.code);
-    assert!(out.code.contains("} catch (error) {\nif ($signal.aborted) return;"), "{}", out.code);
+    assert!(
+        out.code.contains("} catch ($error) {\nconst error = $error as Error;\nif ($signal.aborted) return;"),
+        "{}",
+        out.code
+    );
     let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/stdlib/task-http.ts.snap");
     if std::env::var_os("BLOOM_BLESS").is_some() {
         std::fs::write(&golden, &out.code).unwrap();

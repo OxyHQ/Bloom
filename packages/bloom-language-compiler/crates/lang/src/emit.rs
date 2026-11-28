@@ -1663,18 +1663,15 @@ impl<'a> Emitter<'a> {
             [only] if only.pattern.is_none() && !self.ck.catch_casts.contains_key(&only.span) => {
                 let name = only.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
                 let body = self.block_body(&only.body.stmts, Tail::Discard, signal.as_deref());
-                match &signal {
-                    // In a task, a throw once it is cancelled (an aborted request) is the
-                    // cancellation itself: the task stops, and no `catch` runs.
-                    Some(signal) => {
-                        line.s(&format!(" catch ({name}) {{\nif ({signal}.aborted) return;\n"))
-                            .f(body)
-                            .s("\n}");
-                    }
-                    None => {
-                        line.s(&format!(" catch ({name}) ")).f(body);
-                    }
+                // The caught value is Bloom's `Error`: TS's `Error` (a catch binding is TS's
+                // `unknown`), as a function that takes one declares it.
+                line.s(&format!(" catch ($error) {{\nconst {name} = $error as Error;\n"));
+                // In a task, a throw once it is cancelled (an aborted request) is the
+                // cancellation itself: the task stops, and no `catch` runs.
+                if let Some(signal) = &signal {
+                    line.s(&format!("if ({signal}.aborted) return;\n"));
                 }
+                line.f(body).s("\n}");
             }
             catches => {
                 line.s(" catch ($error) {\n");
@@ -1699,7 +1696,7 @@ impl<'a> Emitter<'a> {
                         let name = catch.name.as_ref().map_or("error".to_string(), |n| js_name(&n.name));
                         match &cast {
                             Some(cast) => lines.push(format!("const {name} = {cast}($error)!;")),
-                            None => lines.push(format!("const {name} = $error;")),
+                            None => lines.push(format!("const {name} = $error as Error;")),
                         }
                     }
                     let body = self.block_body(&catch.body.stmts, Tail::Discard, signal.as_deref());
