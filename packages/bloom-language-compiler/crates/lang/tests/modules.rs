@@ -69,7 +69,10 @@ fn a_path_import_of_an_own_file_is_dropped() {
         "own-path",
         &[
             ("Package.bloom", MANIFEST),
-            ("Sources/Feed/Card.bloom", "public struct CardData {\n  let id: String\n}\n"),
+            (
+                "Sources/Feed/Card.bloom",
+                "public struct CardData {\n  let id: String\n}\n\npublic func cardTitle(_ d: CardData) -> String { d.id }\n",
+            ),
             (
                 "Sources/Feed/Use.bloom",
                 "import { type CardData } from \"@/Feed/Card\"\n\nfunc make(_ id: String) -> CardData { CardData(id: id) }\n",
@@ -82,14 +85,19 @@ fn a_path_import_of_an_own_file_is_dropped() {
     assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
     assert_eq!(out.warnings.iter().map(|d| d.code).collect::<Vec<_>>(), ["B0901"], "{:?}", out.warnings);
     assert!(out.code.contains("from \"./Card.bloom\""), "{}", out.code);
-    // A renaming import is the only way to rename, so it is kept.
+    // A renaming import is the only way to rename, so the renamed names are kept, imported from
+    // the `.bloom` file itself; the others are in scope already (Mention's lists:
+    // `ListCard as ListCardComponent, type ListCardData`).
     std::fs::write(
         root.join("Sources/Feed/Use.bloom"),
-        "import { type CardData as Card } from \"@/Feed/Card\"\n\nfunc make(_ id: String) -> Card { Card(id: id) }\n",
+        "import { cardTitle as title, type CardData } from \"@/Feed/Card\"\n\nfunc make(_ id: String) -> String { title(CardData(id: id)) }\n",
     )
     .unwrap();
     let out = build(&root, "Sources/Feed/Use.bloom", &options);
-    assert!(!out.warnings.iter().any(|d| d.code == "B0901"), "{:?}", out.warnings);
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert!(!out.warnings.iter().any(|d| d.code == "B0602"), "{:?}", out.warnings);
+    assert!(out.code.contains("cardTitle as title"), "{}", out.code);
+    assert!(out.code.contains("from \"./Card.bloom\""), "{}", out.code);
 }
 
 /// A `@jsOptions` function of another file of the module is called with one object there too.

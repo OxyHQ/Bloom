@@ -319,6 +319,20 @@ pub fn prepare(file: &mut File, source: &str, filename: &str, options: &Options)
         if let Some(sibling) = own_file_import(&import, &path, options)
             && graph.files(index).iter().any(|f| same_file(f, &sibling))
         {
+            // `import { ListCard as ListCardComponent, type ListCardData } from "@/…/ListCard"`:
+            // a renaming is the only way to rename, so the renamed names stay, imported from the
+            // `.bloom` file itself (`./ListCard.bloom`); the others are in scope already.
+            if let ImportKind::Named(specs) = &import.kind
+                && specs.iter().any(|spec| spec.alias.is_some())
+            {
+                let renamed: Vec<ImportSpec> =
+                    specs.iter().filter(|spec| spec.alias.is_some()).cloned().collect();
+                let mut kept_import = import.clone();
+                kept_import.kind = ImportKind::Named(renamed);
+                kept_import.source = relative_specifier(&dir, &sibling);
+                kept.push(kept_import);
+                continue;
+            }
             out.diagnostics.push(
                 Diagnostic::warning(
                     "B0901",
@@ -1067,10 +1081,7 @@ fn builtin_codec(owner: &str) -> Option<()> {
 /// resolved through the `paths` map as `Card.bloom`), when it names one; `None` for an import
 /// that renames a name (`{ Card as C }`), which only an import can do.
 fn own_file_import(import: &Import, from: &Path, options: &Options) -> Option<PathBuf> {
-    let ImportKind::Named(specs) = &import.kind else { return None };
-    if specs.iter().any(|spec| spec.local().name != spec.name.name) {
-        return None;
-    }
+    let ImportKind::Named(_) = &import.kind else { return None };
     let source = import.source.as_str();
     if source.ends_with(".bloom") || Path::new(source).extension().is_some() || source.is_empty() {
         return None;
