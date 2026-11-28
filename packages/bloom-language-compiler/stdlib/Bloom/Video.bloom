@@ -46,3 +46,58 @@ extern native "BloomVideo" {
   /// A source's duration (seconds) and picture size (pixels), once known.
   @extern("onSource") private func onNativeSource(_ listener: ({ player: Int, duration: Double, width: Double, height: Double }) -> Void) -> () -> Void
 }
+
+// ---- the player and its view (SwiftUI/AVKit's shape) ------------------------------------
+//
+//     @State private var player = VideoPlayer(url: clip.url)
+//     Video(player: player).videoGravity(.fill).controls(.hidden)
+//     Button("Play") { player.play() }
+//
+//     Video(url: clip.url, poster: clip.thumbnail).muted().loops().autoplay()
+//
+// A `VideoPlayer` is the app's: it plays, pauses and seeks, and its `currentTime`, `duration`
+// and `isPlaying` follow the playback (an `@Observable`, so a view that reads them draws again).
+// `Video(url:poster:)` builds and owns one for as long as the view is drawn. The runtime pools
+// the decoders under the players, so a feed of videos keeps one decoding at a time: a player
+// that starts takes the decoder from the one that played before, which pauses and gives its
+// source up until it plays again. On the web and in tests the players are expo-video's (Bloom's
+// `VideoView`); a `bloom build` draws them with `BloomVideo` above (media3 on Android).
+
+extern module "./players" {
+  private func videoAttach(_ player: VideoPlayer, _ url: String)
+  private func videoPlay(_ player: VideoPlayer)
+  private func videoPause(_ player: VideoPlayer)
+  private func videoSeek(_ player: VideoPlayer, _ seconds: Double)
+}
+
+/// A player of one video, AVPlayer's shape: the app makes it, holds it in a `@State`, hands it
+/// to `Video(player:)` and drives it.
+@Observable
+public final class VideoPlayer {
+  /// What it plays.
+  public let url: URL
+  /// Whether its sound is off.
+  public var isMuted: Bool = false
+  /// Whether it starts again from the beginning when it ends.
+  public var loops: Bool = false
+  /// The position, in seconds from the start.
+  public private(set) var currentTime: Double = 0
+  /// The video's length in seconds, once known (0 before).
+  public private(set) var duration: Double = 0
+  /// Whether it is playing now.
+  public private(set) var isPlaying: Bool = false
+
+  public init(url: URL) {
+    self.url = url
+    videoAttach(self, url.absoluteString)
+  }
+
+  /// Starts or resumes playing, taking the pool's decoder.
+  public func play() { videoPlay(self) }
+
+  /// Pauses, keeping the position.
+  public func pause() { videoPause(self) }
+
+  /// Moves to `seconds` from the start.
+  public func seek(to seconds: Double) { videoSeek(self, seconds) }
+}

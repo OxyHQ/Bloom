@@ -7,7 +7,7 @@ description: Every modifier of the Bloom language: its parameters and their toke
 
 # Bloom language modifiers
 
-Every modifier the language has (668). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
+Every modifier the language has (672). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
 
 ## Universal modifiers
 
@@ -3791,7 +3791,7 @@ In the secondary ink (a truncated device id).
 - Category: `node`, an option of the node it is chained on, read by that node's own implementation
 - Parameters: a value (optional)
 - Signature: `.muted(value?: boolean)`
-- Taken by: [settingsValue](bloom-language-nodes.mdx#settingsvalue), [callScreen](bloom-language-nodes.mdx#callscreen), [callMinimisedPill](bloom-language-nodes.mdx#callminimisedpill), [storyViewer](bloom-language-nodes.mdx#storyviewer), [voiceControls](bloom-language-nodes.mdx#voicecontrols)
+- Taken by: [settingsValue](bloom-language-nodes.mdx#settingsvalue), [video](bloom-language-nodes.mdx#video), [callScreen](bloom-language-nodes.mdx#callscreen), [callMinimisedPill](bloom-language-nodes.mdx#callminimisedpill), [storyViewer](bloom-language-nodes.mdx#storyviewer), [voiceControls](bloom-language-nodes.mdx#voicecontrols)
 
 ### `compact`
 
@@ -4849,6 +4849,44 @@ The platform's playback controls over it.
 - Signature: `.nativeControls(value: boolean)`
 - Taken by: [video](bloom-language-nodes.mdx#video), [mediaFlightHost](bloom-language-nodes.mdx#mediaflighthost), [mediaSurface](bloom-language-nodes.mdx#mediasurface), [gallery](bloom-language-nodes.mdx#gallery)
 
+### `poster`
+
+The image drawn until the video's first frame (Bloom's `VideoPlayer` and `Video(url)`).
+
+- Category: `node`, an option of the node it is chained on, read by that node's own implementation
+- Parameters: a value
+- Signature: `.poster(url: UrlLike)`
+- Taken by: [video](bloom-language-nodes.mdx#video)
+
+### `videoGravity`
+
+AVKit's gravity: `fill` covers the box (cropped), `fit` shows the whole picture.
+
+- Category: `node`, an option of the node it is chained on, read by that node's own implementation
+- Parameters: [videoGravity](bloom-language-tokens.mdx#videogravity)
+- Signature: `.videoGravity(value: 'fill' | 'fit')`
+- Taken by: [video](bloom-language-nodes.mdx#video)
+- `videoGravity` tokens: `'fill'`, `'fit'`
+
+### `controls`
+
+The platform's playback controls: `automatic` shows them, `hidden` does not.
+
+- Category: `node`, an option of the node it is chained on, read by that node's own implementation
+- Parameters: [videoControls](bloom-language-tokens.mdx#videocontrols)
+- Signature: `.controls(value: 'hidden' | 'automatic')`
+- Taken by: [video](bloom-language-nodes.mdx#video)
+- `videoControls` tokens: `'hidden'`, `'automatic'`
+
+### `loops`
+
+Starts again when it ends (a `Video(url)`'s own player).
+
+- Category: `node`, an option of the node it is chained on, read by that node's own implementation
+- Parameters: a value (optional)
+- Signature: `.loops(value?: boolean)`
+- Taken by: [video](bloom-language-nodes.mdx#video)
+
 ### `allowsPictureInPicture`
 
 Whether it can float in picture in picture.
@@ -5045,12 +5083,13 @@ Each option's own box.
 
 ### `autoplay`
 
-Whether a visible video starts on its own (the viewer's preference by default).
+Plays while it is on screen and pauses off it, the one audible video at a time.
 
 - Category: `node`, an option of the node it is chained on, read by that node's own implementation
 - Parameters: a value
-- Signature: `.autoplay(value: boolean)`
-- Taken by: [videoPlayback](bloom-language-nodes.mdx#videoplayback)
+- Signature: `.autoplay(value?: boolean)`
+- Taken by: [video](bloom-language-nodes.mdx#video), [videoPlayback](bloom-language-nodes.mdx#videoplayback)
+- Narrower on: [video](bloom-language-nodes.mdx#video) (a value (optional))
 
 ### `closeDelay`
 

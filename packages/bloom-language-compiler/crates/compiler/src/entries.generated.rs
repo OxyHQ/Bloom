@@ -492,6 +492,13 @@ pub const FAMILY_EXPORTS: &[(&str, &str)] = &[
     ("WebSearch", "@oxy.so/bloom-language/web-search"),
     ("WishlistCard", "@oxy.so/bloom-language/listing-card"),
     ("WriteReviewPrompt", "@oxy.so/bloom-language/place-reviews"),
+    ("provideVideoPlayers", "@oxy.so/bloom-language/video-view"),
+    ("setVideoDecoders", "@oxy.so/bloom-language/video-view"),
+    ("videoAttach", "@oxy.so/bloom-language/video-view"),
+    ("videoPause", "@oxy.so/bloom-language/video-view"),
+    ("videoPlay", "@oxy.so/bloom-language/video-view"),
+    ("videoRelease", "@oxy.so/bloom-language/video-view"),
+    ("videoSeek", "@oxy.so/bloom-language/video-view"),
 ];
 
 /// The module that exports `name`: its family's entry, else the root.

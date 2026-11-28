@@ -1326,6 +1326,14 @@ export const ENUMS = {
     "contain",
     "cover"
   ],
+  "videoGravity": [
+    "fill",
+    "fit"
+  ],
+  "videoControls": [
+    "hidden",
+    "automatic"
+  ],
   "justify": [
     "start",
     "center",
@@ -4716,6 +4724,18 @@ export const MODIFIERS = {
   ],
   "nativeControls": [
     "value"
+  ],
+  "poster": [
+    "value"
+  ],
+  "videoGravity": [
+    "videoGravity"
+  ],
+  "controls": [
+    "videoControls"
+  ],
+  "loops": [
+    "value?"
   ],
   "allowsPictureInPicture": [
     "value"
@@ -19100,7 +19120,13 @@ export type NodeModifiers = {
     "phases",
     "contentFit",
     "nativeControls",
-    "allowsPictureInPicture"
+    "allowsPictureInPicture",
+    "poster",
+    "videoGravity",
+    "controls",
+    "muted",
+    "loops",
+    "autoplay"
   ],
   "inputOtp": [
     "padding",
