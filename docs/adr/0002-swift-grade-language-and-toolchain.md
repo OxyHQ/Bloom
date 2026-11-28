@@ -477,3 +477,105 @@ Next in this track:
 
 What already merged or is in flight, and still ships, because the internals are reused: #984
 (compiler 1.6.0), #979 and #980 (phase-1 internals and tooling), Mention #2046 (the proof).
+
+## Phase D: the codemod's corpus
+
+`bloom migrate` (embedded-language TSX to 2.0) is measured over Mention's `packages/frontend`
+on `feat/mention-on-language`, tests excluded. A file counts as migrated when it meets all
+three of these:
+
+- its 2.0 text compiles with 0 errors in the migration mode (`--allow-ts-imports`, section 4)
+  inside a package;
+- no form 2.0 retires is left in it (B0950);
+- no `// bloom: review` marker is left in it, unless the count says "with review".
+
+The gate is **more than 80%**.
+
+| Date | Codemod (PR) | Corpus | Migrated (+ review) |
+|---|---|---|---|
+| 2026-11-26 | the 0.x codemod alone, on the 2.0 stack | 324 files (fd8a4290f) | 35.5% (0.x output, not 2.0) |
+| 2026-11-26 | #1007: 2.0 forms, typed tokens, SwiftUI names, effects as `.onAppear`/`.task(id:)`, `do`/`catch`, `String(localized:)`, `private` | 324 files (fd8a4290f) | 27.8% (+4.0% review) = **31.8%** |
+| 2026-11-27 | #1007 on phase A + the M1–M9 compiler fixes (#1016) | 324 files (fd8a4290f) | 28.4% (+4.0% review) = 32.4% |
+| 2026-11-27 | #1007: `xs.at(i)`, `x!`, narrowed reads as `x!`, `@ref` → `Ref(v)`/`ViewRef<T>()`, state-reset effects as `.onChange(of:)`, options records, React's stale reads as snapshots, JS names kept on `Foreign` | 324 files (fd8a4290f) | 29.3% (+7.7% review) = 37.0% |
+| 2026-11-27 | the same, with the compiler's R2–R4 and R7 (`fix/bloom-lang-2-core2` 7b9e701f5) | 324 files (fd8a4290f) | 30.2% (+8.6% review) = 38.9% |
+| 2026-11-27 | #1007: typed promises' `then`/`catch` as tasks, closures' `var` snapshots, `sort` comparators, `splice`/`unshift`, tuple arity; with the compiler's R1–R5, R7 (`fix/bloom-lang-2-core2` ea118687b) | 324 files (fd8a4290f) | 34.9% (+9.9% review) = 44.8% |
+| 2026-11-27 | #1007 on main (29e83bdbd, phases A and B merged), with #1017 (R1–R7) | 324 files (fd8a4290f) | 35.5% (+10.8% review) = 46.3% (40.4% without #1017) |
+| 2026-11-27 | #1007: props typed in another TS file written out as stored properties (2.0 has no `..Props`), barrels' re-exports, `then`/`catch` in place, `useMemo`/`useState` closures, `Readonly<T>`; with #1017 | 324 files (fd8a4290f) | 38.6% (+11.7% review) = 50.3% (42.9% without #1017) |
+| 2026-11-27 | #1007: TS's nominal-incompatible annotations of TS call results dropped, optional strings' truthiness; with #1017 | 324 files (fd8a4290f) | 38.9% (+12.0% review) = 50.9% |
+| 2026-11-27 | the same, with #1021 (on #1017: generic views, the corpus follow-ups) | 324 files (fd8a4290f) | 39.5% (+13.3% review) = 52.8% |
+| 2026-11-27 | #1007 rebased on main 7742f55fe (#1017, #1019 merged); `--from 0.x` names a default export and rewrites its importers; with #1021 (1caebfbb1) | 324 files (fd8a4290f) | 39.5% (+13.3% review) = 52.8% |
+| 2026-11-27 | the same, with #1026 (on #1021: none-defaulted fields optional, TS `T \| null` as `T?`, keyword field names, a `Foreign` value fits a record field) | 324 files (fd8a4290f) | 39.8% (+13.9% review) = **53.7%** |
+| 2026-11-27 | #1007 on main b448b98c4 (#1021 merged): `Array.from({ length })` as a range, `xs = xs.add(x)` on a `Set` as `inserting`; with #1028 (38b9fff4f, on #1026: a TS component's trailing builder is its children, ranges, memo bytes) | 324 files (fd8a4290f) | 39.5% (+13.9% review) = **53.4%** (see below) |
+| 2026-11-27 | the same, + generic arrow functions' type parameters (`T: Equatable` for `extends string \| number`) | 324 files (fd8a4290f) | 39.8% (+13.9% review) = 53.7% (KeyboardShortcutsModal won) |
+| 2026-11-27 | the same, with #1033 (d9fbcfc44, on #1030 and #1028: TS lists into typed lists, `[View]` as a child, generic literals, indexed access types) | 324 files (fd8a4290f) | 41.4% (+15.1% review) = 56.5% |
+| 2026-11-27 | the same, with #1035 (471ca249a, on #1033: TS values compared with numbers and strings, `a \|\| b` of optionals) | 324 files (fd8a4290f) | 42.0% (+15.4% review) = **57.4%**; 5 of the 12 render-checked files draw wrongly (below), so at most 55.9% is verified |
+| 2026-11-27 | #1007: the migration mode in Jest, Metro and `bloom-lang-dts`, `xs?.[i]` on a present TS value as `xs[i]`, untyped `&&`/`\|\|` operands in a condition as `Boolean(x)`; with #1035 (9cfa4eb89: R1–R5, locale-reactive `String(localized:)`, `k_zero` for a count of 0) | 324 files (fd8a4290f) | 42.3% (+15.7% review) = **58.0%**; 11 of the 12 render-checked files draw as the TS (WelcomeScreen does not) |
+| 2026-11-27 | #1007: a list's strings beside nodes (and a ternary's string branches) as `RawText`, props destructured from `props` read as fields; with #1035 (9cfa4eb89) | 324 files (fd8a4290f) | 42.3% (+16.0% review) = **58.3%** (PostCrosspostRow won); all 12 render-checked files draw as the TS |
+| 2026-11-27 | #1007 round 7: bare blocks, `if let` over a state its branch writes, a `catch` beside an `error` state, type predicates as `Bool`; props a view hands on whole written out, rest props as a stored property, labelled parameters for a local function of one object; a dropped TS cast to a literal union as `as!`, `toFixed` as `formatted(fractionDigits:)`; TanStack's `useQuery` with Mention's binding module; with #1038 (14b3e6cb0, on #1035) | 324 files (fd8a4290f) | 42.3% (+17.3% review) = **59.6%** (PostItem, lists/[id], feeds/view and feeds/marketplace won) |
+| 2026-11-27 | #1007 round 8: a guard the source had is never dropped (lead decision; bloomc keeps `?.`/`?[]`/`??` on a TS value, #1038 991ab35ba), a field the source guards is written `T?`; with #1038 884734dbe | 324 files (fd8a4290f) | 40.4% (+15.1% review) = 55.6%: **12 files had counted only by dropping a guard** |
+| 2026-11-27 | the same, with #1038 45f0364e7 (a TS claim kept through a `let` and a view member, `{}` as a patch, wider closure parameters) and the codemod's own fallbacks dropped once narrowed | 324 files (fd8a4290f) | 42.3% (+17.3% review) = **59.6%**: all 12 back with their guards kept; each counts once a test or render passes (PostItem: 29 of 34 row tests) |
+| 2026-11-28 | #1007 round 9 (a78b9b41e): inline `as const` lists as module constants and pair lists as tuples, `padStart`/`padEnd`, setters in a statement's `?:`/`&&`, exhaustive returning `switch`es, value `a && "…"`, `Boolean(x?.trim())`, `[x, onX]` bindings, `{c && xs?.map(…)}`, intersection aliases as one struct, subscript sets, record-or-string arguments split, generic components as `struct X<T>: View`, and `actions(function …)`/`menu(function …)` as `MenuActions`/`MenuContent` structs (#1046); on main 92c9f1056 + #1033..#1052 b4b73bb6e | 324 files (fd8a4290f) | 44.4% (+19.4% review) = **63.9%** (16 files won, among them PostMenu, ProfileMoreMenu, ReplySettingsMenu and AudienceMenu). PostItem passes its 34 row tests, its row cost equals the TS on every feed row kind, and it is checked on the emulator (Mention #2049) |
+| 2026-11-28 | #1007 round 10 (0529d6ad3), on main 7c1f1387c + #1028..#1058 c3c4a003a. What changed:<br>• reads TS had typed (casts to `T['k']` unions, called `Record` reads, `slice(n)`, i18next defaults, narrowable member truthiness, type-guard `filter` as `compactMap`);<br>• values built by a local closure; optional closure parameters as `T?`;<br>• nested and in-place `defineModifier`s, list patterns with defaults, generic functions and views;<br>• `never` defaults; `aria-*` props; `ReadonlySet`; `Embed(<></>)`; inline intersections of object types as one record;<br>• a file-scope `private var` (#1058); `async throws` for functions that await TS | 324 files (fd8a4290f) | 45.4% (+22.8% review) = **68.2%** (21 files won, among them TopicPicker, RoomCard, ChannelInfoDialog, postMenuActions and useInfiniteCatalogSearch). PostItem and explore/trending are lost to #1057's contextual typing (repro `iife-regressions`, with lang-2-core9) |
+| 2026-11-28 | #1007 round 11 (3b8517ded), on main 7c1f1387c + #1028..#1065 b65fecd3e. What changed:<br>• a private hook with an effect, used by one view, inlined (its effect `.task(id:)`); render-time ref writes and side calls as `.task(id:)`;<br>• closures typed by `const f: F`/`useCallback<F>`; record lists of varying shapes as TS's union; `ReactNode` parameters `View?`, strings there `RawText`; guarded lists optional;<br>• imported base types written out (`extends`, intersections, `Pick`/`Omit`); React components returning an element as views; JSX prop spreads field by field;<br>• FormatStyle for numbers (`toLocaleString()`, `Intl.NumberFormat`, #1065) | 324 files (fd8a4290f) | 46.9% (+25.0% review) = **71.6%** (232; 11 files won, among them PostItem and trending back, PostDetailScreen, RightBar, ProfileCommunities, jobs/[id]). An `as? HTTPError` form was reverted: its all-or-nothing `decode` is not TS's read of an Axios error (repro `http-error-shape`) |
+| 2026-11-28 | #1007 round 12 (0c5e89413), on main 52a063a6a + #1066 baa3a0971. What changed:<br>• JS's `Date` is the standard library's (a JS `Date` itself, #1066): every `new Date` at once, the getters as `components()`, the calendar's `date(year:month:day:…)`, `setDate`/`setHours` where exact, and `toLocale…String`/`Intl.DateTimeFormat` as FormatStyle with ECMA-402's defaults written out (`?.formatted(…) ?? "Invalid Date"` where JS prints that);<br>• what TS's flow proved, read so bloomc narrows it (`!Array.isArray(x)` as `x == none`, tested operands, aliased tests, a TS callback's index);<br>• rest props of a local base interface; an arrow component with a hook drawn as JSX as a view | 324 files (fd8a4290f) | 48.1% (+25.6% review) = **73.8%** (239; #1066 first cost the 9 `"js"` Date files, all back, and 6 more won: EmojiPickerSheet and VideosGrid by `break`/`continue`, WeeklyRecapContent, PodcastCard, MediaGrid and feeds.tsx). Waiting on the compiler: a text run that is a view or a string (UserName), the `"js"` `Number` call, a struct passed to a TS interface |
+| 2026-11-28 | #1007 round 13 (09638bf36), on main 52a063a6a + #1066 1cacbc04c. What changed:<br>• a hook function's `useState` is its hook-local `@State var` (#1066); `break`/`continue`; `T: Equatable` for `!=` on a type parameter; `f<T>()` returning `G<T>` typed `G<T>`;<br>• `{ data: xs = [] }` binds `xsOrNone` (no same-scope shadow); `--write` keeps a route's screen `<X />`, names defaults in `.bloom` importers, and mocks views in `jest.mock`;<br>• a `screen()` drawn inside the route's own wrapper (a feature gate) refused until `ViewModifier` (parity: the gated page has no header);<br>• **verification:** the round's files run against their Mention tests, and the 8 with none against a render check (Mention #2049 `__perf__/lang-proof/corpus13`) | 324 files (fd8a4290f) | measured 49.1% (+24.7% review) = **73.8%** (239; 247 before the wrapped-screen refusal). **Verified: at most 227** (70.1%): 15 of the round's files pass their tests; 12 measured files fail or are unchecked (EventEditor, postMenuActions, jobs/[id], WeeklyRecapContent, MediaGrid, VideosGrid, PodcastPickerSheet, EmojiPickerSheet, pokes, PostLocation, SuggestedUsers, MerchantInstallmentSettings), on 9 compiler repros (`repros/mention13`) sent to lang-2-core11 |
+| 2026-11-28 | #1007 round 14 (f92b9d561), on main 52a063a6a + #1066 0de83e525 (lang-2-core11's three batches) and one local compiler fix (below). What changed:<br>• re-verified on core11: 8 of round 13's 12 failing or unchecked files now pass (EventEditor and postMenuActions their tests; WeeklyRecapContent, MediaGrid, VideosGrid, EmojiPickerSheet, SuggestedUsers and PostLocation the corpus13 render check, the last two with new cases);<br>• a Bloom list method on a TS value Bloom could not type (core11's B0601) types its binding (`let names: [String]`, `[Foreign]`): PostItem, PostDetailScreen and LiveRoomsWidget had drawn `enumerated is not a function`;<br>• `x \|\| undefined` is JS's falsy `none`, and `Boolean(x)` of a TS value stays its truthiness where it is a value (jobs/[id] handed React Query the id as `enabled`);<br>• `--write` names a re-exported or `lazy` default and a non-route default `screen()`; a renamed default beside a platform fork is refused (CameraPage, ProfileScreen, ProfileChromeFrame.web: their tests failed) | 324 files (fd8a4290f) | measured 49.7% (+23.5% review) = **73.1%** (237: PostHeader won; the 3 platform forks refused; 12 files depend on a local fix to core11's B0217, which flagged a narrowing as a redeclaration, `repros/mention14/narrow-guard-redeclared`). **Verified: at most 230** (71.0%): measured minus jobs/[id] (screen-group-root), PodcastPickerSheet (closure-view-to-reactelement), pokes (fragment-text-run), MerchantInstallmentSettings (record-update-arrow-body), PostHeader (element-to-view-prop), and PostDetailScreen and LiveRoomsWidget (no test or render case yet) |
+| 2026-11-28 | #1007 round 15 (668c46cd7), on main 52a063a6a + #1066 66a28c5d8 and the same local compiler fix. What changed:<br>• `e instanceof Error ? e.message : fb` is `(e as? JSError)?.message ?? fb`; a TS `===` on an object holding what has no equality is Swift's `===`;<br>• a local function's `ReactNode` parameter that only goes to a TS component's prop, every call giving it text, is `String?`, so pokes draws the TS's text with no nested `Text` (render: 4 states pass);<br>• JS's `Number(s)` of a typed string is `s.trimmed().isEmpty ? 0 : (Float(s) ?? Double.nan)`, `Number.NaN` the stdlib's;<br>• found: the printer's `.task(id:) { …; defer { cleanup } }` runs React's cleanup as soon as a body that does not await returns (`repros/mention15/task-defer-runs-at-once`: 9 sites in 8 measured files) | 324 files (fd8a4290f) | measured 49.7% (+23.5% review) = **73.1%** (237, unchanged). **Verified: at most 225** (69.4%): round 14's 230, plus pokes, minus the 6 earlier-verified files the task-defer bug breaks at run time (trending, saved, CommercePickerSheet, EngagementList, TrendingTopicsInterstitial, PostArticleModal); LiveRoomsWidget and PostDetailScreen (new render cases) and the round-14 failures stay out |
+| 2026-11-28 | #1007 round 15, second part (432f6c919), on main 52a063a6a + #1066 6c64fe36f (core12's B0217 fix; the local fix dropped). What changed:<br>• an effect whose `.task` cleanup would run as soon as its body returns is refused until the stdlib's `Task.cancellation` (the lead's decision: 9 files, SourcesSheet among them);<br>• TS `unknown` is `JSONValue`, a `typeof x === "object"` with `null` ruled out `x.object != none || x.array != none`;<br>• JS regexes are the stdlib `Regex` (no measured file imports JS's `RegExp`) | 324 files (fd8a4290f) | measured 48.8% (+21.9% review) = **70.7%** (229: AddToStarterPackSheet and hide-counts won, the 9 refused). **Verified: at most 221** (68.2%): measured minus jobs/[id], PodcastPickerSheet, MerchantInstallmentSettings, PostHeader (core12's repros), CommunityNoteCard and PostAttachmentExternalEmbed (their tests fail, also on the earlier codemod), and AddToStarterPackSheet and hide-counts (unchecked) |
+| 2026-11-28 | #1007 round 16 (6cbe22737), on #1081 d7c2aab9e (core12/13) and 2 local compiler fixes that change no measured status (`std-loads-ui-runtime`, `memo-dep-method-name`). What changed:<br>• an effect with a cleanup is a `.task(id:)` ending in `await Task.cancellation`, a debounce `try? await sleep(for:)`: the 9 refused files are back, each checked by a test or render case that exercises its cleanup (6 pass);<br>• a string's JS `length`/`slice`/`padStart` read its `utf16` view (strings count characters now);<br>• `--write` names a `require(…).default`, rewrites a typed `jest.requireActual`, and redraws a barrel's views;<br>• jobs/[id]/apply is lost to a compiler regression (`narrowed-state-assign`). | 324 files (fd8a4290f) | **73.1%** measured (237/324); verified **at most 232** (71.6%), 230 without the local memo fix. Not verified: trending (harness), PostDetailScreen and SourcesSheet (render diffs), AddToStarterPackSheet, hide-counts |
+| 2026-11-28 | #1007 round 16, step 2 (6d70922ef), the same stack and 4 local fixes (+ `imported-view-modifier`, `branch-chrome-modifiers`). What changed:<br>• a route that draws its `screen()` inside a gate is that screen with `.modifier(Gate())` on its root; the two gates are hand-ported `ViewModifier`s whose held states are `.ownScreen()` (the TS drew them with no screen);<br>• a wrapper that draws a state before its screen is a file-local `ViewModifier` (CheckoutPlayground);<br>• `x.slice(-n)` is `x.suffix(n)`, a string's on its `utf16` view. | 324 files (fd8a4290f) | **75.3%** measured (244/324); verified **at most 235** (72.5%). Not verified: trending (harness), PostDetailScreen, SourcesSheet and feeds (one state each, compiler repros), feeds/marketplace, lists/create, communities/[id]/bans (no case yet), AddToStarterPackSheet, hide-counts |
+| 2026-11-28 | #1007 round 16, triage (3a8f8a549), the same stack and local fixes. What changed:<br>• render cases for the gated routes and CheckoutPlayground's held state; JS regex literals as `try! Regex("…")` with String's methods;<br>• B0205/B0201 triaged by root cause: compiler causes sent to core14 (`ts-generic-closure-param-hole`, `ts-union-alias-narrowing`, `string-contains-regex`, `runtime-node-types`); codemod causes fixed: keyed literals as dictionaries, a thrown value read as its `jsValue`, `ok && asyncFn()` as `if`, node types as `View`, padded record ternaries, lazily imported views wrapped. | 324 files (fd8a4290f) | **76.9%** measured (249/324); verified **at most 241** (74.4%) |
+
+The rate counts a file the compiler accepts, so a miscompile can hide in it. One was found on
+2026-11-27: a TS function component drawn with a trailing builder was called as a plain function,
+and its builder's nodes were dropped (Mention's PostActions drew an empty bar). #1028 fixes it.
+Its re-check of every migrated and review file (an emit diff) found 13 files that had been
+counted while drawing wrongly: 9 had dropped nodes and 4 ran a component as a plain call.
+
+PostActions was render-checked first (Mention #2049, PostActionsShape 4/4). The other 12 were
+render-checked on 2026-11-27 in Mention's harness (`__perf__/lang-proof/corpus/`, Mention #2049).
+Each file is drawn as TS and as its printed 2.0 text, with the same props and stand-ins, and
+the host trees are compared (every view, its props with styles flattened, its text) over 24
+states. On #1033's stack, 7 files matched and 5 were miscompiled. The compiler fixed those
+(repros R1–R5 in `~/.local/share/bloom-lang/repros/mention5/`, #1035):
+
+| Result on #1035 9cfa4eb89 | Files |
+|---|---|
+| Same tree in every state (24 of 24 states) | PostPodcastAttachment, RoomsListSkeleton, WriteNoteSheet, ExperienceEmployerField, NotificationSkeleton, LiveRoomsWidget, WhoToFollowWidget, Error, ProfileSkeleton, SuggestedProfileCard, VideoReplies, WelcomeScreen |
+
+WelcomeScreen's undefined element was neither the codemod nor the compiler. The language draws
+`.textStyle(.title)` with `@oxy.so/bloom/typography`'s `Title`, which Mention's Jest stand-in did
+not export, so its TS form failed too. The stand-in now has `Title` and `Subtitle`.
+
+The fixed emits were: a TS `view()` mounted as a component (R1), a conditional node, or a node
+for a Bloom component's `ReactNode` prop, not converted to an element (R2, R3), a `Screen` outside
+`app/` that lost its named export (R4), and a memo component with a comparator called as a view
+(R5, which R1's first fix caused).
+
+Two conditions apply to every result above:
+
+- **Catalogs.** `bloom migrate` writes i18next's `t("k")` as `String(localized: "k")`, which
+  reads the package's `Resources/Localizable` catalogs. Mention has none (its strings are
+  i18next's `locales/*.json`), so without them every migrated file that had `t()` draws its keys.
+  Mention now generates them from `locales/` (`scripts/bloom-catalogs.ts`: keys flattened,
+  `{{x}}` as `{x}`, `k_one`/`k_other` as plural forms), and `lib/i18n.ts` registers every
+  catalog i18next loads with Bloom's runtime and follows its language (Mention #2049). A test
+  checks that every key of all 15 locales draws as i18next draws it, plurals included.
+- **Migration mode.** The printed text compiles only inside a package (outside one a file is 0.x),
+  and inside one its TS imports need the migration mode in Jest and Metro (`allowTsImports`,
+  #1007).
+
+Most refusals come from bloomc's errors on the draft. On 2026-11-26 that was 133 of 221
+refused files, and the largest single cause was an indexed array read typing as `T?` where
+Swift's is `T` (repro M1, since fixed). The second round of repros (R1–R7, in
+`~/.local/share/bloom-lang/repros/mention2.md`) is led by these:
+
+- the standard library's BloomData `Action`, which shadows BloomUI's `Action` node (R1, blocking
+  PostItem);
+- TS optional parameters (R2);
+- nested conditionals (R3);
+- `.id` (R4);
+- `Foreign` from TS inference (R7).
+
+The rest is a long tail of codemod gaps, with at most 10 files per reason. PR #1007's handoff
+keeps the list.
