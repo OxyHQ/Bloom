@@ -1151,9 +1151,14 @@ fn promise_then(source: &str, start: usize, end: usize) -> Option<(usize, usize,
     let signature = source[..at]
         .rmatch_indices('\n')
         .map(|(i, _)| &source[i + 1..])
-        .find(|l| l.starts_with("fn ") || l.starts_with("pub fn ") || l.starts_with("async fn ") || l.starts_with("pub async fn "))
+        .find(|l| {
+            l.starts_with("fn ")
+                || l.starts_with("pub fn ")
+                || l.starts_with("async fn ")
+                || l.starts_with("pub async fn ")
+        })
         .and_then(|l| l.split(") {").next());
-    if tail && signature.is_some_and(|l| l.contains("-> Promise") || l.contains(") -> Promise")) {
+    if tail && signature.is_some_and(|l| l.contains("-> Promise")) {
         return None;
     }
     // `then` runs on success only: a rejection is not caught here (TS left it unhandled).
