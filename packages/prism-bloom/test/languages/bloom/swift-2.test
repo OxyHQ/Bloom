@@ -333,7 +333,17 @@ func firstIndex<T: Equatable & Hashable>(_ xs: [T], of x: T) -> Int? {
 	],
 	[
 		"key-path",
-		"\\.locale"
+		[
+			[
+				"operator",
+				"\\"
+			],
+			[
+				"punctuation",
+				"."
+			],
+			"locale"
+		]
 	],
 	[
 		"punctuation",

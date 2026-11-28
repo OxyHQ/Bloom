@@ -1,0 +1,59 @@
+// Members, key paths and operator functions: a tuple's member and optional chaining to it,
+// `if let x` and `guard let x else`, `\.k` and `\T.k`, `x[keyPath: k]` read and written, and an
+// operator as a function. `bloom check` passes on it.
+public struct Account {
+  var name: String = ""
+  var visits: Int = 0
+}
+
+public func members(_ pair: (Int, String), _ maybe: (Int, String)?, _ user: Account?) -> Int {
+  let first = pair.0
+//                ^ punctuation.accessor.bloom
+//                 ^ variable.other.property.bloom
+  let second = maybe?.1 ?? ""
+//                  ^^ punctuation.accessor.bloom
+//                    ^ variable.other.property.bloom
+//                      ^^ keyword.operator.optional.bloom
+  let name = user?.name ?? second
+//               ^^ punctuation.accessor.bloom
+//                 ^^^^ variable.other.property.bloom
+  if let user {
+//^^ keyword.control.bloom
+//   ^^^ storage.type.let.bloom
+//       ^^^^ variable.other.declaration.bloom
+    return user.visits + first
+  }
+  guard let maybe else { return name.count }
+//^^^^^ keyword.control.bloom
+//      ^^^ storage.type.let.bloom
+//          ^^^^^ variable.other.declaration.bloom
+//                ^^^^ keyword.control.bloom
+  return maybe.0
+}
+
+public func operators(_ xs: [Int]) -> [Int] {
+  let total = xs.reduce(0, +)
+//                         ^ keyword.operator.arithmetic.bloom
+  let add: (Int, Int) -> Int = (+)
+//                              ^ keyword.operator.arithmetic.bloom
+  return xs.sorted(by: >) + [total, add(1, 2)]
+//                     ^ keyword.operator.comparison.bloom
+//                        ^ keyword.operator.arithmetic.bloom
+}
+
+public func visited(_ accounts: [Account], _ key: WritableKeyPath<Account, Int>) -> [Account] {
+//                                                ^^^^^^^^^^^^^^^ entity.name.type.bloom
+  let read: KeyPath<Account, String> = \Account.name
+//                                     ^ keyword.operator.key-path.bloom
+//                                      ^^^^^^^ entity.name.type.bloom
+//                                             ^ punctuation.accessor.bloom
+//                                              ^^^^ variable.other.property.bloom
+  var next = accounts[0].with(\.visits, 1)
+//                            ^ keyword.operator.key-path.bloom
+//                             ^ punctuation.accessor.bloom
+//                              ^^^^^^ variable.other.property.bloom
+  next[keyPath: key] = next[keyPath: key] + accounts.count
+//     ^^^^^^^ variable.parameter.bloom
+//                          ^^^^^^^ variable.parameter.bloom
+  return [next, Account(name: next[keyPath: read])]
+}
