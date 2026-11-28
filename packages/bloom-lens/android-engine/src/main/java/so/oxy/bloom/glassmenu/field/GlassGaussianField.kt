@@ -8,7 +8,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-internal class GlassGaussianField(private val minimumStep: Float) {
+class GlassGaussianField(private val minimumStep: Float) {
   var originX = 0f
     private set
   var originY = 0f

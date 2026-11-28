@@ -12,7 +12,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-internal class GlassFieldTexture {
+class GlassFieldTexture {
   private class Buffer(val bitmap: Bitmap) {
     val shader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply {
       filterMode = BitmapShader.FILTER_MODE_LINEAR

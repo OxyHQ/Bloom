@@ -20,7 +20,7 @@ import so.oxy.bloom.glassmenu.render.GlassStill
 // The backdrop tells each lens, before every frame, which window rects change in it (GlassBackdrop.onPreDraw); a lens
 // whose region is touched shows the page again in that same frame. The region is the one the glass samples.
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-internal class GlassLens(val page: GlassBackdrop) {
+class GlassLens(val page: GlassBackdrop) {
   val node = RenderNode("GlassLens")
   private val region = Rect()
   private var showsStill = false

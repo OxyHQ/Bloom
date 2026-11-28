@@ -14,6 +14,8 @@ android {
 }
 
 dependencies {
+  // The glass engine, free of React Native (android-engine, linked by expo-module.config.json's projects).
+  implementation project(':oxy.so-bloom-lens-engine')
   implementation 'com.facebook.react:react-android'
   implementation 'androidx.customview:customview:1.1.0'
 }

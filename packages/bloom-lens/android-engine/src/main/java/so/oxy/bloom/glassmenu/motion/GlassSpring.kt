@@ -7,12 +7,12 @@ import kotlin.math.exp
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-internal class GlassSpringSpec(val dampingRatio: Float, val response: Float) {
+class GlassSpringSpec(val dampingRatio: Float, val response: Float) {
   val omega = (2.0 * PI / response).toFloat()
   val alpha = dampingRatio * omega
   val frequency = if (dampingRatio >= 0.9999f) 0f else omega * sqrt(1f - dampingRatio * dampingRatio)
 }
-internal class GlassSpring(
+class GlassSpring(
   private val valueTolerance: Float = 0.2f,
   private val velocityTolerance: Float = 3f,
 ) {
@@ -36,7 +36,7 @@ internal class GlassSpring(
   }
 
   // Copies the whole state (value, velocity, target, spec) of another spring: used by the scrubbed morph.
-  internal fun copyFrom(other: GlassSpring) {
+  fun copyFrom(other: GlassSpring) {
     value = other.value
     velocity = other.velocity
     destination = other.destination

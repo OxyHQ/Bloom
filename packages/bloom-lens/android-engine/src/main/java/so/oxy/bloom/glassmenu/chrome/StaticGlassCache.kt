@@ -13,7 +13,7 @@ import android.os.Build
 // While the pill is dragged the static glass is drawn from this texture instead of being recorded every frame: the
 // glass keeps its material (the texture is the output of the same GlassRenderer draw), and only the pill is live.
 // It is rendered again only when its key changes (size, backdrop version, search progress, inset): never per frame.
-internal class StaticGlassCache {
+class StaticGlassCache {
   private var reader: ImageReader? = null
   private var image: android.media.Image? = null
   private var textureBitmap: Bitmap? = null

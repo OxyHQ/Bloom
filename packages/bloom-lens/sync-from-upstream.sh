@@ -5,6 +5,8 @@
 # warm-ups that run once per process rather than once per lens, and a base drawn as a group of glasses).
 # It also takes the menu's JavaScript and the chrome's TypeScript; patches/menu/*.patch carries Bloom's changes to
 # the menu's JavaScript (the same names, and those two props).
+# split-engine.mjs then moves the engine (renderer, shaders, backdrop, jelly, springs, feedback, config) into the
+# Gradle project android-engine/, free of React Native and Expo; android/ keeps the Expo adapter.
 # Usage: sync-from-upstream.sh [upstream-java-dir]
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -36,4 +38,6 @@ rm -rf "$MENU_DST"; mkdir -p "$MENU_DST"
 # The entry sits beside src/ upstream and inside it here: its imports drop the `src/` segment.
 sed 's#"\./src/#"./#' "$MODULE_UP/index.ts" > "$MENU_DST/index.ts"
 (cd "$MENU_DST" && for p in "$HERE"/patches/menu/*.patch; do patch -p1 --no-backup-if-mismatch < "$p"; done)
+# The engine (free of React Native) into android-engine/, the Expo adapter left in android/.
+node "$HERE/split-engine.mjs"
 echo "synced from $UP"

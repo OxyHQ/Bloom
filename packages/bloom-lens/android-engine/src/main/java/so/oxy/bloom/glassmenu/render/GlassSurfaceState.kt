@@ -5,7 +5,7 @@ import so.oxy.bloom.glassmenu.field.GlassShapes
 import so.oxy.bloom.glassmenu.records.GlassMenuConfigRecord
 import so.oxy.bloom.glassmenu.records.GlassTriggerConfigRecord
 
-internal class GlassSurfaceState {
+class GlassSurfaceState {
   val incoming = RectF()
   val captureBounds = RectF()
   var lockedFieldStep = 0f

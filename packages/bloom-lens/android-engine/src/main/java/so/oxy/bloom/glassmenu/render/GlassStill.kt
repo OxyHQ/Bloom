@@ -26,7 +26,7 @@ import java.util.concurrent.Executors
 // draws to a surface (Android 13: an ImageReader's) lets go of it by waiting, on RenderThread, until the GPU has
 // finished everything queued (Vulkan's destroySurface waits for the queue to go idle): a still let go as a menu
 // closed held RenderThread 7 to 20 ms while the window's frames waited for buffers behind it.
-internal class GlassStill(val width: Int, val height: Int, private val ready: (Bitmap) -> Unit) {
+class GlassStill(val width: Int, val height: Int, private val ready: (Bitmap) -> Unit) {
   private val root = RenderNode("GlassStill")
   private val target: Target =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) BufferTarget() else ReaderTarget()
@@ -151,7 +151,7 @@ internal class GlassStill(val width: Int, val height: Int, private val ready: (B
 
 // Stills shared by what they show: every trigger that rests with the same look (a feed's ⋯ on every row) draws the one
 // bitmap of that look, so the glass at rest costs one texture per look, not a layer per trigger.
-internal object SharedStills {
+object SharedStills {
   private class Entry(width: Int, height: Int, record: (RecordingCanvas) -> Unit) {
     var bitmap: Bitmap? = null
     var users = 0

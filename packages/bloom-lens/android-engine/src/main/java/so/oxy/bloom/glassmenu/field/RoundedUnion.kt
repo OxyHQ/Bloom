@@ -7,7 +7,7 @@ import kotlin.math.sqrt
 
 // One shape of the field (a rounded rect) or several blended into one (GlassShapes): the distance and gradient at a
 // point, sampled into [distance], [gradientX] and [gradientY].
-internal class RoundedUnion {
+class RoundedUnion {
   private val shapes = Array(GlassShapes.Capacity) { RoundedField() }
   private var count = 0
   private var blend = 0f

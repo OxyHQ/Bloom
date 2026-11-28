@@ -8,7 +8,7 @@ import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.tanh
 
-internal class GlassJelly {
+class GlassJelly {
   private val press = GlassSpring(.002f, .02f)
   private val glow = GlassSpring(.002f, .02f)
   private val dragX = GlassSpring(.3f, 6f)
