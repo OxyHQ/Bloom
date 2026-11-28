@@ -1,0 +1,20 @@
+// A state read after its handler wrote it is React's value of the render, a snapshot. It is
+// taken at the top of the handler, so a write inside a `try` can be undone by its `catch`.
+
+import { save } from "./api"
+
+public struct Blocker: View {
+  let id: String
+  @State private var ids: [String] = []
+  func block() async {
+    let idsBefore = ids
+    do {
+      ids = [..ids, id]
+      try await save(id)
+    } catch { ids = idsBefore.filter { x in x != id } }
+  }
+
+  var body: some View {
+    Button(Text("Block (\(ids.count))")).onPress(block)
+  }
+}

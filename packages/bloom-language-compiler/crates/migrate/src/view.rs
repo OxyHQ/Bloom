@@ -1586,6 +1586,11 @@ impl Tr<'_> {
                 },
             );
         }
+        // TS's rejection of an await here rejects the function's promise: `async throws`.
+        let throws = is_async
+            && matches!(body, Body::Block(..))
+            && ret.as_deref().is_some_and(|r| r != "Unit" && !r.starts_with("View"))
+            && self.throwing.contains(name);
         let text = match body {
             Body::Expr(e) => {
                 if ret.is_some() {
@@ -1601,6 +1606,11 @@ impl Tr<'_> {
             Body::Block(statements, end) => {
                 if ret.as_deref().is_some_and(|r| r.starts_with("View")) && is_view_returns(statements) {
                     self.view_lines(statements, end)
+                } else if throws {
+                    let in_do = std::mem::replace(&mut self.in_do, true);
+                    let text = self.block_stmts(statements, end, ret.is_some());
+                    self.in_do = in_do;
+                    text
                 } else {
                     self.block_stmts(statements, end, ret.is_some())
                 }
@@ -1616,7 +1626,8 @@ impl Tr<'_> {
         }
         let keyword = if is_async { "async fn" } else { "fn" };
         let ret = ret.map(|r| format!(" -> {r}")).unwrap_or_default();
-        format!("{vis}{keyword} {name}({params}){ret} {{\n{text}\n}}")
+        let throws = if throws { " throws" } else { "" };
+        format!("{vis}{keyword} {name}({params}){throws}{ret} {{\n{text}\n}}")
     }
 
     /// A function's parameters, and the `let`s that destructure a typed object parameter.
@@ -1868,6 +1879,23 @@ impl Tr<'_> {
                 let reviews = self.take_reviews();
                 lines.push(format!(
                     "{note}{reviews}// {REVIEW_MARKER}: a rejection of the awaited call stops the block here (TS: an unhandled rejection)\nmatch await {awaited} {{\ncase .ok({bound}) => {{\n{destructure}{rest}\n}}\ncase .err(_) => {{}}\n}}"
+                ));
+                return lines.join("\n");
+            }
+            // `await f()` of a local function made `async throws` (`Tr::throwing`), where nothing
+            // catches: the rest of the block in a `do` whose `catch` ends it, as TS's rejection did.
+            if !self.propagate
+                && !self.in_do
+                && let Some(start @ (AwaitStart::Let(..) | AwaitStart::Pattern(..) | AwaitStart::Expr(..))) =
+                    awaited_start(statement)
+                && self.awaits_throwing(start.value())
+            {
+                let in_do = std::mem::replace(&mut self.in_do, true);
+                let rest = self.block_stmts(&statements[i..], end, false);
+                self.in_do = in_do;
+                let reviews = self.take_reviews();
+                lines.push(format!(
+                    "{note}{reviews}// {REVIEW_MARKER}: a rejection of the awaited call stops the block here (TS: an unhandled rejection)\ndo {{\n{rest}\n}} catch {{}}"
                 ));
                 return lines.join("\n");
             }

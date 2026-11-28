@@ -53,11 +53,12 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                 first_write(source, start, text).map(|line_start| {
                     let snapshot = format!("{text}Before");
                     let indent: String = source[line_start..].chars().take_while(|c| *c == ' ').collect();
-                    let already =
-                        source[..line_start].trim_end().ends_with(&format!("let {snapshot} = {text}"))
-                            || edits.iter().any(|(a, b, t)| {
-                                *a == line_start && *b == line_start && t.contains(&snapshot)
-                            });
+                    let declared = format!("let {snapshot} = {text}\n");
+                    let already = source[line_start..start].contains(&declared)
+                        || source[..line_start].trim_end().ends_with(declared.trim_end())
+                        || edits
+                            .iter()
+                            .any(|(a, b, t)| *a == line_start && *b == line_start && t.contains(&snapshot));
                     if !already {
                         edits.push((line_start, line_start, format!("{indent}let {snapshot} = {text}\n")));
                     }
@@ -187,6 +188,27 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                 })
             }
             // A promise-returning call JS let go unawaited: started as a task.
+            // A call of a module function the codemod made `async throws` (TS's rejection rejects
+            // its promise): awaited, `try await f()`; handed on as TS's promise, a task of it.
+            ("B0223", _) if d.message == "this call can throw, and it is not marked with `try`" => {
+                let callee: String = text.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
+                let declared = !callee.is_empty()
+                    && text[callee.len()..].starts_with('(')
+                    && [format!("async fn {callee}("), format!("async fn {callee}<")].iter().any(|head| {
+                        source.match_indices(head.as_str()).any(|(at, _)| {
+                            let sig = &source[at..];
+                            let sig = &sig[..sig.find(" {\n").unwrap_or(sig.len())];
+                            sig.contains(" throws")
+                        })
+                    });
+                if !declared {
+                    None
+                } else if source[..start].ends_with("await ") {
+                    Some((start - "await ".len(), start - "await ".len(), "try ".to_string()))
+                } else {
+                    Some((start, end, format!("task {{\ntry await {text}\n}}")))
+                }
+            }
             ("B0430", _) => Some((start, end, format!("task {{\nawait {text}\n}}"))),
             // `await f()` of a call that is not async (TS awaited a plain value): the
             // call; a `task { await f() }` around it alone is the call too.
@@ -580,6 +602,13 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     [close] => Some((close + 1, close + 1, "!".to_string())),
                     _ => None,
                 }
+            }
+            // A TS tuple read by a constant index (`coordinates[0]`): Swift's tuple member,
+            // `coordinates.0`. (`coordinates?.[0]` waits for bloomc to parse `x?.0`.)
+            ("B0201", _)
+                if d.message.ends_with("` cannot be indexed") && receiver.is_some_and(is_tuple_type) =>
+            {
+                tuple_index(source, end).map(|(n, close)| (end, close, format!(".{n}")))
             }
             // Arithmetic on a `Record<K, number>` read TS typed present: `d[k]!`.
             ("B0201", _)
@@ -1275,7 +1304,10 @@ fn first_write(source: &str, read: usize, name: &str) -> Option<usize> {
                 || head.contains(" func ")
                 || head.contains(" in ");
             if closure {
-                break;
+                // React reads the handler's state as of its render all through it: the snapshot
+                // is the same at the top of the handler, where every read is in its scope (a
+                // write inside a `do` is read by its `catch`).
+                return found.map(|_| line_end + 1);
             }
             depth = 0;
         }
@@ -1603,6 +1635,19 @@ fn statement_end(source: &str, start: usize) -> usize {
         }
     }
     bytes.len()
+}
+
+/// Whether a bloomc type is a tuple, `(A, B)` (not a function type or a group).
+fn is_tuple_type(ty: &str) -> bool {
+    ty.starts_with('(') && ty.ends_with(')') && !ty.contains("->") && tuple_arity(&ty[1..ty.len() - 1]) > 1
+}
+
+/// `[N]` right at `at`, an integer literal index: `N` and the end of the `]`.
+fn tuple_index(source: &str, at: usize) -> Option<(String, usize)> {
+    let rest = source[at..].strip_prefix('[')?;
+    let close = rest.find(']')?;
+    let n = &rest[..close];
+    (!n.is_empty() && n.chars().all(|c| c.is_ascii_digit())).then(|| (n.to_string(), at + 1 + close + 1))
 }
 
 /// The parenthesised group of `source` around `start..end`: `(` … `)`.

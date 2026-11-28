@@ -371,7 +371,9 @@ impl Tr<'_> {
             },
             Expression::AwaitExpression(a) => {
                 let value = self.expr(&a.argument);
-                if self.in_do && !self.awaits_bloom(&a.argument) {
+                // A local function made `async throws` ([`crate::module::Tr::throwing`]).
+                // (A local function made `async throws` is awaited with `try` anywhere.)
+                if self.awaits_throwing(&a.argument) || self.in_do && !self.awaits_bloom(&a.argument) {
                     format!("try await {value}")
                 } else if self.propagate && !self.awaits_bloom(&a.argument) {
                     format!("await {value}?")
@@ -990,6 +992,12 @@ impl Tr<'_> {
 
     /// An awaited value that is a Bloom async function's result (no `Result`:
     /// a Bloom function does not reject).
+    /// A call of a local function made `async throws` ([`crate::module::Tr::throwing`]).
+    pub fn awaits_throwing(&self, e: &Expression) -> bool {
+        matches!(e.without_parentheses(), Expression::CallExpression(c)
+            if matches!(&c.callee, Expression::Identifier(id) if self.throwing.contains(id.name.as_str())))
+    }
+
     pub fn awaits_bloom(&self, e: &Expression) -> bool {
         matches!(e.without_parentheses(), Expression::CallExpression(call) if matches!(self.callee(call), Callee::LocalFn))
     }
