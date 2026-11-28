@@ -194,6 +194,8 @@ struct Emitter<'a> {
     view: Option<ViewState>,
     /// The `AbortSignal` of the task being emitted.
     signal: Option<String>,
+    /// The label of each `switch` a `break` leaves, by its scrutinee's span.
+    switch_labels: HashMap<Span, String>,
     /// Inside a conditional operand: `?` cannot return early from here.
     conditional: usize,
     /// The value of a record literal's field being emitted: a `T?` check there takes TS's `null`.
@@ -268,6 +270,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         diagnostics: Vec::new(),
         view: None,
         signal: None,
+        switch_labels: HashMap::default(),
         conditional: 0,
         field_value: None,
         uses_result: false,
@@ -328,6 +331,11 @@ fn dedup(mut marks: Vec<(u32, u32)>) -> Vec<(u32, u32)> {
     marks.sort_by_key(|(g, _)| *g);
     marks.dedup_by_key(|(g, _)| *g);
     marks
+}
+
+/// `outer: ` before a named loop's statement.
+fn loop_label(label: Option<&Ident>) -> String {
+    label.map_or_else(String::new, |l| format!("{}: ", js_name(&l.name)))
 }
 
 const RESERVED: &[&str] = &[
@@ -1431,8 +1439,8 @@ impl<'a> Emitter<'a> {
             StmtKind::While(w) => {
                 let cond = self.expr(&w.cond);
                 let body = self.block_body(&w.body.stmts, Tail::Discard, self.signal.clone().as_deref());
-                let mut line = Frag::at(stmt.span, "while (");
-                line.f(cond).s(") ").f(body);
+                let mut line = Frag::at(stmt.span, loop_label(w.label.as_ref()));
+                line.s("while (").f(cond).s(") ").f(body);
                 self.push_stmt(line);
             }
             // `for i in a..<b`: a counting loop, no array.
@@ -1453,7 +1461,8 @@ impl<'a> Emitter<'a> {
                     (decl, Frag::of(name))
                 };
                 let body = self.block_body(&f.body.stmts, Tail::Discard, self.signal.clone().as_deref());
-                let mut line = Frag::at(stmt.span, format!("for (let {target} = "));
+                let mut line = Frag::at(stmt.span, loop_label(f.label.as_ref()));
+                line.s(&format!("for (let {target} = "));
                 line.f(start)
                     .f(bound)
                     .s(&format!("; {target} {} ", if closed { "<=" } else { "<" }))
@@ -1478,7 +1487,8 @@ impl<'a> Emitter<'a> {
                 }
                 let target = self.binding_target(&f.pattern);
                 let body = self.block_body(&f.body.stmts, Tail::Discard, self.signal.clone().as_deref());
-                let mut line = Frag::at(stmt.span, format!("for (const {target} of "));
+                let mut line = Frag::at(stmt.span, loop_label(f.label.as_ref()));
+                line.s(&format!("for (const {target} of "));
                 line.f(iter).s(") ").f(body);
                 self.push_stmt(line);
             }
@@ -1502,6 +1512,20 @@ impl<'a> Emitter<'a> {
                 self.push_stmt(line);
             }
             StmtKind::Do(d) => self.do_stmt(d, stmt.span),
+            StmtKind::Break(label) | StmtKind::Continue(label) => {
+                let word = if matches!(stmt.kind, StmtKind::Break(_)) { "break" } else { "continue" };
+                let target = match label {
+                    Some(label) => Some(js_name(&label.name)),
+                    None => {
+                        self.ck.switch_breaks.get(&stmt.span).and_then(|s| self.switch_labels.get(s)).cloned()
+                    }
+                };
+                let text = match target {
+                    Some(target) => format!("{word} {target};"),
+                    None => format!("{word};"),
+                };
+                self.push_stmt(Frag::at(stmt.span, text));
+            }
         }
     }
 
@@ -1919,6 +1943,12 @@ impl<'a> Emitter<'a> {
         let subject = self.subject(&m.scrutinee, &patterns);
         let signal = self.signal.clone();
         let mut line = Frag::default();
+        // Swift's `break` in a case leaves the `switch`: its `if` chain takes a label.
+        if self.ck.switch_breaks.values().any(|s| *s == m.scrutinee.span) {
+            let label = format!("$switch{}", self.switch_labels.len());
+            line.s(&format!("{label}: "));
+            self.switch_labels.insert(m.scrutinee.span, label);
+        }
         let count = m.arms.len();
         for (index, arm) in m.arms.iter().enumerate() {
             let mut tests = self.pattern_test(&arm.pattern, &subject);
@@ -4671,6 +4701,7 @@ pub(crate) fn stmt_awaits(stmt: &Stmt) -> bool {
         StmtKind::Guard(g) => match &g.cond {
             Cond::Expr(e) | Cond::Let(_, e) => visit(e),
         },
+        StmtKind::Break(_) | StmtKind::Continue(_) => {}
         StmtKind::Throw(e) => visit(e),
         StmtKind::Return(None) | StmtKind::Defer(_) | StmtKind::Do(_) => {}
     }
@@ -4780,6 +4811,7 @@ impl<'a> Emitter<'a> {
             }
             StmtKind::Return(Some(e)) | StmtKind::Expr(e) => self.collect(e, out),
             StmtKind::Return(None) => {}
+            StmtKind::Break(_) | StmtKind::Continue(_) => {}
             StmtKind::Defer(b) => b.stmts.iter().for_each(|s| self.stmt_deps(s, out)),
             StmtKind::While(w) => {
                 self.collect(&w.cond, out);

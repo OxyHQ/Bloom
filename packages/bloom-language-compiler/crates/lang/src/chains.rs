@@ -136,6 +136,7 @@ impl Walker<'_> {
                 }
                 self.stmts(&g.otherwise.stmts);
             }
+            StmtKind::Break(_) | StmtKind::Continue(_) => {}
             StmtKind::Throw(e) => self.expr(e),
             StmtKind::Do(d) => {
                 self.stmts(&d.body.stmts);

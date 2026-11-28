@@ -1,0 +1,5 @@
+export type Kind = "skip" | "stop" | "keep";
+export declare function firstKeys(xs: readonly (string | undefined)[]): readonly string[];
+export declare function pairs(grid: readonly (readonly number[])[], target: number): number;
+export declare function countdown(n: number): number;
+export declare function kept(kinds: readonly Kind[]): number;

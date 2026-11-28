@@ -755,6 +755,13 @@ let value = try? check(code: 1)                       // Int?: `none` when it th
   elsewhere it is B0224 (write `try?`, or handle it). In a `func … throws(E)`, a `throw` outside a
   `do` throws an `E` (`throw .offline`). `Result` and 0.x `?` stay.
 
+`break` and `continue` are Swift's, emitted as JS's own: `continue` starts the innermost loop's
+next turn, `break` leaves the innermost loop, and an unnamed `break` in a `switch` case leaves the
+`switch` (a `break` last in a case, or alone, is an empty case). A loop may be named,
+`outer: for row in grid { … }`, and `break outer` / `continue outer` leave or continue it from a
+loop inside. Outside a loop (or `switch`), and inside a closure whose loop is outside it, either
+is B0219, as is a name no loop around it has.
+
 ## 7. Views
 
 ### 6.3 Ranges

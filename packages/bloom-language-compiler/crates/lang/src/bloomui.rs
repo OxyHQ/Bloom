@@ -564,6 +564,7 @@ impl Lowering<'_> {
                 StmtKind::Assign(x) => self.expr(&mut x.value),
                 StmtKind::Return(Some(x)) | StmtKind::Expr(x) | StmtKind::Throw(x) => self.expr(x),
                 StmtKind::Return(None) => {}
+                StmtKind::Break(_) | StmtKind::Continue(_) => {}
                 StmtKind::Defer(b) => self.stmts(&mut b.stmts),
                 StmtKind::While(w) => {
                     self.expr(&mut w.cond);
@@ -592,7 +593,7 @@ fn for_each(items: Expr, closure: Closure, span: Span) -> Stmt {
         None => Pattern { kind: PatternKind::Wildcard, span: fresh(span) },
     };
     let body = Block { stmts: closure.body, span: closure.span };
-    Stmt { kind: StmtKind::For(ForStmt { pattern, iter: items, body }), span }
+    Stmt { kind: StmtKind::For(ForStmt { pattern, iter: items, body, label: None }), span }
 }
 
 /// Lowers `file`'s BloomUI names in place; returns the standard library names it introduced.

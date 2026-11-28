@@ -2363,7 +2363,35 @@ impl<'s, 'i> Parser<'s, 'i> {
                 self.bump();
                 let cond = self.expr(Ctx::Head);
                 let body = self.block();
-                StmtKind::While(WhileStmt { cond, body })
+                StmtKind::While(WhileStmt { cond, body, label: None })
+            }
+            // `outer: for x in xs { … }`, `outer: while c { … }` (2.0): a loop with a name.
+            Tok::Ident(_)
+                if matches!(self.nth(1), Tok::P(P::Colon))
+                    && matches!(self.nth(2), Tok::Kw(Kw::For | Kw::While)) =>
+            {
+                let label = self.ident("the loop's name");
+                self.bump();
+                let mut stmt = self.stmt()?;
+                match &mut stmt.kind {
+                    StmtKind::For(f) => f.label = Some(label),
+                    StmtKind::While(w) => w.label = Some(label),
+                    _ => {}
+                }
+                stmt.kind
+            }
+            // `break`, `continue`, each with the loop's name or not (2.0).
+            Tok::Ident(word)
+                if (word == "break" || word == "continue")
+                    && matches!(
+                        self.nth(1),
+                        Tok::Newline | Tok::Eof | Tok::Ident(_) | Tok::P(P::Semi | P::RBrace)
+                    ) =>
+            {
+                let is_break = word == "break";
+                self.bump();
+                let label = matches!(self.tok(), Tok::Ident(_)).then(|| self.ident("the loop's name"));
+                if is_break { StmtKind::Break(label) } else { StmtKind::Continue(label) }
             }
             // `guard let x = v else { return }`, `guard ok else { … }` (2.0).
             Tok::Ident(word) if word == "guard" && self.statement_word() => {
@@ -2421,7 +2449,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 }
                 let iter = self.expr(Ctx::Head);
                 let body = self.block();
-                StmtKind::For(ForStmt { pattern, iter, body })
+                StmtKind::For(ForStmt { pattern, iter, body, label: None })
             }
             _ => {
                 let expr = self.expr(Ctx::Normal);
@@ -2861,8 +2889,10 @@ impl<'s, 'i> Parser<'s, 'i> {
                     self.skip_newlines();
                 }
                 let end = Span::new(self.prev_end(), self.prev_end());
-                // `break`: an empty case.
-                stmts.retain(|s| !matches!(&s.kind, StmtKind::Expr(Expr { kind: ExprKind::Name(n), .. }) if n == "break"));
+                // `break` last in a case: the case ends there anyway (alone: an empty case).
+                if matches!(stmts.last(), Some(Stmt { kind: StmtKind::Break(None), .. })) {
+                    stmts.pop();
+                }
                 let body = match stmts.as_slice() {
                     [Stmt { kind: StmtKind::Expr(_), .. }] => {
                         let Some(Stmt { kind: StmtKind::Expr(expr), .. }) = stmts.pop() else {

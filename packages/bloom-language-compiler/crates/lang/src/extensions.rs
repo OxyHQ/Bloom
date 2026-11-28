@@ -669,6 +669,7 @@ fn walk_stmt(stmt: &mut Stmt, f: &mut dyn FnMut(&mut Expr), bind: &mut dyn FnMut
             walk_cond(&mut g.cond, f, bind);
             walk_block(&mut g.otherwise, f, bind);
         }
+        StmtKind::Break(_) | StmtKind::Continue(_) => {}
         StmtKind::Throw(e) | StmtKind::Expr(e) => walk_expr(e, f, bind),
         StmtKind::Do(d) => {
             walk_block(&mut d.body, f, bind);
