@@ -110,12 +110,17 @@ def primary_available(url):
     # backoff before the canonical host is judged down: one dropped probe sent
     # a job to the fallback host, which then rate-limited it. Not
     # --retry-all-errors: the healthy refusal above (curl 63) must not retry.
+    # The cap is 64 KiB, not 1 byte: curl 8.5 (Ubuntu 24.04) applies it to each
+    # redirect's body too, and services.gradle.org's 307 carries 169 bytes, so
+    # a 1-byte cap refused the redirect before following it and sent every
+    # Gradle download to the rate-limited fallback (Bloom PR 1075, on Seldon).
+    # A host that ignores Range still sends the whole artifact and is refused.
     result = subprocess.run([
         'curl', '--fail', '--location', '--silent', '--show-error',
         '--connect-timeout', '10', '--max-time', '30',
         '--retry', '3', '--retry-max-time', '60',
         '--proto', '=https', '--proto-redir', '=https',
-        '--range', '0-0', '--max-filesize', '1', '--output', os.devnull,
+        '--range', '0-0', '--max-filesize', '65536', '--output', os.devnull,
         '--write-out', '%{http_code}', url,
     ], capture_output=True, text=True)
     available = result.returncode in (0, 63) and result.stdout in ('200', '206')
