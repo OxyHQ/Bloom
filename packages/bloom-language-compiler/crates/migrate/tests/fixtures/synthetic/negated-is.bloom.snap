@@ -1,7 +1,7 @@
 // `!Array.isArray(x)` is `!(x is [Foreign])`: `is` binds looser than `!`.
 
 public func count(_ media: Foreign<"unknown">) -> Float {
-  if !(media is [Foreign]) { return 0 }
+  if !(media.array != none) { return 0 }
   1
 }
 

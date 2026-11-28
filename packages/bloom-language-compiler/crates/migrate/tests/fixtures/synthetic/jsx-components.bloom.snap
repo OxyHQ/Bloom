@@ -30,7 +30,7 @@ public struct Hover: View {
       // bloom: review: `as React.ReactElement` dropped: annotate where the value lands if tsc needs it
       children
     } else {
-      Card(title: title!) { children }
+      Card(title: title) { children }
     }
   }
 }

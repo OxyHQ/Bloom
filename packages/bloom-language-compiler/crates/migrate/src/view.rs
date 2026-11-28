@@ -1525,7 +1525,28 @@ impl Tr<'_> {
         // takes its own.
         let defaults = std::mem::take(&mut self.pattern_defaults);
         let value = self.expr(init);
-        let mut out = format!("{keyword} {pattern}{ty} = {value}");
+        // `const { a, b: c } = item` of a name or a member path: one `let` per field, Swift's way
+        // (`let a = item.a`, `let c = item.b`); a record pattern is not Swift's.
+        let fields = match &d.id {
+            BindingPattern::ObjectPattern(_) if ty.is_empty() && crate::expr::is_postfix_text(&value) => {
+                pattern.strip_prefix("{ ").and_then(|p| p.strip_suffix(" }")).filter(|p| !p.contains(['{', '(', '['])).map(
+                    |p| {
+                        p.split(", ")
+                            .map(|part| match part.split_once(": ") {
+                                Some((key, bound)) => format!("{keyword} {bound} = {value}.{key}"),
+                                None => format!("{keyword} {part} = {value}.{part}"),
+                            })
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                    },
+                )
+            }
+            _ => None,
+        };
+        let mut out = match fields {
+            Some(lines) => lines,
+            None => format!("{keyword} {pattern}{ty} = {value}"),
+        };
         for line in defaults {
             out.push('\n');
             out.push_str(&line);

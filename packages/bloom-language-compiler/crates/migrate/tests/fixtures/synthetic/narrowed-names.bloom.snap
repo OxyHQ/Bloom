@@ -15,7 +15,7 @@ public struct Card: View {
     if (username == none || username.isEmpty) || disable == true {
       Text("nobody")
     } else {
-      Live(username: username!)
+      Live(username: username)
     }
   }
 }

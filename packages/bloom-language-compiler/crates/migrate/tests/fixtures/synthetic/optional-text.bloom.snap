@@ -20,8 +20,8 @@ public struct Handle: View {
 
   var body: some View {
     VStack {
-      RawText("@", (handle ?? "")).foreground("muted")
-      Text(hasName ? "named" : "anonymous").font(font).padding("top", gap > 2 ? "sm" : "xs")
+      RawText("@", (handle ?? "")).foreground(.muted)
+      Text(hasName ? "named" : "anonymous").font(font).padding(.top, gap > 2 ? .sm : .xs)
     }
   }
 }
