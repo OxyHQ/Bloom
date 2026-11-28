@@ -2382,8 +2382,12 @@ impl<'a> Emitter<'a> {
                 ("weight", Some(a)) => {
                     parts.push(format!("weight = {}", self.token_or_expr("Text", "weight", &a.value)))
                 }
-                ("underline", _) => parts.push("underline = true".into()),
-                ("italic", _) => parts.push("italic = true".into()),
+                // `.italic()`, or `.italic(r.italic)`: a flag of the run's own.
+                ("underline" | "italic" | "strikethrough", arg) => {
+                    let param = if *name == "strikethrough" { "strike" } else { name };
+                    let value = arg.map_or_else(|| "true".to_string(), |a| self.expr(&a.value));
+                    parts.push(format!("{param} = {value}"));
+                }
                 ("link", Some(a)) => parts.push(format!("href = {}", self.expr(&a.value))),
                 ("onPress", _) => {
                     let action = match call.trailing.as_deref() {

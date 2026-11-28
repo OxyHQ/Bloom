@@ -209,6 +209,7 @@ class TextRun(
   val weight: androidx.compose.ui.text.font.FontWeight? = null,
   val underline: Boolean = false,
   val italic: Boolean = false,
+  val strike: Boolean = false,
   val href: String? = null,
   val onPress: (() -> Unit)? = null,
 )
@@ -238,7 +239,12 @@ fun Text(
           color = run.color ?: Color.Unspecified,
           fontWeight = run.weight,
           fontStyle = if (run.italic) androidx.compose.ui.text.font.FontStyle.Italic else null,
-          textDecoration = if (run.underline) androidx.compose.ui.text.style.TextDecoration.Underline else null,
+          textDecoration = androidx.compose.ui.text.style.TextDecoration.combine(
+            listOfNotNull(
+              androidx.compose.ui.text.style.TextDecoration.Underline.takeIf { run.underline },
+              androidx.compose.ui.text.style.TextDecoration.LineThrough.takeIf { run.strike },
+            ),
+          ),
         )
         val press = run.onPress ?: run.href?.let { href -> { runCatching { uri.openUri(href) }; Unit } }
         if (press != null) {
