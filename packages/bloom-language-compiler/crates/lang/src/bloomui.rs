@@ -121,7 +121,18 @@ fn icon_and_text(text: Expr, icon: Expr) -> Vec<Stmt> {
 }
 
 /// Mention's own glyphs in Bloom's icon set; every other name is a Remix icon.
-const OWN_ICONS: &[&str] = &["Like", "LikeFill", "Reply", "Repost", "MediaAttachment", "GifAttachment"];
+const OWN_ICONS: &[&str] = &[
+    "Like",
+    "LikeFill",
+    "Reply",
+    "Repost",
+    "Share",
+    "Bookmark",
+    "BookmarkFill",
+    "Menu",
+    "MediaAttachment",
+    "GifAttachment",
+];
 
 /// Names written for a glyph of another name in Bloom's set (SwiftUI's, or the obvious one).
 const ICON_ALIASES: &[(&str, &str)] = &[("verified", "verifiedBadge"), ("verifiedFill", "verifiedBadgeFill")];

@@ -3,12 +3,12 @@ import { c as $c } from "react/compiler-runtime";
 import { Button, HStack, Icon, Loading, ScrollView, Spacer, Text, VStack, view } from "@oxy.so/bloom-language";
 import { Toggle } from "@oxy.so/bloom-language/inputs";
 import { useState } from "react";
+import { BookmarkIcon } from "@oxy.so/bloom/icons/BookmarkIcon";
 import { LikeIcon } from "@oxy.so/bloom/icons/LikeIcon";
-import { RiBookmarkLine } from "@oxy.so/bloom/icons/RiBookmarkLine";
 import { Date$formatted, Date$$init$_$strategy, Date$$init$millisecondsSince1970, Date$$init$timeIntervalSince1970, DateFormat$$get$relative } from "../../.bloom/std/Bloom/Time.bloom";
 
 const $view0 = Icon(LikeIcon);
-const $view1 = HStack(Icon(RiBookmarkLine), Text("Saved")).spacing("xs");
+const $view1 = HStack(Icon(BookmarkIcon), Text("Saved")).spacing("xs");
 const $view2 = Text("Likes");
 const $view3 = Spacer();
 const $view4 = VStack(Text("Reposts"), Text("When someone reposts you").foreground("muted").font("body-2")).align("start");
