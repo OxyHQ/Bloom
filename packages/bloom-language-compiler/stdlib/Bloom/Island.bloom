@@ -1,6 +1,6 @@
 // Bloom (UI): a Compose island in a React Native screen (ADR 0003).
 //
-//     Island("FeedIsland", json: JSON.encode(FeedProps.self, props)) { name, payload in
+//     Island("FeedIsland", props: JSON.encode(FeedProps.self, props)) { name, payload in
 //       if name == "onIntent" { handle(try JSON.decode(FeedIntent.self, from: payload)) }
 //     }
 //
@@ -26,12 +26,12 @@ extern native "BloomIsland" {
 }
 
 /// The island `name` (a module marked `native: .island`), drawn from its props as one JSON
-/// object (`json`), its events to `onEvent` as `(prop name, value as JSON)`. It draws in the
+/// object (`props`), its events to `onEvent` as `(prop name, value as JSON)`. It draws in the
 /// app's theme: `preset` (an `AppColorName`) and `scheme` (`"light"` or `"dark"`; none, the
 /// system's), Bloom's default preset when none is given.
 public struct Island: View {
   let name: String
-  let json: String
+  let props: String
   var preset: String? = none
   var scheme: String? = none
   var onEvent: ((String, String) -> Void)? = none
@@ -39,7 +39,7 @@ public struct Island: View {
   var body: some View {
     islandView(
       island: name,
-      props: json,
+      props: props,
       themePreset: preset,
       themeScheme: scheme,
       onIslandEvent: { event in
