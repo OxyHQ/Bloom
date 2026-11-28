@@ -147,6 +147,9 @@ pub struct Tr<'s> {
     /// TS as taking one object). Their parameter's name when it is one (`input`, read only as
     /// `input.x`): the body keeps it, as a record of the labels.
     pub js_options: HashMap<String, Option<String>>,
+    /// While a record with an optional spread is printed twice ([`Tr::record`]): that name, and
+    /// whether this print spreads it.
+    pub optional_spread: Option<(String, bool)>,
     /// The `ReactNode` parameters (by span start) of a local function that only hands them to a
     /// TS component's prop, every call passing text (a string, a fragment of text, nothing):
     /// `String?`, so the component draws the same text the TS gave it (no nested `Text`).
@@ -445,6 +448,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         wrapped: HashSet::new(),
         labelled: HashMap::new(),
         js_options: HashMap::new(),
+        optional_spread: None,
         text_params: HashSet::new(),
         object_tests: HashSet::new(),
         rest_views: HashMap::new(),

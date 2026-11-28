@@ -2023,6 +2023,25 @@ impl Tr<'_> {
         if let Some(dictionary) = self.dictionary(object) {
             return dictionary;
         }
+        // `{ ...cached, ...known }` with `cached` optional: JS spreads nothing for `undefined`, so
+        // the record has its fields when it is there, `cached != none ? { ..cached!, … } : { … }`.
+        if self.optional_spread.is_none() {
+            let optional = object.properties.iter().find_map(|p| match p {
+                ObjectPropertyKind::SpreadProperty(s) => match self.declared(&s.argument) {
+                    Some((name, ty)) if ty.ends_with('?') => Some(name),
+                    _ => None,
+                },
+                _ => None,
+            });
+            if let Some(name) = optional {
+                self.optional_spread = Some((name.clone(), true));
+                let with = self.record(object);
+                self.optional_spread = Some((name.clone(), false));
+                let without = self.record(object);
+                self.optional_spread = None;
+                return format!("{name} != none ? {with} : {without}");
+            }
+        }
         let mut out = Vec::new();
         for property in &object.properties {
             let note = self.note(property.span().start);
@@ -2033,6 +2052,15 @@ impl Tr<'_> {
                     if let Some(fields) = self.conditional_fields(&s.argument) =>
                 {
                     out.push(format!("{note}{fields}"))
+                }
+                ObjectPropertyKind::SpreadProperty(s)
+                    if let Some((name, with)) = self.optional_spread.clone()
+                        && matches!(s.argument.without_parentheses(), Expression::Identifier(id)
+                            if self.scope.renames.get(id.name.as_str()).map_or(id.name.as_str(), String::as_str) == name) =>
+                {
+                    if with {
+                        out.push(format!("{note}..{name}!"))
+                    }
                 }
                 ObjectPropertyKind::SpreadProperty(s) => {
                     out.push(format!("{note}..{}", self.expr(&s.argument)))

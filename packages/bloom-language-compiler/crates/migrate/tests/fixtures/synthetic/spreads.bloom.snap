@@ -1,0 +1,19 @@
+// A spread of an optional value (`{ ...cached, ...known }`, `cached` maybe `undefined`): JS spreads
+// nothing for `undefined`, so the record has its fields only when it is there.
+
+public struct Identity {
+  var name: String? = none
+  var handle: String? = none
+}
+
+private func merged(_ cached: Identity?, _ known: Identity) -> Identity {
+  cached != none ? { ..cached, ..known } : { ..known }
+}
+
+public struct Byline: View {
+  var cached: Identity? = none
+  let known: Identity
+  var body: some View {
+    Text(merged(cached, known).name ?? "")
+  }
+}
