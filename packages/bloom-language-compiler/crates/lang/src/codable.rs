@@ -537,6 +537,7 @@ fn codec(g: &mut Gen, ty: &str, visibility: Visibility) -> Item {
         visibility,
         modifiers: Modifiers::default(),
         kind: ItemKind::Const(ConstDecl {
+            mutable: false,
             name: Ident { name: crate::extensions::mangle(ty, "self", true), span },
             ty: Some(codec_ty),
             value,

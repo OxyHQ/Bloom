@@ -220,6 +220,7 @@ fn lower_member(owner: &Owner, member: &TypeMember, ids: &mut Ids, out: &mut Vec
                 replace_self(t, &owner.self_ty);
             }
             ItemKind::Const(ConstDecl {
+                mutable: false,
                 name: Ident { name: mangle(&owner.key, &name.name, true), span: name.span },
                 ty,
                 value: value.clone(),
@@ -552,6 +553,7 @@ fn all_cases(e: &EnumDecl, item: &Item, ids: &mut Ids, out: &mut Vec<Item>) {
         visibility: item.visibility,
         modifiers: Modifiers::default(),
         kind: ItemKind::Const(ConstDecl {
+            mutable: false,
             name: Ident { name: mangle(&e.name.name, "allCases", true), span },
             ty: Some(TypeExpr { kind: TypeKind::List(Box::new(element)), span }),
             value: Expr { id: ids.next(), kind: ExprKind::List(cases), span },
