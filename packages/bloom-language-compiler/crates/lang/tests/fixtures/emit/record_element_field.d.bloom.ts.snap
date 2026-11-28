@@ -1,0 +1,8 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+export interface EditorProps {
+  readonly visible: boolean;
+  readonly onClose: () => void;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Editor())`), or from TSX as `toElement(Editor())`. */
+export declare const Editor: (props: EditorProps) => ComposedView;
+export declare function show(badge: boolean): void;

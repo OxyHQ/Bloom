@@ -1,0 +1,27 @@
+// A view value in a record field TS types `ReactNode` crosses raw: a Dialog header's `right`
+// (Bloom's `DialogHeaderConfig.right: ReactNode`) is emitted `.header({ right: saveAction })`,
+// so the Dialog gets the Node object ("Objects are not valid as a React child" on draw).
+// Mention: EventEditor (Compose), its 13 EventEditor.test cases.
+// Expected: `right: toElement(saveAction)`, as a view given to a TS `ReactNode` prop crosses.
+public struct Editor: View {
+  let visible: Bool
+  let onClose: () -> Unit
+  let saveAction = Button(Text("Save")).onPress { }
+  var body: some View {
+    Dialog { Text("Body") }
+      .header({ title: "Create", largeTitle: false, right: saveAction })
+      .presented(Binding(get: visible, set: { _ in onClose() }))
+  }
+}
+
+// A TS function's options: a view in a `ReactNode` field, an optional one, and one in a list of
+// records, each crosses as an element.
+import { present } from "@/ui/components"
+
+public func show(_ badge: Bool) {
+  present({
+    title: "Saved",
+    accessory: badge ? Text("New") : none,
+    rows: [{ label: "a", trailing: Text("1") }],
+  })
+}

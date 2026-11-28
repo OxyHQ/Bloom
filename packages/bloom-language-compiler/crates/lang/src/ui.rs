@@ -6,7 +6,8 @@ use rustc_hash::FxHashMap as HashMap;
 use std::rc::Rc;
 
 use bloom_language_compiler::spec::{
-    MODIFIERS, NODES, NONE_MODIFIERS, NodeSpec, OBJECT_FIELDS, OBJECTS, POINT_PARAMS, SIGNATURES, TOKEN_SETS,
+    ELEMENT_FIELDS, MODIFIERS, NODES, NONE_MODIFIERS, NodeSpec, OBJECT_FIELDS, OBJECTS, POINT_PARAMS,
+    SIGNATURES, TOKEN_SETS,
 };
 use bloom_language_compiler::{Doc, Tour};
 
@@ -26,6 +27,12 @@ pub fn signature(constructor: &str) -> &'static [&'static str] {
 /// token argument may be `none` there, which leaves the modifier unapplied.
 pub fn takes_none(modifier: &str) -> bool {
     NONE_MODIFIERS.contains(&modifier)
+}
+
+/// The fields of a modifier's object that TS types as a React element (`spec::ELEMENT_FIELDS`):
+/// a Bloom view given there crosses as `toElement(view)`.
+pub fn element_fields(modifier: &str) -> &'static [&'static str] {
+    ELEMENT_FIELDS.iter().find(|(name, _)| *name == modifier).map_or(&[], |(_, fields)| fields)
 }
 
 pub fn node(kind: &str) -> Option<&'static NodeSpec> {

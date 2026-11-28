@@ -1886,6 +1886,16 @@ pub const SIGNATURES: &[(&str, &[&str])] = &[
 /// `none` there), read from `Node`'s methods by `generate-signatures.mjs`.
 pub const NONE_MODIFIERS: &[&str] = &["accessibilityHidden", "active", "allowsHitTesting", "autoResize", "backLabel", "badge", "bar", "bloomOnly", "border", "chevron", "clipped", "collapsed", "collapsible", "colorScope", "compact", "contentGrows", "count", "coverFill", "detached", "disabled", "divider", "dividers", "documentScroll", "dots", "draggable", "dropBeside", "droppable", "error", "eyebrow", "fadeBottom", "filled", "floatingChrome", "flush", "focusable", "foreground", "frosted", "fullBleed", "fullWidth", "glass", "hidden", "hide", "highlighted", "hint", "hoverCard", "hoverForeground", "hoverHighlight", "iconOnly", "ignoresSafeArea", "inPage", "indeterminate", "interactive", "interactiveDismissDisabled", "invalid", "inverted", "itemType", "keepMounted", "keyboardAvoiding", "label", "lineNumbers", "live", "loading", "manualActivation", "matchSurfacePaint", "meta", "metaOverlay", "minimize", "modifier", "mono", "multiline", "multiple", "muted", "onBack", "onCancel", "onConfirm", "onEndReached", "onError", "onHover", "onLayout", "onLoad", "onLongPress", "onPress", "onPressItem", "onReselect", "opaque", "ownScreen", "page", "peek", "portrait", "preload", "pressFade", "progress", "provider", "rangeLabels", "reorderable", "replacesBottomBar", "required", "resetKey", "resizable", "revealsOnAppear", "role", "round", "safeArea", "safeAreaPadding", "savedToast", "screen", "screenActive", "scrollY", "scrollable", "searchable", "selectable", "selected", "separated", "showZeroCounts", "sidebar", "sortable", "sortsDescendingFirst", "sticky", "stickyHeaders", "stickyIndices", "stopPropagation", "streaming", "stretchItems", "subtitle", "surface", "tail", "themeToggle", "tint", "total", "verified", "wrap", "wrapControl"];
 
+/// Each modifier's object fields TS types as a React element (`header`'s `right`): a Bloom view
+/// given there crosses as `toElement(view)` (`elementFields`, by `generate-signatures.mjs`).
+pub const ELEMENT_FIELDS: &[(&str, &[&str])] = &[
+    ("buttons", &["label"]),
+    ("header", &["left", "right", "titleContent"]),
+    ("linkView", &["children"]),
+    ("logo", &["icon", "wordmark"]),
+    ("sectionIndex", &["empty", "footer", "header"]),
+];
+
 /// Each universal modifier's category (`modifierCategories`): what a backend that draws
 /// modifiers itself (the native runtimes, ADR 0003) does with it. A modifier not listed is
 /// `node`: an option its node's own implementation reads.

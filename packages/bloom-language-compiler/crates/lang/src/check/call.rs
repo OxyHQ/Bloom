@@ -1587,6 +1587,33 @@ impl Checker<'_> {
         ty
     }
 
+    /// A modifier's object literal (`.header({ right: saveAction })`), a list of them or either
+    /// branch of a ternary: the views in its `fields` (those TS types `ReactNode`) cross as
+    /// React elements, as a view given to a TS prop does.
+    fn element_fields(&mut self, value: &Expr, fields: &[&str]) {
+        if fields.is_empty() {
+            return;
+        }
+        match &value.kind {
+            ExprKind::Record(entries) => {
+                for entry in entries {
+                    if let RecordEntry::Field { key, value } = entry
+                        && fields.contains(&key.name.as_str())
+                    {
+                        self.element(value);
+                    }
+                }
+            }
+            ExprKind::List(items) => items.iter().for_each(|item| self.element_fields(item, fields)),
+            ExprKind::Paren(inner) => self.element_fields(inner, fields),
+            ExprKind::Ternary(_, then, otherwise) => {
+                self.element_fields(then, fields);
+                self.element_fields(otherwise, fields);
+            }
+            _ => {}
+        }
+    }
+
     /// `S(field: v, ..spread)`; `partial`: `Partial<S>(…)`, every field optional.
     fn construct(
         &mut self,
@@ -1679,6 +1706,11 @@ impl Checker<'_> {
                     given.push(&field.name);
                     let field_ty = substitute(&field.ty, &targs);
                     self.expr(&arg.value, Some(&field_ty));
+                    // A TS object's `ReactNode` field (`rows: [{ trailing: Text("1") }]`): a view
+                    // there crosses as an element.
+                    if matches!(d.origin, Origin::Ts { .. }) && super::is_element(&field_ty) {
+                        self.element(&arg.value);
+                    }
                 }
                 // A callback's result (`xs.map { x in ({ id: x.id, color: x.color }) }` where
                 // `[AvatarGroupItem]` is expected) may have more fields: TS checks no excess
@@ -2681,6 +2713,7 @@ impl Checker<'_> {
                 }
                 ParamKind::Any => {
                     self.boundary(value, None);
+                    self.element_fields(value, crate::ui::element_fields(&name.name));
                 }
             }
         }

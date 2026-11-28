@@ -7,6 +7,7 @@ import type {
   LazyExoticComponent,
   MemoExoticComponent,
   NamedExoticComponent,
+  ReactElement,
   ReactNode,
 } from 'react';
 
@@ -36,3 +37,27 @@ export interface LogContext {
   [key: string]: unknown;
 }
 export declare function log(message: string, context?: LogContext): void;
+
+/** A TS function taking React elements nested in its options. */
+export interface PresentOptions {
+  title: string;
+  accessory?: ReactNode;
+  rows?: PresentRow[];
+}
+export interface PresentRow {
+  label: string;
+  trailing: ReactNode;
+}
+export declare function present(options: PresentOptions): void;
+
+/** A generic TS component whose props take React elements and a render function. */
+export interface GridEntry {
+  postId: string;
+}
+export interface GridListProps<T extends GridEntry> {
+  data: readonly T[];
+  renderCell: (item: T, size: number) => ReactElement;
+  emptyComponent?: ReactElement | null;
+  header?: ReactNode;
+}
+export declare function GridList<T extends GridEntry>(props: GridListProps<T>): ReactElement;

@@ -4621,6 +4621,21 @@ impl<'o> Checker<'o> {
         if hint.as_ref().is_some_and(is_element) {
             self.element(expr);
         }
+        // A function value (not a closure, which crosses its own result) where TS takes one
+        // returning a React element (`renderCell: (item: T) => ReactElement`): what it gives
+        // crosses as an element.
+        if let Some(Ty::Fn(want)) = hint.as_ref().map(|h| self.resolve(h))
+            && is_element(&self.resolve(&want.ret))
+            && !matches!(expr.kind, ExprKind::Closure(_))
+            && let Ty::Fn(given) = self.resolve(&ty)
+            && match self.resolve(&given.ret) {
+                Ty::View(_) => true,
+                Ty::Option(inner) => matches!(self.resolve(&inner), Ty::View(_)),
+                _ => false,
+            }
+        {
+            self.out.elements.insert(expr.id);
+        }
         if let Some(hint) = hint {
             // `merge<T extends Holder>(actor: T)` given a TS value: `T` is that value's type, so
             // the result is one too (it was left unsolved, `_`).

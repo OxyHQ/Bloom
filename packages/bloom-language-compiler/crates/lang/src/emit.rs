@@ -2362,7 +2362,36 @@ impl<'a> Emitter<'a> {
         // A Bloom view where TS takes a React element.
         if self.ck.elements.contains(&expr.id) && self.hoisting != Some(expr.id) {
             self.import_name(LANGUAGE, "toElement");
-            return out.wrap("toElement(", ")");
+            return match self.expr_ty(expr) {
+                // A function giving views where TS takes one giving elements (`renderCell`): each
+                // view it gives crosses (`none` stays `undefined`).
+                Ty::Fn(f) => {
+                    if matches!(f.ret, Ty::Option(_)) {
+                        Frag::of(format!(
+                            "((...$a: Parameters<typeof {0}>) => {{ const $v = {0}(...$a); return $v == null ? undefined : toElement($v); }})",
+                            out.text
+                        ))
+                    } else {
+                        Frag::of(format!(
+                            "((...$a: Parameters<typeof {0}>) => toElement({0}(...$a)))",
+                            out.text
+                        ))
+                    }
+                }
+                // `meta: View?`: `none` stays `undefined` (`toElement(undefined)` is an element
+                // drawing nothing, which TS reads as present).
+                Ty::Option(_) if is_path_text(&out.text) => {
+                    Frag::of(format!("({0} == null ? undefined : toElement({0}))", out.text))
+                }
+                Ty::Option(_) => {
+                    let name = self.temp();
+                    let mut stmt = Frag::of(format!("const {name} = "));
+                    stmt.f(out).s(";");
+                    self.push_stmt(stmt);
+                    Frag::of(format!("({name} == null ? undefined : toElement({name}))"))
+                }
+                _ => out.wrap("toElement(", ")"),
+            };
         }
         // A value passed as `any P`: with its conformance's witness.
         if let Some((def, protocol)) = self.ck.packs.get(&expr.id).copied() {
@@ -4700,6 +4729,11 @@ impl Emitter<'_> {
         }
         out
     }
+}
+
+/// Whether emitted text is a plain path (`meta`, `props.meta`, `$view0`), safe to read twice.
+fn is_path_text(text: &str) -> bool {
+    !text.is_empty() && text.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '$' | '.'))
 }
 
 /// `object.name` as a path (`object["a-b"]` when the name is not an identifier).

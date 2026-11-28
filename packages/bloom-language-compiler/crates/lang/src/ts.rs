@@ -1708,7 +1708,9 @@ impl Mapper<'_> {
         // `null` is `none`. An optional of a TS type Bloom does not map stays `Foreign` (not
         // `Foreign?`): TS checks the whole where it lands, as a TS field's (`server?.robots`
         // beside a `String?`).
-        if matches!(inner, Ty::Foreign(_)) {
+        // A React element's optional (`ReactElement | null`) stays one, so a Bloom view (or `none`)
+        // crosses into it as an element.
+        if matches!(&inner, Ty::Foreign(_)) && !crate::check::is_element(&inner) {
             return Ty::Foreign(path.into());
         }
         if nullable { Ty::Option(Box::new(inner)) } else { inner }

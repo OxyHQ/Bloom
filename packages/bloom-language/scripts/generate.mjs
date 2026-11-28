@@ -683,6 +683,14 @@ ${Object.entries(withoutComment(spec.signatures ?? {}))
 /// \`none\` there), read from \`Node\`'s methods by \`generate-signatures.mjs\`.
 pub const NONE_MODIFIERS: &[&str] = ${rustList(spec.noneModifiers ?? [])};
 
+/// Each modifier's object fields TS types as a React element (\`header\`'s \`right\`): a Bloom view
+/// given there crosses as \`toElement(view)\` (\`elementFields\`, by \`generate-signatures.mjs\`).
+pub const ELEMENT_FIELDS: &[(&str, &[&str])] = &[
+${Object.entries(withoutComment(spec.elementFields ?? {}))
+  .map(([name, fields]) => `    (${rustStr(name)}, ${rustList(fields)}),`)
+  .join('\n')}
+];
+
 /// Each universal modifier's category (\`modifierCategories\`): what a backend that draws
 /// modifiers itself (the native runtimes, ADR 0003) does with it. A modifier not listed is
 /// \`node\`: an option its node's own implementation reads.
