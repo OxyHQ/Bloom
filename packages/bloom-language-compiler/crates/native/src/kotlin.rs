@@ -178,6 +178,34 @@ fn unwind(expr: &Expr) -> Option<Chain<'_>> {
     }
 }
 
+/// Whether a statement of a stack's body draws a view that fills the stack's width
+/// (`.frame(width: .full)` on it).
+fn fills_width(stmt: &Stmt) -> bool {
+    let StmtKind::Expr(e) = &stmt.kind else { return false };
+    let mut at = e;
+    loop {
+        match &at.kind {
+            ExprKind::Call(call) => {
+                if let ExprKind::Field(inner, name) = &call.callee.kind {
+                    if name.name == "frame"
+                        && call.args.iter().any(|a| {
+                            a.label.as_ref().is_some_and(|l| l.name == "width")
+                                && matches!(&a.value.kind, ExprKind::ImplicitMember(m) if m.name == "full")
+                        })
+                    {
+                        return true;
+                    }
+                    at = inner;
+                } else {
+                    return false;
+                }
+            }
+            ExprKind::Paren(inner) => at = inner,
+            _ => return false,
+        }
+    }
+}
+
 /// The built-in nodes the runtime draws (BloomUI's names, as Bloom writes them).
 const NODES: &[&str] = &[
     "Text",
@@ -1668,6 +1696,11 @@ impl<'a> Emitter<'a> {
                 let i = self.expr(index);
                 let rebuilt = match self.ty_of(base) {
                     Some(Ty::Map(_) | Ty::JsMap(..)) => format!("{b} + ({i} to {value})"),
+                    // A local whose type the checker keeps by its declaration, not this span:
+                    // a string key is a dictionary's (`out[k] = v` on `[String: String]`).
+                    None if matches!(self.ty_of(index), Some(Ty::Str | Ty::Strings(_))) => {
+                        format!("{b} + ({i} to {value})")
+                    }
                     _ => format!("{b}.replacing({i}, {value})"),
                 };
                 if self.is_reference(base) {
@@ -2141,6 +2174,28 @@ impl<'a> Emitter<'a> {
                     }
                 }
                 ("NavigationStack", Some("root")) => format!("root = {}", self.expr(&a.value)),
+                // `Avatar(url, { name: n, initials: i })`: the fallback disc's name and initials.
+                ("Avatar", None) if positional == 1 => {
+                    positional += 1;
+                    if let ExprKind::Record(entries) = &a.value.kind {
+                        for entry in entries {
+                            match entry {
+                                RecordEntry::Field { key, value } if matches!(key.name.as_str(), "name" | "initials") => {
+                                    args.push(format!("{} = {}", key.name, self.expr(value)));
+                                }
+                                RecordEntry::Field { key, .. } => {
+                                    self.unsupported(key.span, format!("the avatar option `{}`", key.name));
+                                }
+                                RecordEntry::Spread(value) => {
+                                    self.unsupported(value.span, "a spread avatar option");
+                                }
+                            }
+                        }
+                    } else {
+                        self.unsupported(a.value.span, "avatar options that are not a record literal");
+                    }
+                    continue;
+                }
                 (_, Some(l)) => format!("{} = {}", kw(l), self.expr(&a.value)),
                 // A view passed to a node (`Button(Text("Like"))`): a composable lambda.
                 (_, None) if matches!(self.ty_of(&a.value), Some(Ty::View(_))) => {
@@ -2208,6 +2263,12 @@ impl<'a> Emitter<'a> {
                 format!("{p}NavigationStack({}) {content}\n", args.join(", "))
             }
             (_, Some(c)) => {
+                // A column in a row whose child fills its width (`.frame(width: .full)`: a tab's
+                // underline): React Native's column is as wide as its content there, and the
+                // child stretches to that, not to the row's room.
+                if node == "VStack" && self.scopes.last() == Some(&"row") && c.body.iter().any(fills_width) {
+                    args.push("fitContent = true".into());
+                }
                 self.scopes.push(match node {
                     "HStack" => "row",
                     "VStack" | "ScrollView" => "column",

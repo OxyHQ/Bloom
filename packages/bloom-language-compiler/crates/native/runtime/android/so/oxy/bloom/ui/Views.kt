@@ -20,6 +20,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -54,6 +55,9 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.graphicsLayer
@@ -92,8 +96,12 @@ fun VStack(
   spacing: Dp = 0.dp,
   foreground: Color? = null,
   modifier: Modifier = Modifier,
+  // In a row, as wide as its content, its full-width children stretched to that (React Native's
+  // column in a row), not to the row's room. The emitter sets it when a child fills the width.
+  fitContent: Boolean = false,
   content: @Composable ColumnScope.() -> Unit,
 ) {
+  val modifier = if (fitContent) modifier.width(IntrinsicSize.Max) else modifier
   val across = when (alignment) {
     HAlign.center -> Alignment.CenterHorizontally
     HAlign.trailing, HAlign.end -> Alignment.End
@@ -313,10 +321,71 @@ fun Icon(icon: IconData, size: IconSize = IconSize.sm, foreground: Color? = null
 }
 
 @Composable
-fun Avatar(source: String, size: AvatarSize = AvatarSize.md, modifier: Modifier = Modifier) {
-  // Bloom's avatar: a circle, filled while its picture loads (or when it has none).
+fun Avatar(
+  source: String,
+  size: AvatarSize = AvatarSize.md,
+  modifier: Modifier = Modifier,
+  name: String? = null,
+  initials: String? = null,
+) {
+  // Bloom's avatar: a circle, filled while its picture loads; with no picture, the initials disc
+  // when it has a name or initials (Bloom's `Avatar` fallback), else the plain fill.
+  if (source.isEmpty()) {
+    val text = initials?.trim()?.takeIf { it.isNotEmpty() } ?: name?.let(::avatarInitial)
+    if (text != null) {
+      val tint = avatarTint(if (initials.isNullOrBlank() && !name.isNullOrBlank()) avatarTintForName(name) else "neutral")
+      Box(modifier.size(size.dp).clip(CircleShape).background(tint.first), contentAlignment = Alignment.Center) {
+        BasicText(text, style = avatarInitialsType(size.dp.value).copy(color = tint.second))
+      }
+      return
+    }
+  }
   val box = modifier.size(size.dp).clip(CircleShape).background(Colors.surface)
   if (source.isEmpty()) Box(box) else BloomImage(source, ContentFit.cover, box, benchMark = false)
+}
+
+/** The first code point of a name, upper-cased (`getInitial`); `?` for a blank name. */
+internal fun avatarInitial(name: String): String {
+  val trimmed = name.trim()
+  if (trimmed.isEmpty()) return "?"
+  val end = trimmed.offsetByCodePoints(0, 1)
+  return trimmed.substring(0, end).uppercase()
+}
+
+/** The tint a name draws (`avatarTintForName`): JS's 32-bit string hash over UTF-16 units. */
+internal fun avatarTintForName(name: String): String {
+  var hash = 0
+  for (unit in name) hash = hash * 31 + unit.code
+  val tints = arrayOf("blue", "lime", "pink", "neutral")
+  return tints[Math.abs(hash.toLong()).rem(tints.size).toInt()]
+}
+
+/**
+ * An initials disc's fill and letter (`resolveAvatarTint`): the host theme's own when it handed
+ * them over (`avatarBlue`, `avatarBlueForeground`, …), else the neutral disc.
+ */
+@Composable
+private fun avatarTint(tint: String): Pair<Color, Color> {
+  val colors = LocalThemeColors.current
+  val key = "avatar" + tint.replaceFirstChar { it.uppercase() }
+  val fill = colors[key]?.let { Color(it) }
+  val ink = colors[key + "Foreground"]?.let { Color(it) }
+  if (fill != null && ink != null) return fill to ink
+  return Colors.surface to Colors.muted
+}
+
+/** The initials' type for a diameter (`avatarInitialsType`). */
+private fun avatarInitialsType(size: Float): TextStyle = when {
+  size <= 20f -> TextStyle(fontSize = 10.sp, lineHeight = 15.sp, fontWeight = FontWeight(600), letterSpacing = 0.sp)
+  size <= 24f -> Font.caption1Semibold.copy(letterSpacing = 0.sp)
+  size <= 32f -> Font.headlineSemibold
+  size <= 40f -> TextStyle(fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight(600), letterSpacing = 0.sp)
+  else -> TextStyle(
+    fontSize = Math.round(size * 0.45f).sp,
+    lineHeight = Math.round(size * 0.6f).sp,
+    fontWeight = FontWeight(600),
+    letterSpacing = 0.sp,
+  )
 }
 
 /** `Image(url)`: decoded off the main thread at its drawn size, through [ImagePipeline]. */

@@ -19,7 +19,7 @@ data class Tagged(
 fun tagged(tags: List<String>, run: (String) -> Unit): Tagged {
   var handlers: Map<String, () -> Unit> = mapOf()
   val add = { tag -> 
-    handlers = handlers.replacing(tag, { run(tag) })
+    handlers = handlers + (tag to { run(tag) })
     return tag
 }
   val rows = tags.map({ t -> add(t) })
