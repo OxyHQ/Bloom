@@ -5346,6 +5346,12 @@ impl<'a> Emitter<'a> {
             ExprKind::Field(object, name)
                 if self.ck.fields.get(&expr.id) == Some(&FieldRes::Field) && is_ident(&name.name) =>
             {
+                // Under a narrowed name (`item.draft.id` in the `else` of `if item.origin ==
+                // "server"`), the read is there only where the narrowing holds, and the cache's
+                // test runs before it: the name itself is the dependency.
+                if let Some(root) = self.narrowed_root(object) {
+                    return self.dep_path(root);
+                }
                 let dot =
                     if matches!(self.expr_ty(object), Ty::Foreign(_) | Ty::Option(_)) { "?." } else { "." };
                 self.dep_path(object).map(|p| format!("{p}{dot}{}", name.name))
@@ -5359,6 +5365,24 @@ impl<'a> Emitter<'a> {
                 self.dep_path(object).map(|p| format!("{p}?.{}", name.name))
             }
             ExprKind::Paren(inner) => self.dep_path(inner),
+            _ => None,
+        }
+    }
+
+    /// The narrowed name a member chain starts from (`item` in `item.draft`, narrowed by a tag
+    /// test): its reads are valid only where the narrowing holds. An optional's `!= none`
+    /// narrowing is left out (its reads are `?.` already).
+    fn narrowed_root<'e>(&self, expr: &'e Expr) -> Option<&'e Expr> {
+        match &expr.kind {
+            ExprKind::Field(object, _) | ExprKind::OptField(object, _) | ExprKind::Paren(object) => {
+                self.narrowed_root(object)
+            }
+            ExprKind::Name(_) => matches!(
+                self.ck.names.get(&expr.id),
+                Some(NameRes::Local(local)) if self.narrowed_from.contains_key(local)
+                    && !matches!(self.ck.locals[*self.narrowed_from.get(local).expect("checked")].ty, Ty::Option(_))
+            )
+            .then_some(expr),
             _ => None,
         }
     }

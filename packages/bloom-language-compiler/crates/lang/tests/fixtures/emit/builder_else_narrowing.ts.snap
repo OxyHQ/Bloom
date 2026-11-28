@@ -1,0 +1,28 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+import { type DraftItem } from "@/store";
+
+async function publish(id: string): Promise<void> {
+}
+
+export interface DraftRowProps {
+  readonly item: DraftItem;
+}
+export const DraftRow = view(function DraftRow(props: DraftRowProps) {
+"use no memo";
+const $ = $c(2);
+const { item } = props;
+let $t0;
+if ($[0] !== item) {
+$t0 = (item.origin === "server") ? Text(item.post.id).onPress(() => void (async () => {
+await (publish(item.post.id));
+})()) : Text(item.draft.id);
+$[0] = item;
+$[1] = $t0;
+} else {
+$t0 = $[1];
+}
+return $t0;
+});
+
