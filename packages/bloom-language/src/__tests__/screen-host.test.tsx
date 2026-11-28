@@ -12,7 +12,7 @@ import { dirname, join, relative } from 'node:path';
 import { createElement, useState } from 'react';
 
 import { Glyph, hosts, mount, only, quietRenderer } from './support/mount';
-import { Button, Icon, Text, VStack } from '../primitives';
+import { Button, FAB, Group, Icon, Text, VStack } from '../primitives';
 import { drawScreen, ScreenHost } from '../screen-host';
 import { view } from '../view';
 
@@ -157,6 +157,37 @@ describe('@oxy.so/bloom-language/screen-host', () => {
     // Without it, the view is the Screen's content: its body's title draws nothing.
     const plain = mount(createElement(() => drawScreen(Post({ id: '7' }))));
     expect(only(plain, 'PageHeader').props.title).toBeUndefined();
+  });
+
+  it('a root Group’s drawn branch gives the screen its footer, floating action, sheet and test id', () => {
+    // SwiftUI reads a screen's chrome from any branch: the branch `if canEdit` draws declares them.
+    const r = mount(
+      createElement(() =>
+        drawScreen(
+          Group(
+            false,
+            Text('page')
+              .title('Feeds')
+              .floatingAction(FAB(Icon(Glyph)).label('Create'))
+              .footer(Text('reply'))
+              .testID('feeds-screen'),
+          ),
+        ),
+      ),
+    );
+    const s = only(r, 'Screen');
+    expect(s.props.primaryAction).toBeTruthy();
+    expect(s.props.bottomBar).toBeTruthy();
+    expect(s.props.testID).toBe('feeds-screen');
+    // The test id names the screen once: the branch inside it no longer carries it.
+    expect(
+      r.root.findAll((n) => n.props.testID === 'feeds-screen' && typeof n.type === 'string'),
+    ).toHaveLength(1);
+    // The root's own still win.
+    const own = mount(
+      createElement(() => drawScreen(Group(Text('page').testID('branch')).testID('root'))),
+    );
+    expect(only(own, 'Screen').props.testID).toBe('root');
   });
 
   it('a root that is its own surface, and null, as screen() draws them', () => {
