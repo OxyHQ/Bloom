@@ -1033,12 +1033,36 @@ fn options_record(source: &str, a: usize, b: usize) -> Option<(usize, usize, Str
 /// `receiver.then { v in body }` as a statement: the task that awaits it, then runs `body`.
 fn promise_then(source: &str, start: usize, end: usize) -> Option<(usize, usize, String)> {
     let (at, close, receiver, inner) = promise_statement(source, start, end)?;
-    let (params, body) = inner.split_once(" in ")?;
-    let name = params.split(':').next()?.trim();
+    // `p.then { … }` (TS's `() => …`): nothing is bound, the value is discarded.
+    let first = inner.lines().next().unwrap_or_default();
+    let has_param = first.split_once(" in").is_some_and(|(params, rest)| {
+        (rest.is_empty() || rest.starts_with([' ', '\n']))
+            && params.split(',').all(|p| {
+                let p = p.split(':').next().unwrap_or_default().trim();
+                !p.is_empty() && p.chars().all(|c| c.is_alphanumeric() || c == '_')
+            })
+    });
+    let (name, body) = if has_param {
+        let (params, body) = inner.split_once(" in")?;
+        (params.split(':').next()?.trim(), body.trim_start())
+    } else {
+        ("_", inner.as_str())
+    };
     if name.is_empty() || !name.chars().all(|c| c.is_alphanumeric() || c == '_') {
         return None;
     }
     let awaited = source[at..].starts_with("await");
+    // The last statement of a function that returns the promise (`return p.then(…)`) stays a
+    // value: a task there would return nothing.
+    let tail = source[close..].trim_start().starts_with('}');
+    let signature = source[..at]
+        .rmatch_indices('\n')
+        .map(|(i, _)| &source[i + 1..])
+        .find(|l| l.starts_with("fn ") || l.starts_with("pub fn ") || l.starts_with("async fn ") || l.starts_with("pub async fn "))
+        .and_then(|l| l.split(") {").next());
+    if tail && signature.is_some_and(|l| l.contains("-> Promise") || l.contains(") -> Promise")) {
+        return None;
+    }
     // `then` runs on success only: a rejection is not caught here (TS left it unhandled).
     let steps = format!("do {{\nlet {name} = try await {receiver}\n{body}\n}} catch {{}}");
     Some((at, close, if awaited { steps } else { format!("task {{\n{steps}\n}}") }))
