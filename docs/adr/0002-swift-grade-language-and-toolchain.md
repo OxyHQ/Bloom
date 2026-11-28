@@ -444,6 +444,239 @@ Next in this track:
 2. The language router's nodes over the Bloom router, for Mention's route tree.
 3. Then the inventory above, in order.
 
+#### Mention on `bloom build android`: hybrid mode (measured 2026-11-28)
+
+Mention is an Expo Router app (157 route files, 36 `expo*` packages, its own Expo modules). It
+now builds with `bloom build android`, without a rewrite (#1053):
+
+- **`bloom init --adopt`** wrote its `Package.bloom` from `package.json` and the app config
+  (evaluated once by Expo's CLI): the app settings, `reactNativeFromSource: true` (Mention
+  patches React Native), `adopt: Expo(entry: "expo-router/entry")`, and 35 stopgaps. The app
+  config plugins' native config is an override layer in `Native/android/`: the App Links and
+  share filters, the Oxy identity queries and permissions, the updates and notification
+  meta-data, strings, colours, Gradle properties and ProGuard rules.
+- **Hybrid mode.** The JS stays where Bun installed it and bundles over Mention's own Metro
+  config (with its tsconfig path aliases). `bloom` writes and drives the Gradle project. The
+  stopgaps are linked through Expo Modules autolinking limited to them and what they depend
+  on (46 modules linked, 6 left out), with Expo's lifecycle wrappers.
+- **Not stopgaps.** `expo-video` (BloomVideo, through the `expo-video` shim of #1034),
+  `expo-splash-screen` (the manifest's splash), `expo-dev-client` and `expo-build-properties`.
+  An import of an Expo package that is neither linked nor shimmed fails the bundle and names
+  the line to add.
+- **The routes** stay on expo-router, which is a stopgap. Its replacement by the Bloom router
+  (Mention's route tree into `NavigationStack`/`TabView`) is not done: see "Next" below.
+
+Measured on hangar-test-36 (x86_64), release APKs of the same commit (OTA updates off, signed
+out, the production API):
+
+- The Expo path is `expo prebuild` and Gradle. The Bloom path is `bloom build android
+  --release` in hybrid mode.
+- **Cold start.** Each run starts after a force-stop. The times are from `am start` to React
+  Native's `main`, to the first feed row committed and to the first feed image loaded (logcat
+  marks under `EXPO_PUBLIC_BLOOM_BENCH=1`).
+- **Scroll.** 20 s of swipes per run (gfxinfo), and the PSS after them.
+- Each figure is the median of 10 runs, 5 per half of an ABBA session.
+
+| | Expo path | Bloom, hybrid (BloomVideo) | Bloom, hybrid (expo-video as a stopgap) |
+|---|---|---|---|
+| APK, release (x86_64) | 109.3 MB | 109.7 MB | |
+| `am start -W` TotalTime | 962 ms | 356 ms | 329 ms |
+| Launch → JS `main` | **471 ms** | 621 ms | 568 ms |
+| Launch → first feed row | **898 ms** | 1,397 ms | 1,295 ms |
+| Launch → first feed image | **1,356 ms** | 1,772 ms | 1,582 ms |
+| Scroll: janky / p50 / p90 / p99 | 43.9% / 25 / 33 / 53 ms | 49.2% / 27 / 35 / 57 ms | 42.6% / 26 / 36 / 59 ms |
+| PSS after the scroll | 317 MB | 309 MB | 308 MB |
+
+What the numbers say:
+
+- **The hybrid build was not yet at parity at startup** (closed below, with the splash hold). It reaches `main` ~150 ms later and the
+  first feed row ~500 ms later. A second session, with the bundle transformed for Hermes
+  (`hermes-stable`, and Expo's Babel preset told the engine), had the same gap: 840 against
+  493 ms to `main`, 1,927 against 850 ms to the first row.
+  - The gap opens before JS. From SoLoader's start to Hermes loading takes 170 ms against 80 ms.
+    The likeliest cause is the generated application's warm-up thread (#1036), which loads the
+    WebView cookie store while React Native starts.
+  - The bundle is the second suspect. The Expo path bundles with Expo's CLI (`export:embed`),
+    the hybrid build with React Native's bundle command over the same Metro config.
+- **TotalTime is not comparable.** The Expo path holds its splash (expo-splash-screen) until
+  the route tree lays out; the Bloom build draws its first frame at once.
+- **Scroll and memory are at parity.** The APK is the same size: the hybrid build leaves out
+  expo-dev-client's release stubs, expo-video and Fresco's GIF and WebP decoders, and adds
+  Bloom's three native modules and an uncompressed splash.
+- **Video.** In the same hybrid build, BloomVideo against expo-video as a stopgap: 1,397
+  against 1,295 ms to the first row and 1,772 against 1,582 ms to the first image (noisy, one
+  session), with the same scroll and memory.
+
+**expo-image (Mention #2061).** Mention's 18 files (38 uses) now draw `@oxy.so/bloom/image`'s
+`BloomImage`.
+
+- `expo-image` stays a stopgap. Bloom's own `MediaSurface` and `LinkPreviewCard`, and
+  `@oxy.so/services`, still import it.
+- Built against a local Bloom pack with the native image view (#1027, #1036), the hybrid build
+  first drew no avatar and no link poster, with no error. The cause was a file name (#1062).
+  - Metro tries each source extension before each platform. With Mention's `sourceExts`
+    starting `ts, tsx`, `bloom-image-view-draw.ts` (the web's no-op) was found before
+    `bloom-image-view-draw.native.tsx`, so no `BloomImageView` was ever mounted.
+  - #1062 renames the web file to `.tsx`, and a test holds every platform file in `src/` to its
+    default file's extension.
+  - With the rename, the first screen mounts 12 `BloomImageView`s and draws the avatars and
+    posters.
+- Measured against expo-image in the same hybrid build (both without the splash hold below),
+  with medians of 12 cold starts: the first feed row at **1,148** against 1,228 ms and the first
+  feed image at **1,382** against 1,515 ms. BloomImage does not regress.
+
+#### The hybrid build's startup gap, traced and closed (2026-11-28)
+
+The gap was not the JS. It was the hybrid shell drawing early.
+
+All of these ran on hangar-test-36, with release APKs. Sessions were interleaved ABBA, and the
+figures are medians of 10–12 cold starts each.
+
+| Variant | Launch → JS `main` | first feed row | first feed image |
+|---|---|---|---|
+| Expo build | 532 ms | 902 ms | 1,275 ms |
+| Hybrid, expo-image (BloomImage on released Bloom) | 623 ms | 1,228 ms | 1,515 ms |
+| Hybrid, BloomImage (#1062) | 622 ms | 1,148 ms | 1,382 ms |
+| Hybrid, BloomImage, **splash held** (#1068) | **525 ms** | **895 ms** | **1,240 ms** |
+
+What was ruled out:
+
+- **#1036's warm-up thread** is a small part. Started from the first React instance at
+  background priority instead of `onCreate`, it gives 560 against 585 ms to `main`, 1,132 against
+  1,296 ms to the first row and 1,444 against 1,963 ms to the first image. With no warm-up at
+  all: 510 / 1,164 / 1,458 ms. Its move is a follow-up once #1036 lands.
+- **The bundle** is not the cause.
+  - Expo's APK running the hybrid build's bundle (the APK's bundle swapped and re-signed)
+    reaches `main` in 467 ms and the first row in 961 ms, like Expo's own: 512 / 934 ms.
+  - The hybrid APK running Expo's bundle is as slow at `main` as the hybrid build itself.
+- **The signing key** is not the cause. Each APK re-signed with the other's key did not move.
+- What remained was the native shell. The hybrid window drew its first frame at ~300 ms
+  (`am start -W` TotalTime), then every frame of the loading app on the emulator's 4 cores. An
+  Expo build keeps its splash (expo-splash-screen, which Mention holds until its route tree lays
+  out) and draws nothing before then.
+  - The fix is Bloom's own, with no Expo dependency (#1068). `SplashHold` is a pre-draw hold on
+    the content view. It is released at React Native's `CONTENT_APPEARED`, or, after
+    `Splash.preventAutoHide()`, at `Splash.hide()`.
+  - The generated `MainActivity` installs it. An adopted app's `expo-splash-screen` calls reach
+    it through the hybrid build's shim (#1053).
+- TotalTime now matches the Expo build's (965 against 1,015 ms), because both show the splash
+  until the first screen.
+
+Found on the way (#1053): the hybrid bundle task did not track `node_modules`. A `bun install`
+of a different Bloom pack left the bundle UP-TO-DATE, and the APK shipped the old JS. The
+lockfiles beside each `node_modules` the bundle resolves from are now its inputs.
+
+Next in this track:
+
+1. Land #1068 (splash hold), #1062 (BloomImage) and #1053 (hybrid). Then the warm-up follow-up
+   after #1036, and Mention #2061 on the Bloom release that carries #1027 and #1062.
+2. Mention's route tree on the Bloom router.
+   - Done: #1059's `bloom routes` reads Mention's `app/` as Expo Router does (124 routes,
+     11 layouts, one shared pattern: `/` in `(app)` and `(auth)`). Its `--out` writes the tree as
+     the router's module.
+   - Next: the router's entry reading that module, with layouts nested by their chain.
+   - Then Mention's `lib/navigation/router.ts` facade over it (`Link`, `Redirect`, `Slot`,
+     `useRouter`, `usePathname`, `useLocalSearchParams`, `useIsFocused`, `useFocusEffect`;
+     159 files use it).
+   - Then the layouts' Bloom adapters over the screen host (#1029). Mention's 13 other direct
+     expo-router imports, five of them into `expo-router/build/…` internals, come last.
+   - Then `expo-router` and `expo-linking` leave the stopgaps.
+3. Then the stopgaps, one line at a time.
+
+#### Mention's switch to `bloom build`: OTA, release and rollback (2026-11-28)
+
+The coordinator gave the go to prepare Mention's switch, on a Mention branch (#2061, into
+`feat/mention-on-language`), never `main`.
+
+**OTA updates: expo-updates stays a stopgap, with a runtime of the Bloom build's own.**
+
+- Mention's updates come from Oxy Updates over the expo-updates protocol. The server serves an
+  update only to the binary whose `expo-runtime-version` equals the update's. The Expo build's
+  runtime is the app `version` (`withOxyUpdates`, appVersion policy).
+- The Bloom build's runtime is `<version>-bloom` (`2.2.0-bloom`; Mention's
+  `Native/android/res/values/overrides.xml`). Its native layer is not the Expo build's: Bloom's
+  splash, video and image modules are linked, `expo-video` and `expo-splash-screen` are not. So
+  an update exported from the Expo build must never run on it, and the reverse. A sideloaded build
+  was once replaced by an incompatible OTA; the distinct runtime makes that impossible.
+- It is checked three times: a Mention test keeps the runtime at `package.json`'s version plus
+  `-bloom`; oxy's `android-release.yml` (`builder: bloom`) reads the built APK's runtime with
+  `aapt2` and fails on any other; and on the emulator the APK asked Oxy Updates for
+  `2.2.0-bloom` and found none (expo-updates' `CheckCompleteUnavailable`).
+- Consequence: `publish-update.yml` publishes the Expo build's bundle under `2.2.0`, so the Bloom
+  build gets no OTA update until a Bloom bundle is published under its runtime. That needs
+  `bloom export android` (the hybrid bundle and assets in `expo export`'s layout) and a second
+  publish job with `oxy-ship publish --runtime-version <version>-bloom --dist-dir …`. Until then
+  the Bloom build runs its embedded bundle, and a JS fix reaches it with a binary.
+- Oxy Updates' own client (`Bloom.Updates`) replaces expo-updates later, as its stopgap line says.
+
+**Release.** oxy's shared `android-release.yml` takes `builder: bloom`: `bloomc build android
+--store` (the app bundle and one APK per ABI, Bloom #1073) with the ecosystem key from the
+runner's `ORG_GRADLE_PROJECT_OXY_UPLOAD_*`, every artifact checked against the ecosystem
+certificate, and `Package.bloom` checked against the app config's version and versionCode. The
+archive, the Play upload (internal testing) and the GitHub release are the Expo build's steps.
+Mention's caller passes `builder: bloom` in one commit.
+
+**Rollback** is reverting that one commit: the caller goes back to `builder: expo`, which
+prebuilds with Expo exactly as before. Nothing else of the Expo build changed. Tested: with the
+switch commit reverted, the Expo path (prebuild, `:app:bundleRelease`, `:app:assembleRelease`)
+builds the signed AAB and the arm64-v8a APK, with the ecosystem certificate and runtime `2.2.0`.
+
+**Firebase.** The hybrid build applies Google's services plugin when the overrides hold a
+`google-services.json`; Mention's is a symlink to its committed one.
+
+**Artifacts** (laptop, the ecosystem key; `native10/store/s2/`): `Mention.aab` (143 MB: arm64-v8a,
+armeabi-v7a, x86_64) and the three APKs (108, 90 and 115 MB). bloom checked every one against the
+ecosystem certificate (`b8ab3746…a58d`). The APK carries Firebase's resources and the runtime
+`2.2.0-bloom`.
+
+**Smoke.** On hangar-test-36 (x86_64, signed out) and on the Pixel 8a (arm64, through hangar,
+authorized by the coordinator, signed in):
+
+| Check | Result |
+|---|---|
+| Feed, BloomImage avatars and images | drawn |
+| Video (feed and the Videos tab) | plays |
+| Notifications tab | opens |
+| Composer | opened and closed; nothing typed or posted |
+| Account sheet | opens (from the drawer) |
+| Deep links | `https://mention.earth/<user>` and `mention://explore` open their routes |
+| OTA | checked Oxy Updates with `2.2.0-bloom`; no update |
+| Push registration | not verifiable on this Pixel: it runs LineageOS without Google Play services (`FirebaseMessaging: … NameNotFoundException: com.google.android.gms`). Firebase is initialized from the applied config. |
+| Crashes and ANRs | none |
+
+No device setting was changed. The installed `org.mention.app` 2.2.0 was pulled before the smoke
+and reinstalled after it.
+
+**The session across builds.** The Pixel's installed Expo APK (an older build, another services
+version) came up signed out, and the Bloom build signed in. Against this commit's own Expo build
+(the rollback build), the session is the same: Expo, then Bloom, then Expo again, all three signed
+in as the same account. Both builds are one application id and UID: one data directory, one
+keystore, and the same `@oxy.so/services` JS and `OxyDeviceSession` broker (a signature-level
+provider). No other app's credentials are read.
+
+**The upgrade, with a test account** (2026-11-28, hangar-test-36, which has Google Play services).
+
+- A new key-only QA account (oxy's product-journeys operator) signed in through Mention's own
+  "Continue with Oxy". That request was approved with the account's key: application Mention,
+  `device_sign_in`, no scopes.
+- Each build replaced the other in place, as a Play update does: one application id, UID and data
+  directory.
+- Signed in, with Commons uninstalled so only Mention's own storage counts:
+  - Expo → Bloom (two cold starts): signed in as the same account, no prompt and no onboarding again;
+  - Bloom → Expo again: signed in.
+- Signed out in the Expo build, then upgraded to Bloom (two cold starts): still signed out, with
+  Commons installed (the shared device session's sibling broker) and without it.
+- Two things are already true of the Expo build:
+  - with Commons installed, a fresh install comes up signed in (the shared `OxyDeviceSession`
+    lane, by design);
+  - its sign-out showed "There was a problem signing you out", although the sign-out took effect.
+
+**Before the switch ships** (checklist; the upgrade check above is done):
+
+- Push registration on a device with Google Play services, after release (the owner's Pixel 10
+  Pro is install-only; the owner confirms it).
+- `bloom export android` and the second OTA publish job, or the decision to ship without OTA.
+
 ## Consequences
 
 - **Kept:** the lexer, parser, recovery, checker, inference, the memo emitter, source maps,
