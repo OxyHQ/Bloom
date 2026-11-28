@@ -2385,7 +2385,8 @@ impl Tr<'_> {
                         };
                         return format!("{name} = {{ ..{name}, {field}: {value} }}");
                     }
-                    // `counts[k] = v` on a local object literal: `counts = counts.setting(k, v)`.
+                    // `counts[k] = v` on a local object literal: Swift's subscript set, `counts[k] = v`
+                    // (inside a closure too, which writes the captured `var`).
                     AssignmentTarget::ComputedMemberExpression(m)
                         if let Expression::Identifier(o) = &m.object
                             && self.scope.grown.get(o.name.as_str()) == Some(&true)
@@ -2398,7 +2399,7 @@ impl Tr<'_> {
                             "=" => value,
                             op => format!("({name}[{key}] ?? 0) {} {value}", &op[..1]),
                         };
-                        return format!("{name} = {name}.setting({key}, {value})");
+                        return format!("{name}[{key}] = {value}");
                     }
                     // `player.loop = true`: a field of a TS value is TS's to write (spec 4.6);
                     // on a Bloom value the checker refuses it.
@@ -2930,10 +2931,41 @@ pub fn local_object<'b, 'a>(module: &'b [Statement<'a>], name: &str) -> Option<V
                 return Some(members);
             }
             Some(Declaration::TSTypeAliasDeclaration(a)) if a.id.name == name => {
-                if let TSType::TSTypeLiteral(literal) = &a.type_annotation {
-                    return Some(literal.members.iter().collect());
+                match &a.type_annotation {
+                    TSType::TSTypeLiteral(literal) => return Some(literal.members.iter().collect()),
+                    // `type P = Q & { t: T }` of object types here: one object of all their fields,
+                    // in order, a field named twice being its last (TS's narrower) one.
+                    TSType::TSIntersectionType(intersection) if a.type_parameters.is_none() => {
+                        let mut members = Vec::new();
+                        for part in &intersection.types {
+                            match part {
+                                TSType::TSTypeLiteral(literal) => members.extend(literal.members.iter()),
+                                TSType::TSTypeReference(r)
+                                    if r.type_arguments.is_none()
+                                        && let TSTypeName::IdentifierReference(id) = &r.type_name
+                                        && id.name != name =>
+                                {
+                                    members.extend(local_object(module, &id.name)?)
+                                }
+                                _ => return None,
+                            }
+                        }
+                        let mut seen = HashSet::new();
+                        let mut kept: Vec<_> = members
+                            .into_iter()
+                            .rev()
+                            .filter(|m| match m {
+                                TSSignature::TSPropertySignature(p) => {
+                                    key_name(&p.key).is_none_or(|k| seen.insert(k))
+                                }
+                                _ => true,
+                            })
+                            .collect();
+                        kept.reverse();
+                        return Some(kept);
+                    }
+                    _ => return None,
                 }
-                return None;
             }
             _ => {}
         }

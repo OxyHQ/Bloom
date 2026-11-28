@@ -1183,6 +1183,15 @@ impl Tr<'_> {
                             fields.iter().map(|f| format!("{f}: {}", self.name(f, v.span))).collect();
                         format!("{callee}({})", args.join(", "))
                     }
+                    // `Rows(options)` of a menu struct: each stored property read from the value.
+                    [Argument::Identifier(v)]
+                        if let Expression::Identifier(id) = &call.callee
+                            && let Some(fields) = self.menu_fields.get(id.name.as_str()).cloned() =>
+                    {
+                        let value = self.name(&v.name, v.span);
+                        let args: Vec<String> = fields.iter().map(|f| format!("{f}: {value}.{f}")).collect();
+                        format!("{callee}({})", args.join(", "))
+                    }
                     // `X(props)`: its fields as the arguments.
                     [arg] if arg.as_expression().is_some() => {
                         let value = self.expr(arg.to_expression());
