@@ -1,0 +1,18 @@
+// A builder `if`'s `else` narrows a TS discriminated union to its other member, as an `if`
+// value's does, and a read behind the narrowing is a memo dependency through `?.` (the cache's
+// test runs before the branch: `item.draft.id` of a server item would throw).
+import { type DraftItem } from "@/store"
+
+func publish(_ id: String) async {}
+
+public struct DraftRow: View {
+  let item: DraftItem
+
+  var body: some View {
+    if item.origin == "server" {
+      Text(item.post.id).onPress { task { await publish(item.post.id) } }
+    } else {
+      Text(item.draft.id)
+    }
+  }
+}
