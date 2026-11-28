@@ -867,6 +867,10 @@ pub struct Closure {
     pub ret: Option<TypeExpr>,
     pub body: Vec<Stmt>,
     pub span: Span,
+    /// `reduce(0, +)`, `sorted(by: <)`: an operator passed as a function (Swift's). The parser
+    /// writes it as the closure `{ $0 + $1 }` (`params` `$0`, `$1`, `body` the binary), so a
+    /// backend reads an ordinary closure; the formatter prints the operator back.
+    pub operator: Option<BinaryOp>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

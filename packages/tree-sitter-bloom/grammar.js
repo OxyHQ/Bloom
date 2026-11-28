@@ -691,9 +691,15 @@ export default grammar({
 
     value_argument: ($) =>
       choice(
-        seq(optional(seq(field('label', $._label_name), ':')), field('value', $._expression)),
+        seq(
+          optional(seq(field('label', $._label_name), ':')),
+          field('value', choice($._expression, $.operator_function)),
+        ),
         $.spread_element,
       ),
+
+    /** `reduce(0, +)`, `sorted(by: <)`, `(+)`: an operator passed as a function (Swift's). */
+    operator_function: (_) => choice('+', '-', '*', '/', '%', '<', '<=', '>', '>=', '==', '!='),
 
     spread_element: ($) => seq('..', $._expression),
 
@@ -725,7 +731,7 @@ export default grammar({
 
     unit: (_) => seq('(', ')'),
 
-    parenthesized_expression: ($) => seq('(', $._expression, ')'),
+    parenthesized_expression: ($) => seq('(', choice($._expression, $.operator_function), ')'),
 
     tuple_expression: ($) =>
       seq('(', $._expression, ',', optional(seq(commaSep1($._expression), optional(','))), ')'),

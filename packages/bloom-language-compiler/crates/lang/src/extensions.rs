@@ -441,6 +441,7 @@ fn queued(visibility: Visibility, modifiers: &Modifiers, at: Span, f: &FnDecl, i
         params: Vec::new(),
         has_in: false,
         tuple: false,
+        operator: None,
         body: vec![Stmt { kind: StmtKind::Expr(work), span }],
         span,
     };
