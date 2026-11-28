@@ -494,7 +494,8 @@ a string, a `String`), and the emitter writes `(insets.top satisfies number)`; s
 an `Int` (`2 * Math.PI` is a `Float`), negated (`-event.translationY`), or compared with a number or
 a string (`item.pokeCount > 1`, checked as a `number`; two TS values compare as TS compares them). So does a TS value beside `none` or a Bloom value in a
 branch (`on ? none : presets.find { … }`), and `for x in foreign` walks TS items. A TS tuple
-of string literals (`['a', 'b'] as const`) is a list of their union, `[("a" | "b")]`. `f || b`
+of string literals (`['a', 'b'] as const`, declared or inferred) is a list of their union,
+`[("a" | "b")]`, and its element type `(typeof C)[number]` is that union. `f || b`
 of a TS value `f` is JS's `||` (`list.title || "Untitled"`): `b`'s type, checked by
 `satisfies`. A field of a TS value is TS's to write (`player.loop = true`, `p.time += 5`),
 emitted as written and checked by tsc. A node's argument TS types (a signature's `value`) takes `none` where TS takes

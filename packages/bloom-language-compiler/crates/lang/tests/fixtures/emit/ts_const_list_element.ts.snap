@@ -1,0 +1,11 @@
+import { type Tier } from "@/benefits";
+
+export function labels(tier: Tier): readonly string[] {
+const benefitLabels = { content_read: "Read member content", discussion_write: "Participate" };
+return tier.benefits.map((benefit: "content_read" | "discussion_write") => benefitLabels[benefit]);
+}
+
+export function paid(tier: Tier): boolean {
+return tier.kind === "plus";
+}
+
