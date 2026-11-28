@@ -1,0 +1,455 @@
+// Bloom's colour policy, in Bloom: how a seed becomes the visible token set
+// (src/theme/color-policy.ts, and chart-colors.ts' `createChartColors`). The engine answers which
+// colours exist around a seed; the policy decides how deep, how loud and how far apart they are.
+// The rule under every decision: light and dark want opposite things. The TypeScript's comments
+// carry each constant's reasons; the constants and the order of operations are the same here.
+import Bloom
+
+/// The semantic status seeds, in order. Only hue and chroma survive; tones come from the policy.
+let STATUS_SEEDS: [(String, String)] = [
+  ("success", "#10B981"),
+  ("error", "#EF4444"),
+  ("warning", "#F59E0B"),
+  ("info", "#3B82F6"),
+]
+
+/// Real accent colours to pin (the 2nd and 3rd seeds of artwork), and whether the surfaces, text
+/// and boundaries are greys of no hue (a desktop's window chrome).
+public struct PinnedAccents: Equatable {
+  public var secondary: String? = none
+  public var tertiary: String? = none
+  public var neutralSurfaces: Bool = false
+}
+
+let AA = 4.5
+
+func rgb(_ argb: Int) -> String {
+  "rgb(\(redFromArgb(argb)) \(greenFromArgb(argb)) \(blueFromArgb(argb)))"
+}
+
+/// A translucent tint, `rgba(r, g, b, a)`: the comma form every platform's parser reads.
+func rgba(_ argb: Int, _ alpha: Double) -> String {
+  "rgba(\(redFromArgb(argb)), \(greenFromArgb(argb)), \(blueFromArgb(argb)), \(alpha))"
+}
+
+func luminanceChannel(_ v: Int) -> Double {
+  let c = v.toFloat() / 255.0
+  return c <= 0.03928 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4)
+}
+
+/// The WCAG contrast of a quantized colour against white or black: what renders, not the tone.
+func contrastOf(_ argb: Int, _ onWhite: Bool) -> Double {
+  let luminance = 0.2126 * luminanceChannel(redFromArgb(argb)) +
+    0.7152 * luminanceChannel(greenFromArgb(argb)) +
+    0.0722 * luminanceChannel(blueFromArgb(argb))
+  return onWhite ? 1.05 / (luminance + 0.05) : (luminance + 0.05) / 0.05
+}
+
+/// White when it clears AA on the fill, else black: the fill's tone decides.
+func foregroundFor(_ argb: Int) -> String {
+  contrastOf(argb, true) >= AA ? "rgb(255 255 255)" : "rgb(0 0 0)"
+}
+
+func noLegibleForeground(_ argb: Int) -> Bool {
+  contrastOf(argb, true) < AA && contrastOf(argb, false) < AA
+}
+
+let FILL_TONE_FLOOR = 45.0
+let FILL_TONE_SEARCH_CEILING = 56.0
+let LIGHT_DEPTH_STEP = 5.0
+let PINNED_ACTION_LIGHT_STEP = 4.0
+let LIGHT_FILL_FLOOR = 40.0
+let TONE_BUDGET = 25.0
+let DARK_SEED_FLOOR = 58.0
+let DARK_ACCENT_FLOOR = 58.0
+let ACCENT_CHROMA = 80.0
+let TEXT_TONE_LIGHT = 40.0
+let TEXT_TONE_DARK = 80.0
+let TEXT_CHROMA = 60.0
+let SUBTLE_SOURCE_TONE = 60.0
+let SUBTLE_ALPHA_LIGHT = 0.13
+let SUBTLE_ALPHA_DARK = 0.24
+let RAMP_LIGHT_SURFACE = 92.0
+let RAMP_LIGHT_POPOVER = 88.0
+let RAMP_LIGHT_MUTED = 84.0
+let RAMP_DARK_SURFACE = 10.0
+let RAMP_DARK_POPOVER = 14.0
+let RAMP_DARK_MUTED = 18.0
+let BACKGROUND_TONE_LIGHT = 96.0
+let BACKGROUND_TONE_DARK = 4.0
+let LIGHT_NEUTRAL_SHIFT = -2.0
+let NEUTRAL_CHROMA = 28.0
+let MONOCHROME_MAX_CHROMA = 6.0
+let MONOCHROME_FILL_TONE_LIGHT = 12.0
+let MONOCHROME_FILL_TONE_DARK = 94.0
+let MONOCHROME_SECONDARY_TONE_LIGHT = 36.0
+let MONOCHROME_SECONDARY_TONE_DARK = 72.0
+let SPLIT_ROTATION_A = 150.0
+let SPLIT_ROTATION_B = 210.0
+let VIVID_SNAP_WINDOW = 25
+let VIVID_SNAP_MIN_GAIN = 15.0
+let MIN_ACCENT_SEPARATION = 25.0
+let DESTRUCTIVE_PROXIMITY = 30.0
+
+/// Whether a seed carries no colour to derive a theme from: the one authority for it.
+public func isColourlessSeed(_ seedHex: String) -> Bool {
+  hctFromInt(argbFromHex(seedHex)).chroma <= MONOCHROME_MAX_CHROMA
+}
+
+/// The page background (`--background`) of a seed: its neutral at the background tone.
+public func policyBackground(
+  _ seedHex: String,
+  _ isDark: Bool,
+  _ neutralSurfaces: Bool = false,
+) -> String {
+  let seed = hctFromInt(argbFromHex(seedHex))
+  let monochrome = seed.chroma <= MONOCHROME_MAX_CHROMA
+  let neutral = tonalPaletteFromHueAndChroma(
+    seed.hue,
+    monochrome || neutralSurfaces ? 0.0 : NEUTRAL_CHROMA,
+  )
+  let lightShift = !isDark && !monochrome ? LIGHT_NEUTRAL_SHIFT : 0.0
+  return rgb(neutral.tone((isDark ? BACKGROUND_TONE_DARK : BACKGROUND_TONE_LIGHT) + lightShift))
+}
+
+func hueDistance(_ a: Double, _ b: Double) -> Double {
+  let d = abs(a - b) % 360.0
+  return min(d, 360.0 - d)
+}
+
+/// Where a hue reaches its highest chroma in sRGB, and that chroma.
+struct HuePeak {
+  let tone: Double
+  let chroma: Double
+}
+
+let HUE_PEAK_LIMIT = 1024
+private var huePeaks: Map<Double, HuePeak> = Map()
+
+/// `huePeak`, memoized by hue and bounded (the TypeScript's `memoByHue`).
+func huePeak(_ hue: Double) -> HuePeak {
+  if let known = huePeaks.get(hue) { return known }
+  let palette = tonalPaletteFromHueAndChroma(hue, 200.0)
+  var bestTone = 50.0
+  var bestChroma = -1.0
+  for tone in 30...92 {
+    let chroma = hctFromInt(palette.tone(tone.toFloat())).chroma
+    if chroma > bestChroma {
+      bestChroma = chroma
+      bestTone = tone.toFloat()
+    }
+  }
+  let peak = HuePeak(tone: bestTone, chroma: bestChroma)
+  huePeaks = huePeaks.setting(hue, peak)
+  if huePeaks.count > HUE_PEAK_LIMIT {
+    if let oldest = huePeaks.keys.first { huePeaks = huePeaks.removing(oldest) }
+  }
+  return peak
+}
+
+func peakTone(_ hue: Double) -> Double { huePeak(hue).tone }
+
+func peakChroma(_ hue: Double) -> Double { huePeak(hue).chroma }
+
+/// A hue nudged to the most vivid one near it, only when that is a real gain.
+func vividHueNear(_ hue: Double) -> Double {
+  let baseChroma = peakChroma(hue)
+  var bestHue = hue
+  var bestChroma = baseChroma
+  for delta in (0 - VIVID_SNAP_WINDOW)...VIVID_SNAP_WINDOW {
+    let candidate = ((hue + delta.toFloat()) % 360.0 + 360.0) % 360.0
+    let chroma = peakChroma(candidate)
+    if chroma > bestChroma {
+      bestChroma = chroma
+      bestHue = candidate
+    }
+  }
+  return bestChroma - baseChroma >= VIVID_SNAP_MIN_GAIN ? bestHue : hue
+}
+
+/// Whether the seed is a built-in preset that declares a white label (PresetLabels.generated.bloom).
+func declaresWhiteLabel(_ seedHex: String) -> Bool {
+  WHITE_LABEL_SEEDS.contains(seedHex.lowercased())
+}
+
+/// The most vivid tone of a palette that a white label still clears AA on, searched per hue.
+func vividLegibleTone(_ palette: TonalPalette) -> Double {
+  var bestTone = FILL_TONE_FLOOR
+  var bestChroma = -1.0
+  var tone = FILL_TONE_FLOOR
+  while tone <= FILL_TONE_SEARCH_CEILING {
+    let argb = palette.tone(tone)
+    if contrastOf(argb, true) >= AA {
+      let chroma = hctFromInt(argb).chroma
+      // A tie keeps the deepest tone.
+      if chroma > bestChroma {
+        bestChroma = chroma
+        bestTone = tone
+      }
+    }
+    tone += 0.5
+  }
+  return bestTone
+}
+
+/// The tone a brand fill sits at.
+func brandTone(_ palette: TonalPalette, _ isDark: Bool, _ forceWhite: Bool) -> Double {
+  if !isDark { return max(LIGHT_FILL_FLOOR, vividLegibleTone(palette) - LIGHT_DEPTH_STEP) }
+  return forceWhite ? vividLegibleTone(palette) : max(peakTone(palette.hue), DARK_SEED_FLOOR)
+}
+
+/// The tone an accent fill sits at.
+func accentTone(_ hue: Double, _ isDark: Bool) -> Double {
+  let palette = tonalPaletteFromHueAndChroma(hue, ACCENT_CHROMA)
+  if !isDark { return max(LIGHT_FILL_FLOOR, vividLegibleTone(palette) - LIGHT_DEPTH_STEP) }
+  let peak = max(peakTone(hue), DARK_ACCENT_FLOOR)
+  let candidate = max(vividLegibleTone(palette), peak - TONE_BUDGET)
+  return contrastOf(palette.tone(candidate), true) >= AA ? candidate : peak
+}
+
+/// A fill and the foreground legible on it.
+struct FillPair {
+  let fill: String
+  let foreground: String
+}
+
+/// A fill tone settled so some foreground is legible, paired with that foreground.
+func fillPair(_ palette: TonalPalette, _ startTone: Double) -> FillPair {
+  var tone = startTone
+  while noLegibleForeground(palette.tone(tone)) && tone > 1.0 && tone < 99.0 {
+    tone += tone < 50.0 ? -1.0 : 1.0
+  }
+  return FillPair(fill: rgb(palette.tone(tone)), foreground: foregroundFor(palette.tone(tone)))
+}
+
+/// The two accent hues a seed rotates to when nothing pins them.
+public struct AccentHues: Equatable {
+  public let secondary: Double
+  public let tertiary: Double
+}
+
+/// The split-complementary accent hues: the standout arm (`tertiary`) and the quiet one.
+public func deriveAccentHues(_ seedHue: Double) -> AccentHues {
+  let geometricA = (seedHue + SPLIT_ROTATION_A) % 360.0
+  let geometricB = (seedHue + SPLIT_ROTATION_B) % 360.0
+  let geometricStandout = peakChroma(geometricA) >= peakChroma(geometricB) ? geometricA : geometricB
+  let quiet = geometricStandout == geometricA ? geometricB : geometricA
+  let snapped = vividHueNear(geometricStandout)
+  let standout = hueDistance(snapped, quiet) >= MIN_ACCENT_SEPARATION ? snapped : geometricStandout
+  // A call to action must not read as a destructive one: near the error hue, the two trade places.
+  let errorHue = hctFromInt(argbFromHex("#EF4444")).hue
+  return hueDistance(standout, errorHue) < DESTRUCTIVE_PROXIMITY ? AccentHues(
+    secondary: standout,
+    tertiary: quiet,
+  ) : AccentHues(secondary: quiet, tertiary: standout)
+}
+
+let ACCENT_HUES_LIMIT = 128
+private var accentHuesCache: Map<Double, AccentHues> = Map()
+
+/// `deriveAccentHues` for a seed, memoized. The TypeScript reads a built-in preset's from its
+/// generated table (preset-accent-hues.ts), which its test holds equal to this search.
+func accentHues(_ seedHex: String, _ seedHue: Double) -> AccentHues {
+  if let known = accentHuesCache.get(seedHue) { return known }
+  let hues = deriveAccentHues(seedHue)
+  accentHuesCache = accentHuesCache.setting(seedHue, hues)
+  if accentHuesCache.count > ACCENT_HUES_LIMIT {
+    if let oldest = accentHuesCache.keys.first {
+      accentHuesCache = accentHuesCache.removing(oldest)
+    }
+  }
+  return hues
+}
+
+/// A chart series' fill and its active fill.
+public struct ChartColor: Equatable {
+  public let color: String
+  public let activeColor: String
+}
+
+/// The first five canonical series stay stable; four extra hues interleave.
+let CHART_HUE_OFFSETS: [Double] = [0.0, 72.0, 144.0, 216.0, 288.0, 36.0, 108.0, 180.0, 252.0]
+let CHART_MONO_STEPS: [Double] = [0.0, 1.0, 2.0, 3.0, 4.0, 0.5, 1.5, 2.5, 3.5]
+
+/// The nine categorical chart pairs (chart-colors.ts' `createChartColors`).
+public func createChartColors(_ hue: Double, _ isDark: Bool, _ monochrome: Bool) -> [ChartColor] {
+  var out: [ChartColor] = []
+  for index in 0..<CHART_HUE_OFFSETS.count {
+    let offset = CHART_HUE_OFFSETS[index]
+    let palette = tonalPaletteFromHueAndChroma(
+      monochrome ? 0.0 : (hue + offset) % 360.0,
+      monochrome ? 0.0 : 60.0,
+    )
+    let tone = monochrome ? (isDark ? 40.0 + CHART_MONO_STEPS[index] * 13.0 : 78.0 -
+      CHART_MONO_STEPS[index] * 13.0) : (isDark ? 72.0 : 48.0)
+    let activeTone = tone + (isDark ? (monochrome ? 3.0 : 8.0) : -8.0)
+    out = out.appending(
+      ChartColor(color: rgb(palette.tone(tone)), activeColor: rgb(palette.tone(activeTone))),
+    )
+  }
+  return out
+}
+
+func role(_ roles: [String: String], _ name: String) -> String { roles[name] ?? "" }
+
+/// The policy-owned tokens of a seed and mode. `roles` is the engine's role set for the same seed
+/// and mode (`generateRoleColors`), passed in so it is not generated twice.
+public func buildPolicyTokens(
+  _ seedHex: String,
+  _ isDark: Bool,
+  _ roles: [String: String],
+  _ pinned: PinnedAccents = PinnedAccents(),
+) -> [String: String] {
+  let seed = hctFromInt(argbFromHex(seedHex))
+  let monochrome = seed.chroma <= MONOCHROME_MAX_CHROMA
+  let brandPalette = monochrome ? tonalPaletteFromHueAndChroma(0.0, 0.0) : tonalPaletteFromInt(
+    argbFromHex(seedHex),
+  )
+  let primary = fillPair(
+    brandPalette,
+    monochrome ? (isDark ? MONOCHROME_FILL_TONE_DARK : MONOCHROME_FILL_TONE_LIGHT) : brandTone(
+      brandPalette,
+      isDark,
+      declaresWhiteLabel(seedHex),
+    ),
+  )
+  // The brand as a system tint: the seed at its own tone and chroma, with whichever of black or
+  // white reads on it. A monochrome seed has no colour to show, so its tint is its fill.
+  var vivid = primary
+  if !monochrome {
+    let vividArgb = brandPalette.tone(seed.tone.rounded().toFloat())
+    vivid = FillPair(fill: rgb(vividArgb), foreground: foregroundFor(vividArgb))
+  }
+  let neutral = tonalPaletteFromHueAndChroma(
+    seed.hue,
+    monochrome || pinned.neutralSurfaces ? 0.0 : NEUTRAL_CHROMA,
+  )
+  let lightShift = !isDark && !monochrome ? LIGHT_NEUTRAL_SHIFT : 0.0
+  let rampSurface = (isDark ? RAMP_DARK_SURFACE : RAMP_LIGHT_SURFACE) + lightShift
+  let rampPopover = (isDark ? RAMP_DARK_POPOVER : RAMP_LIGHT_POPOVER) + lightShift
+  let rampMuted = (isDark ? RAMP_DARK_MUTED : RAMP_LIGHT_MUTED) + lightShift
+  let foreground = rgb(neutral.tone(isDark ? 94.0 : 10.0))
+  let mutedForeground = rgb(neutral.tone(isDark ? 80.0 : 30.0))
+  let boundary = rgb(neutral.tone(isDark ? 35.0 : 72.0))
+  let subtleAlpha = isDark ? SUBTLE_ALPHA_DARK : SUBTLE_ALPHA_LIGHT
+
+  var tokens: [String: String] = [
+    "--primary": primary.fill,
+    "--primary-foreground": primary.foreground,
+    "--vivid": vivid.fill,
+    "--vivid-foreground": vivid.foreground,
+    "--primary-text": role(roles, "primary"),
+    "--primary-subtle": rgba(
+      tonalPaletteFromHueAndChroma(seed.hue, monochrome ? 0.0 : 200.0).tone(SUBTLE_SOURCE_TONE),
+      subtleAlpha,
+    ),
+    "--ring": role(roles, "primary"),
+    "--card": monochrome ? (isDark ? role(roles, "surfaceContainerHighest") : role(
+      roles,
+      "surfaceContainerLowest",
+    )) : rgb(neutral.tone(isDark ? 22.0 : 98.0)),
+    "--background": policyBackground(seedHex, isDark, pinned.neutralSurfaces),
+    "--content-area": monochrome ? role(roles, "background") : rgb(
+      neutral.tone(isDark ? 6.0 : 96.0),
+    ),
+    "--foreground": monochrome ? role(roles, "onBackground") : foreground,
+    "--surface-foreground": monochrome ? role(roles, "onSurface") : foreground,
+    "--card-foreground": monochrome ? role(roles, "onSurface") : foreground,
+    "--popover-foreground": monochrome ? role(roles, "onSurface") : foreground,
+    "--sidebar-foreground": monochrome ? role(roles, "onSurface") : foreground,
+    "--muted-foreground": monochrome ? role(roles, "onSurfaceVariant") : mutedForeground,
+    "--faint-foreground": monochrome ? role(roles, "onSurfaceVariant") : mutedForeground,
+    "--border": monochrome ? role(roles, "outlineVariant") : boundary,
+    "--input": monochrome ? role(roles, "outlineVariant") : boundary,
+    "--sidebar-border": monochrome ? role(roles, "outlineVariant") : boundary,
+    "--surface": rgb(neutral.tone(rampSurface)),
+    "--sidebar": rgb(neutral.tone(rampSurface)),
+    "--popover": rgb(neutral.tone(rampPopover)),
+    "--muted": rgb(neutral.tone(rampMuted)),
+    "--accent": rgb(neutral.tone(rampMuted)),
+    "--accent-foreground": monochrome ? role(roles, "onSurfaceVariant") : mutedForeground,
+    "--sidebar-accent": monochrome ? role(roles, "secondaryContainer") : rgb(
+      neutral.tone(rampMuted),
+    ),
+    "--sidebar-accent-foreground": monochrome ? role(
+      roles,
+      "onSecondaryContainer",
+    ) : mutedForeground,
+  ]
+
+  for accent in ["secondary", "tertiary"] {
+    let pin = accent == "secondary" ? pinned.secondary : pinned.tertiary
+    var hue = 0.0
+    if let pinnedHex = pin {
+      hue = hctFromInt(argbFromHex(pinnedHex)).hue
+    } else {
+      let derived = accentHues(seedHex, seed.hue)
+      hue = accent == "secondary" ? derived.secondary : derived.tertiary
+    }
+    // A colourless identity can still declare a real action seed: only an unpinned accent is grey.
+    let accentMonochrome = monochrome && pin == none
+    let fillPalette = tonalPaletteFromHueAndChroma(hue, accentMonochrome ? 0.0 : ACCENT_CHROMA)
+    let textPalette = tonalPaletteFromHueAndChroma(hue, accentMonochrome ? 0.0 : TEXT_CHROMA)
+    let vividPalette = tonalPaletteFromHueAndChroma(hue, accentMonochrome ? 0.0 : 200.0)
+    let pinnedAction = accent == "tertiary" && pin != none
+    var tone = 0.0
+    if accentMonochrome {
+      if accent == "tertiary" {
+        tone = isDark ? MONOCHROME_FILL_TONE_DARK : MONOCHROME_FILL_TONE_LIGHT
+      } else {
+        tone = isDark ? MONOCHROME_SECONDARY_TONE_DARK : MONOCHROME_SECONDARY_TONE_LIGHT
+      }
+    } else if pinnedAction {
+      // A paired action stays near the hue's vivid peak; light steps a little below it.
+      tone = isDark ? max(peakTone(hue), DARK_ACCENT_FLOOR) : max(
+        LIGHT_FILL_FLOOR,
+        peakTone(hue) - PINNED_ACTION_LIGHT_STEP,
+      )
+    } else {
+      tone = accentTone(hue, isDark)
+    }
+    let pair = fillPair(fillPalette, tone)
+    tokens = tokens.setting("--\(accent)", pair.fill)
+    tokens = tokens.setting("--\(accent)-foreground", pair.foreground)
+    tokens = tokens.setting(
+      "--\(accent)-text",
+      rgb(textPalette.tone(isDark ? TEXT_TONE_DARK : TEXT_TONE_LIGHT)),
+    )
+    tokens = tokens.setting(
+      "--\(accent)-subtle",
+      rgba(vividPalette.tone(SUBTLE_SOURCE_TONE), subtleAlpha),
+    )
+  }
+
+  let charts = createChartColors(seed.hue, isDark, monochrome)
+  for index in 0..<charts.count {
+    tokens = tokens.setting("--chart-\(index + 1)", charts[index].color)
+    tokens = tokens.setting("--chart-\(index + 1)-active", charts[index].activeColor)
+  }
+
+  // The status family, themed per mode.
+  for (status, hex) in STATUS_SEEDS {
+    let statusHct = hctFromInt(argbFromHex(hex))
+    let palette = tonalPaletteFromHueAndChroma(statusHct.hue, statusHct.chroma)
+    let pair = fillPair(
+      palette,
+      isDark ? vividLegibleTone(palette) : max(
+        LIGHT_FILL_FLOOR,
+        vividLegibleTone(palette) - LIGHT_DEPTH_STEP,
+      ),
+    )
+    tokens = tokens.setting("--\(status)", pair.fill)
+    tokens = tokens.setting("--\(status)-foreground", pair.foreground)
+    tokens = tokens.setting(
+      "--\(status)-text",
+      rgb(
+        tonalPaletteFromHueAndChroma(statusHct.hue, TEXT_CHROMA).tone(
+          isDark ? TEXT_TONE_DARK : TEXT_TONE_LIGHT,
+        ),
+      ),
+    )
+    // Mixed from the seed's own tone and chroma (for error: #EF4444 exactly).
+    tokens = tokens.setting("--\(status)-subtle", rgba(palette.tone(statusHct.tone), subtleAlpha))
+  }
+  return tokens
+}

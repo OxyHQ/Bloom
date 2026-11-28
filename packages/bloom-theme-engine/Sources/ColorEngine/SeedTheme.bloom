@@ -1,0 +1,163 @@
+// Bloom's theme from a seed, in Bloom: the canonical tokens of a seed
+// (src/theme/color-scope/seed-scope.ts' `roleColorsToPresetTokens` and the tokens of
+// `buildSeedScopeVars`) and the JS theme's colours (build-theme-from-seed.ts). A named preset is a
+// fixed seed fed through this same path, so a preset's seed reproduces that preset's tokens
+// (golden-resolved-tokens.json). The web's `--color-*` alias layer (`withScopeAliases`, for apps
+// still on `className`) is not here: it is the TypeScript renderer's.
+
+/// The canonical role-to-token assignment of a role set (the preset path's `getPresetVars`).
+public func roleColorsToPresetTokens(_ r: [String: String]) -> [String: String] {
+  [
+    "--background": role(r, "background"),
+    "--foreground": role(r, "onBackground"),
+    "--surface": role(r, "surfaceContainerLow"),
+    "--surface-foreground": role(r, "onSurface"),
+    "--popover": role(r, "surfaceContainer"),
+    "--popover-foreground": role(r, "onSurface"),
+    "--primary": role(r, "primary"),
+    "--primary-foreground": role(r, "onPrimary"),
+    "--secondary": role(r, "secondaryContainer"),
+    "--secondary-foreground": role(r, "onSecondaryContainer"),
+    "--tertiary": role(r, "tertiaryContainer"),
+    "--tertiary-foreground": role(r, "onTertiaryContainer"),
+    "--muted": role(r, "surfaceContainerHigh"),
+    "--muted-foreground": role(r, "onSurfaceVariant"),
+    "--accent": role(r, "secondaryContainer"),
+    "--accent-foreground": role(r, "onSecondaryContainer"),
+    "--destructive": role(r, "error"),
+    "--border": role(r, "outlineVariant"),
+    "--input": role(r, "outlineVariant"),
+    "--ring": role(r, "primary"),
+    "--sidebar": role(r, "surfaceContainerLow"),
+    "--card": role(r, "surfaceContainerLowest"),
+    "--card-foreground": role(r, "onSurface"),
+    "--chart-1": role(r, "primary"),
+    "--chart-2": role(r, "secondary"),
+    "--chart-3": role(r, "tertiary"),
+    "--chart-4": role(r, "primaryContainer"),
+    "--chart-5": role(r, "tertiaryContainer"),
+    "--content-area": role(r, "background"),
+    "--sidebar-foreground": role(r, "onSurface"),
+    "--sidebar-primary": role(r, "primary"),
+    "--sidebar-primary-foreground": role(r, "onPrimary"),
+    "--sidebar-accent": role(r, "secondaryContainer"),
+    "--sidebar-accent-foreground": role(r, "onSecondaryContainer"),
+    "--sidebar-border": role(r, "outlineVariant"),
+    "--sidebar-ring": role(r, "primary"),
+  ]
+}
+
+/// A theme's seed and how it is read.
+public struct SeedThemeOptions: Equatable {
+  /// The seed colour, `#rrggbb`.
+  public let seed: String
+  public let isDark: Bool
+  /// The scheme variant: `vivid` (every preset's), or `monochrome` for a colourless seed, by default.
+  public var variant: SchemeVariant? = none
+  public var contrastLevel: Double = 0.0
+  public var secondarySeed: String? = none
+  public var tertiarySeed: String? = none
+}
+
+func roleOptions(_ o: SeedThemeOptions) -> GenerateOptions {
+  GenerateOptions(
+    seed: o.seed,
+    variant: o.variant ??
+      (isColourlessSeed(o.seed) ? SchemeVariant.monochrome : SchemeVariant.vivid),
+    isDark: o.isDark,
+    contrastLevel: o.contrastLevel,
+    secondarySeed: o.secondarySeed,
+    tertiarySeed: o.tertiarySeed,
+  )
+}
+
+/// The resolved canonical tokens of a seed: the role tokens with the policy's on top
+/// (`buildSeedScopeVars` without the web's alias layer).
+public func seedTokens(_ o: SeedThemeOptions) -> [String: String] {
+  let roles = generateRoleColors(roleOptions(o))
+  var tokens = roleColorsToPresetTokens(roles)
+  let policy = buildPolicyTokens(
+    o.seed,
+    o.isDark,
+    roles,
+    PinnedAccents(secondary: o.secondarySeed, tertiary: o.tertiarySeed),
+  )
+  for (key, value) in policy.entries { tokens = tokens.setting(key, value) }
+  return tokens
+}
+
+/// The JS theme's colours of a seed (`buildThemeFromSeed(…).colors`), in its field order.
+public func seedThemeColors(_ o: SeedThemeOptions) -> [(String, String)] {
+  let t = seedTokens(o)
+  let g = { (name: String) -> String in t["--\(name)"] ?? "rgb(0 0 0)" }
+  // `buildThemeFromSeed`'s variant reaches `generateRoleColors` as given (undefined is its vibrant).
+  let r = generateRoleColors(
+    GenerateOptions(
+      seed: o.seed,
+      variant: o.variant ?? SchemeVariant.vibrant,
+      isDark: o.isDark,
+      contrastLevel: o.contrastLevel,
+      secondarySeed: o.secondarySeed,
+      tertiarySeed: o.tertiarySeed,
+    ),
+  )
+  return [
+    ("background", g("background")),
+    ("backgroundSecondary", g("surface")),
+    ("backgroundTertiary", g("popover")),
+    ("text", g("foreground")),
+    ("textSecondary", g("muted-foreground")),
+    ("textTertiary", g("faint-foreground")),
+    ("border", g("border")),
+    ("borderLight", g("input")),
+    ("primary", g("primary")),
+    ("primaryForeground", g("primary-foreground")),
+    ("primaryLight", g("surface")),
+    ("primaryDark", g("background")),
+    ("secondary", g("secondary")),
+    ("secondaryForeground", g("secondary-foreground")),
+    ("secondarySubtle", g("secondary-subtle")),
+    ("secondarySubtleForeground", g("secondary-text")),
+    ("tertiary", g("tertiary")),
+    ("tertiaryForeground", g("tertiary-foreground")),
+    ("tertiarySubtle", g("tertiary-subtle")),
+    ("tertiarySubtleForeground", g("tertiary-text")),
+    ("vivid", g("vivid")),
+    ("vividForeground", g("vivid-foreground")),
+    ("tint", g("primary")),
+    ("icon", g("muted-foreground")),
+    ("iconActive", g("primary")),
+    ("success", g("success")),
+    ("successForeground", g("success-foreground")),
+    ("error", g("error")),
+    ("errorForeground", g("error-foreground")),
+    ("warning", g("warning")),
+    ("warningForeground", g("warning-foreground")),
+    ("info", g("info")),
+    ("infoForeground", g("info-foreground")),
+    ("successSubtle", g("success-subtle")),
+    ("successSubtleForeground", g("success-text")),
+    ("errorSubtle", g("error-subtle")),
+    ("errorSubtleForeground", g("error-text")),
+    ("warningSubtle", g("warning-subtle")),
+    ("warningSubtleForeground", g("warning-text")),
+    ("infoSubtle", g("info-subtle")),
+    ("infoSubtleForeground", g("info-text")),
+    ("primarySubtle", g("primary-subtle")),
+    ("primarySubtleForeground", g("primary-text")),
+    ("negative", role(r, "error")),
+    ("negativeForeground", role(r, "onError")),
+    ("negativeSubtle", g("error-subtle")),
+    ("negativeSubtleForeground", g("error-text")),
+    ("contrast50", g("muted")),
+    ("card", g("card")),
+    ("shadow", o.isDark ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.1)"),
+    ("overlay", "rgba(0, 0, 0, 0.5)"),
+    ("destructive", g("destructive")),
+    ("white", "#ffffff"),
+    ("black", "#000000"),
+    ("transparent", "transparent"),
+    ("surfaceForeground", g("surface-foreground")),
+    ("accent", g("accent")),
+  ]
+}
