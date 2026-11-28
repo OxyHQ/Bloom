@@ -354,10 +354,13 @@
           }
         },
         {
-          "match": "\\b(init)\\s*(?=[(<])",
+          "match": "\\b(init)(\\?)?\\s*(?=[(<])",
           "captures": {
             "1": {
               "name": "storage.type.function.init.bloom"
+            },
+            "2": {
+              "name": "keyword.operator.optional.bloom"
             }
           }
         },

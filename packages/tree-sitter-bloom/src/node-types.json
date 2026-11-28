@@ -2141,6 +2141,16 @@
           }
         ]
       },
+      "failable": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "?",
+            "named": false
+          }
+        ]
+      },
       "parameters": {
         "multiple": false,
         "required": true,

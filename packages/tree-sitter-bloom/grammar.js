@@ -328,6 +328,8 @@ export default grammar({
       seq(
         optional($.modifiers),
         'init',
+        // `init?(…)`: Swift's failable init.
+        optional(field('failable', '?')),
         field('parameters', $.parameters),
         optional('async'),
         optional($.throws_clause),

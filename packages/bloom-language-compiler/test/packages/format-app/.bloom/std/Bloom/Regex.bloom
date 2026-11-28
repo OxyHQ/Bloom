@@ -47,7 +47,7 @@ extension Regex {
     if let message = regexError(pattern, "") {
       throw RegexError(pattern: pattern, message: message)
     }
-    return Regex(pattern: pattern, flags: "")
+    self = Regex(pattern: pattern, flags: "")
   }
 
   /// The expression, checked: throws a `RegexError` when `pattern` is invalid.

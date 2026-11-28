@@ -1,0 +1,55 @@
+// Swift's struct `init`: it sets `self`'s fields (or `self` whole), each stored field once on
+// every path, from the fields' defaults. `init?` fails with `return none`. Its own `init`
+// replaces the memberwise one; an `extension`'s keeps it.
+public struct Temperature {
+  let celsius: Double
+  var label: String = "°C"
+
+  public init(fahrenheit: Double) {
+    celsius = (fahrenheit - 32.0) * 5.0 / 9.0
+  }
+
+  public init?(reading: String) {
+    guard let value = Double(reading) else { return none }
+    if value < -273.15 {
+      return none
+    }
+    self.celsius = value
+    self.label = "read"
+  }
+
+  public var kelvin: Double { celsius + 273.15 }
+}
+
+public struct Point {
+  let x: Int
+  let y: Int
+}
+
+extension Point {
+  /// The memberwise `init` stays beside an extension's.
+  public init(diagonal n: Int) {
+    self = Point(x: n, y: n)
+  }
+}
+
+public enum Size {
+  case small
+  case large
+
+  public init(count: Int) {
+    if count > 10 {
+      self = .large
+    } else {
+      self = .small
+    }
+  }
+}
+
+public func readings() -> Double {
+  let body = Temperature(fahrenheit: 98.6)
+  let read = Temperature(reading: "21") ?? body
+  let p = Point(diagonal: 2)
+  let q = Point(x: 1, y: p.y)
+  return body.kelvin + read.celsius + Double(q.x) + (Size(count: 3) == .small ? 1.0 : 0.0)
+}

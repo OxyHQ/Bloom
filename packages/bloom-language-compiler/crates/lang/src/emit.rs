@@ -224,6 +224,8 @@ struct Emitter<'a> {
     range_index: bool,
     /// Emitting a `@jsOptions` function (`FnTy::options`): its parameters are one object's fields.
     options_fn: bool,
+    /// Emitting an `init`'s own body (not a closure in it): `return` gives `self`.
+    in_init: bool,
     /// Emitting a function's result (its expression body, a `return`, its last line), through
     /// parentheses and a ternary's branches: an absent view there crosses as `null`, which a TS
     /// render callback's `ReactElement | null` takes; anywhere else as `undefined`.
@@ -304,6 +306,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         enumerated: false,
         range_index: false,
         options_fn: false,
+        in_init: false,
         result_position: false,
         int_checked: None,
         guarded: HashSet::default(),
@@ -1407,18 +1410,48 @@ impl<'a> Emitter<'a> {
             Some(generics) if f.generics.is_empty() => generics,
             _ => self.shaped_generics(&f.generics, f.span),
         };
-        // A class's `init` (`T$$init`): makes `self`, runs, and returns it.
-        let body = if f.name.name.ends_with("$$init")
-            && !crate::extensions::demangle(&f.name.name)
-                .is_some_and(|(owner, _, _)| crate::extensions::BUILTIN.contains(&owner))
-        {
-            let class = self.ts_type(&ret_ty);
-            let new = match &ret_ty {
-                Ty::Adt(def, _) => self.ck.defs[*def].name.clone(),
-                _ => class.clone(),
+        // An `init`: makes `self`, runs, and returns it. A class's `self` is the new object; a
+        // value type's starts as its fields' defaults (or unset, for an enum or a built-in type)
+        // and is set field by field or whole.
+        let body = if crate::extensions::is_init(&f.name.name) {
+            let made = match &ret_ty {
+                Ty::Option(inner) => (**inner).clone(),
+                other => other.clone(),
             };
-            self.bufs.push(vec![Frag::of(format!("const self: {class} = new {new}();"))]);
+            let text = self.ts_type(&made);
+            let start = match &made {
+                Ty::Adt(def, _) if self.ck.defs[*def].class.is_some() => {
+                    format!("const self: {text} = new {}();", self.ck.defs[*def].name)
+                }
+                Ty::Adt(def, _) if !self.ck.defs[*def].fields().is_empty() => {
+                    let fields = self.ck.defs[*def].fields().to_vec();
+                    let mut entries = Vec::new();
+                    for field in &fields {
+                        if self.may_be_absent(field) {
+                            continue;
+                        }
+                        let value = match &field.default {
+                            FieldDefault::Expr(id) => self.default_expr(*id),
+                            FieldDefault::Literal(text) => Some(Frag::of(text.clone())),
+                            FieldDefault::Undefined | FieldDefault::None => None,
+                        };
+                        if let Some(value) = value {
+                            entries.push(format!("{}: {}", prop_key(&field.name), value.text));
+                        }
+                    }
+                    let object = if entries.is_empty() {
+                        "{}".to_string()
+                    } else {
+                        format!("{{ {} }}", entries.join(", "))
+                    };
+                    format!("let self = {object} as {text};")
+                }
+                _ => format!("let self!: {text};"),
+            };
+            self.bufs.push(vec![Frag::of(start)]);
+            let outer = std::mem::replace(&mut self.in_init, true);
             self.stmts(&f.body.stmts, Tail::Discard, None);
+            self.in_init = outer;
             self.push_stmt(Frag::of("return self;"));
             let lines = self.bufs.pop().expect("the init's buffer");
             let mut out = Frag::of("{\n");
@@ -1643,6 +1676,11 @@ impl<'a> Emitter<'a> {
                 self.push_stmt(line);
             }
             StmtKind::Assign(a) => self.assign(a, stmt.span),
+            // In an `init`: `return` gives `self`, an `init?`'s `return none` nothing.
+            StmtKind::Return(value) if self.in_init => self.push_stmt(Frag::at(
+                stmt.span,
+                if value.is_some() { "return undefined;" } else { "return self;" },
+            )),
             StmtKind::Return(value) => match value {
                 Some(value) => self.tail_expr(value, &Tail::Return),
                 None => self.push_stmt(Frag::at(stmt.span, "return;")),
@@ -3590,6 +3628,13 @@ impl<'a> Emitter<'a> {
 
     /// A closure; one that reads nothing of its view or function is a module constant.
     fn closure(&mut self, c: &Closure) -> Frag {
+        let outer_init = std::mem::replace(&mut self.in_init, false);
+        let out = self.closure_inner(c);
+        self.in_init = outer_init;
+        out
+    }
+
+    fn closure_inner(&mut self, c: &Closure) -> Frag {
         let Some(info) = self.ck.closures.get(&c.span).cloned() else { return Frag::of("undefined") };
         if let Some(name) = self.hoisted_names.get(&c.span).cloned() {
             return Frag::of(name);

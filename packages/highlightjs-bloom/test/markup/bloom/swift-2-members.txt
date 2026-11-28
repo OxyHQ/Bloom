@@ -30,3 +30,11 @@ public func visited(_ accounts: [Account], _ key: WritableKeyPath<Account, Int>)
   next[keyPath: key] += 1
   return [next, Account(name: next[keyPath: read])]
 }
+
+public struct Reading {
+  let value: Double
+  public init?(text: String) {
+    guard let v = Double(text) else { return none }
+    self.value = v
+  }
+}

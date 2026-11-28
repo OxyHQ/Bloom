@@ -861,3 +861,55 @@ func names(_ actors: [Actor]) -> [String] {
               (identifier)
               (identifier))
             (identifier)))))))
+
+====================
+A struct's init and a failable init
+====================
+
+public struct Temperature {
+  let celsius: Double
+
+  public init(fahrenheit: Double) {
+    celsius = fahrenheit
+  }
+
+  public init?(reading: String) {
+    return none
+  }
+}
+
+---
+
+(source_file
+  (struct_declaration
+    (modifiers
+      (visibility_modifier))
+    (type_identifier)
+    (struct_body
+      (property_declaration
+        (identifier)
+        (user_type
+          (type_identifier)))
+      (init_declaration
+        (modifiers
+          (visibility_modifier))
+        (parameters
+          (parameter
+            (identifier)
+            (user_type
+              (type_identifier))))
+        (block
+          (assignment
+            (identifier)
+            (identifier))))
+      (init_declaration
+        (modifiers
+          (visibility_modifier))
+        (parameters
+          (parameter
+            (identifier)
+            (user_type
+              (type_identifier))))
+        (block
+          (return_statement
+            (none_literal)))))))

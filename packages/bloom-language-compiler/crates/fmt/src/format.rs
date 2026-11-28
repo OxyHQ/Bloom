@@ -487,12 +487,22 @@ impl<'a> Formatter<'a> {
                 text(" "),
                 self.block(body, Layout::Broken),
             ]),
-            TypeMemberKind::Func(f) if f.name.name == "init" => concat(vec![
-                text("init"),
-                self.params(&f.params),
-                text(" "),
-                self.block(&f.body, Layout::Own),
-            ]),
+            TypeMemberKind::Func(f) if f.name.name == "init" => {
+                // `init?` (failable: the parser gave it `Self?`), its parameters, `throws`.
+                let mut parts =
+                    vec![text(if f.ret.is_some() { "init?" } else { "init" }), self.params(&f.params)];
+                if let Some(throws) = &f.throws {
+                    parts.push(text(" throws"));
+                    if let Some(ty) = &throws.ty {
+                        parts.push(text("("));
+                        parts.push(self.ty(ty));
+                        parts.push(text(")"));
+                    }
+                }
+                parts.push(text(" "));
+                parts.push(self.block(&f.body, Layout::Own));
+                concat(parts)
+            }
             TypeMemberKind::Func(f) => self.fn_decl(f),
             TypeMemberKind::Let(l) => self.let_stmt(l),
         };
