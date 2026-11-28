@@ -1,0 +1,26 @@
+// `let { data: xs } = f()` then `let xs = xs ?? []` in the same view body (the codemod's form of
+// TS's `const { data: xs = [] } = useQuery(…)`). bloomc accepts it, but the memoized emit
+// declares `let xs` twice in one JS scope (`Identifier 'xs' has already been declared`).
+// Mention: components/settings/pages/connected-ai (connectedAi.test fails to parse).
+// Expected: the shadowing let takes a JS name of its own (`xs$1`), as for an outer local.
+public struct Rec { var data: [String]? = none }
+public func load() -> Rec { Rec(data: ["a"]) }
+public struct List: View {
+  let { data: xs } = load()
+  let xs = xs ?? []
+  var body: some View {
+    VStack { for x in xs { Text(x) } }
+  }
+}
+
+// In a function's block too; a shadow of a parameter or an outer scope's local stays one.
+public func twice(_ x: Int?) -> Int {
+  let x = x ?? 0
+  let y = x + 1
+  let y = y * 2
+  if y > 2 {
+    let x = 3
+    return x
+  }
+  return y
+}

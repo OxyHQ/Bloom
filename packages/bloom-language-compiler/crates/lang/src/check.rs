@@ -1235,6 +1235,37 @@ impl<'o> Checker<'o> {
     }
 
     fn declare(&mut self, name: &Ident, ty: Ty, kind: LocalKind) -> LocalId {
+        // `let { data: xs } = load()` then `let xs = xs ?? []` in one scope: Swift's invalid
+        // redeclaration (JS would declare `xs` twice in one function). A shadow of a parameter,
+        // a prop or an outer scope's local stays one (`let x = x ?? 0`, renamed in JS).
+        if matches!(kind, LocalKind::Let | LocalKind::Var | LocalKind::Derived | LocalKind::Hook)
+            && name.name != "_"
+            && let Some(&earlier) = self.scopes.last().and_then(|scope| scope.get(&name.name))
+            && matches!(
+                self.out.locals[earlier].kind,
+                LocalKind::Let
+                    | LocalKind::Var
+                    | LocalKind::Derived
+                    | LocalKind::Hook
+                    | LocalKind::State
+                    | LocalKind::Ref
+                    | LocalKind::Handler
+            )
+            && !crate::codable::is_synthetic(name.span)
+        {
+            let first = self.out.locals[earlier].span;
+            self.report(
+                Diagnostic::error("B0217", name.span, format!("`{}` is declared twice in one scope", name.name))
+                    .label("a second declaration")
+                    .with_label(first, "first declared here")
+                    .help(format!(
+                        "give the first another name and read it here: `let {{ data: {0}Value }} = …` then `let {0} = {0}Value ?? …`",
+                        name.name
+                    ))
+                    .fix(first, format!("{}Value", name.name))
+                    .spec("43-soundness-rules"),
+            );
+        }
         if self.binding_stmt
             && matches!(kind, LocalKind::Let | LocalKind::Var)
             && name.name != "_"
