@@ -1625,6 +1625,27 @@ impl<'s> Tr<'s> {
     ) -> String {
         match declaration {
             Declaration::VariableDeclaration(v) => {
+                // A module `let` of this file alone (`let showInfo: (() => void) | null = null`, a
+                // registry a provider fills): Swift's file-scope `private var`. One another module
+                // could write stays refused.
+                if v.kind == VariableDeclarationKind::Let
+                    && vis.is_empty()
+                    && let [d] = v.declarations.as_slice()
+                    && let BindingPattern::BindingIdentifier(id) = &d.id
+                    && !self.listed_exports.contains(id.name.as_str())
+                    && !defaults.contains(id.name.as_str())
+                    && let Some(init) = &d.init
+                {
+                    let name = id.name.to_string();
+                    let text = self.constant(&name, d.type_annotation.as_deref(), init, vis, body);
+                    let decl = format!("let {name}");
+                    return match text.find(&decl) {
+                        Some(at) if text[at + decl.len()..].starts_with([' ', ':']) => {
+                            format!("{}private var {name}{}", &text[..at], &text[at + decl.len()..])
+                        }
+                        _ => self.refuse("module:mutable", "a module-level `let`/`var`", v.span),
+                    };
+                }
                 if v.kind != VariableDeclarationKind::Const {
                     return self.refuse("module:mutable", "a module-level `let`/`var`", v.span);
                 }
