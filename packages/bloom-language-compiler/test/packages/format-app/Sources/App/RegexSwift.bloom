@@ -30,6 +30,9 @@ public func hasNumber(_ s: String) -> Bool {
   return s.contains(digit)
 }
 
+// `s.contains(try! Regex(…))`: the regex given in place, through its `try!`.
+public func onlyAs(_ s: String) -> Bool { s.contains(try! Regex("^a+$")) }
+
 public func squeezed(_ s: String) -> String {
   guard let spaces = try? Regex("\\s+") else { return s }
   return s.replacing(spaces, with: " ")

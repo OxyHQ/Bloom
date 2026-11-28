@@ -15,6 +15,7 @@ const m = require('./packages/format-app/Sources/App/RegexSwift.bloom') as {
   firstHandle: (s: string) => string | undefined;
   handles: (s: string) => string[];
   hasNumber: (s: string) => boolean;
+  onlyAs: (s: string) => boolean;
   squeezed: (s: string) => string;
   fields: (s: string) => string[];
   optionalGroups: (s: string) => (string | undefined)[];
@@ -39,6 +40,8 @@ it('finds, lists, tests, replaces and splits as RegExp does', () => {
   expect(m.handles(text)).toEqual([...text.matchAll(/@(\w+)/g)].map((x) => x[1]));
   expect(m.hasNumber('room 7')).toBe(/[0-9]/.test('room 7'));
   expect(m.hasNumber('room')).toBe(false);
+  expect(m.onlyAs('aaa')).toBe(true);
+  expect(m.onlyAs('aab')).toBe(false);
   expect(m.squeezed('a  b \t c')).toBe('a  b \t c'.replace(/\s+/g, ' '));
   expect(m.fields('a , b,c')).toEqual('a , b,c'.split(/\s*,\s*/));
 });

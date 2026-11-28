@@ -778,7 +778,8 @@ impl Checker<'_> {
             return false;
         }
         let mut value = &arg.value;
-        while let ExprKind::Try(inner) | ExprKind::Paren(inner) = &value.kind {
+        // `s.contains(try! Regex("…"))`: through `try`, `try!` and parentheses.
+        while let ExprKind::Try(inner) | ExprKind::Paren(inner) | ExprKind::Throwing(_, inner) = &value.kind {
             value = inner;
         }
         let is_regex =
