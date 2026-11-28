@@ -1,0 +1,7 @@
+import type { Child, ComposedView } from "@oxy.so/bloom-language";
+export interface ShellProps {
+  readonly drawing: boolean;
+  readonly routeHeader?: Child | undefined | null;
+}
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Shell())`), or from TSX as `toElement(Shell())`. */
+export declare const Shell: (props: ShellProps) => ComposedView;
