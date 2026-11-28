@@ -1,0 +1,36 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, view } from "@oxy.so/bloom-language";
+
+export function primary(c: boolean, name: string | undefined, handle: string | undefined): string {
+const p = c ? name : ((handle != null) ? `@${handle}` : undefined);
+return p ?? "";
+}
+
+export function chained(c: boolean, name: string | undefined, other: string | undefined): string | undefined {
+return c ? name : other;
+}
+
+export interface PrimaryProps {
+  readonly hasName: boolean;
+  readonly name?: string | undefined;
+  readonly handle?: string | undefined;
+}
+export const Primary = view(function Primary(props: PrimaryProps) {
+"use no memo";
+const $ = $c(4);
+const { hasName, name = undefined, handle = undefined } = props;
+let $t0;
+if ($[0] !== hasName || $[1] !== name || $[2] !== handle) {
+const text = hasName ? name : ((handle != null) ? `@${handle}` : undefined);
+$t0 = Text(text ?? "");
+$[0] = hasName;
+$[1] = name;
+$[2] = handle;
+$[3] = $t0;
+} else {
+$t0 = $[3];
+}
+return $t0;
+});
+
