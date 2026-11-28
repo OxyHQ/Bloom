@@ -1,0 +1,17 @@
+import { Embed, VStack, inlineView } from "@oxy.so/bloom-language";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { Card as FcCard, Named, Toggle } from "@/ui/components";
+
+const $view0 = Embed($jsx(FcCard, { label: "fc" } satisfies ComponentProps<typeof FcCard>));
+const $view1 = Embed($jsx(Named, { label: "named" } satisfies ComponentProps<typeof Named>));
+const $view2 = Embed($jsx(Toggle, { label: "toggle" } satisfies ComponentProps<typeof Toggle>));
+export interface KindsProps {
+  readonly shown: boolean;
+}
+export const Kinds = inlineView(function Kinds(props: KindsProps) {
+"use no memo";
+const { shown } = props;
+return VStack((shown) ? [$view0, $view1, $view2] : null);
+});
+

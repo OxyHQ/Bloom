@@ -1405,6 +1405,12 @@ impl Mapper<'_> {
                 TsDecl::Fn(function) if function.params.len() <= 1 && returns_element(function) => {
                     Some((file.clone(), function.params.first().and_then(|p| p.ty.clone())))
                 }
+                // `declare const Switch: (props: P) => React.ReactNode; declare const $$Switch:
+                // typeof Switch` (react-native 0.81+): the const's own type.
+                TsDecl::Var(Some(ty)) => {
+                    let ty = ty.clone();
+                    self.component_in(file, &ty, depth + 1)
+                }
                 _ => None,
             },
             TsType::Ref(name, args) if args.is_empty() => {

@@ -1,0 +1,30 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Embed, VStack, view } from "@oxy.so/bloom-language";
+import { useState } from "react";
+import { jsx as $jsx } from "react/jsx-runtime";
+import type { ComponentProps } from "react";
+import { Switch } from "react-native";
+
+export interface ToggleProps {
+  readonly shown: boolean;
+}
+export const Toggle = view(function Toggle(props: ToggleProps) {
+"use no memo";
+const $ = $c(3);
+const { shown } = props;
+const [on, setOn] = useState<boolean>(false);
+let $t0;
+if ($[0] !== shown || $[1] !== on) {
+$t0 = VStack((shown) ? Embed($jsx(Switch, { accessibilityLabel: "On", value: on, onValueChange: (v) => {
+setOn((v satisfies boolean));
+} } satisfies ComponentProps<typeof Switch>)) : null);
+$[0] = shown;
+$[1] = on;
+$[2] = $t0;
+} else {
+$t0 = $[2];
+}
+return $t0;
+});
+
