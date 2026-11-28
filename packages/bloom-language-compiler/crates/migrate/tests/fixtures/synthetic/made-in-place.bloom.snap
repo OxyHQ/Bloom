@@ -1,0 +1,34 @@
+// A modifier made in place (in a table, or returned by a function) is a modifier value; a list
+// pattern with defaults reads each element as JS does past the end; a generic function keeps its
+// type parameters.
+
+import { defineModifier } from "@oxy.so/bloom-language"
+import { type ViewModifier } from "@oxy.so/bloom-language"
+
+private let padding = {
+  default: defineModifier { v: View in v.padding(.lg) },
+  compact: defineModifier { v: View in v.padding(.md) },
+}
+
+private func nudged(_ y: "xs" | "sm") -> ViewModifier {
+  defineModifier { v: View in v.offset(y: y) }
+}
+
+private func amount(_ value: String) -> String {
+  let wholeFractionParts = value.split(".")
+  let whole = wholeFractionParts.at(0) ?? "0"
+  let fraction = wholeFractionParts.at(1) ?? ""
+  "\(whole),\(fraction)"
+}
+
+public func firstOf<T>(_ values: [T], _ fallback: T) -> T {
+  values.count > 0 ? values[0] : fallback
+}
+
+public struct Price: View {
+  let value: String
+  let compact: Bool
+  var body: some View {
+    Text(amount(value)).modifier(padding[compact ? "compact" : "default"]).modifier(nudged("xs"))
+  }
+}

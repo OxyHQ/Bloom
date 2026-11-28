@@ -1158,6 +1158,22 @@ impl Tr<'_> {
                     _ => self.refuse("embed:to-element", "`toElement` with a spread argument", call.span),
                 };
             }
+            // A modifier made in place (`{ compact: defineModifier((v) => v.padding('md')) }`, a
+            // function's result): the modifier value, `defineModifier { v: View in v.… }`.
+            if self.is_lang(name, "defineModifier")
+                && let [Argument::ArrowFunctionExpression(arrow)] = call.arguments.as_slice()
+                && let [param] = arrow.params.items.as_slice()
+                && let BindingPattern::BindingIdentifier(id) = &param.pattern
+                && let Some(body) = arrow.get_expression()
+                && crate::module::chain_root(body).is_some_and(|root| root == id.name.as_str())
+            {
+                let saved = self.scope.clone();
+                let v = self.bind(&id.name, id.span);
+                let chain = self.expr(body);
+                self.scope = saved;
+                self.lang_values.insert(name.to_string());
+                return format!("{name} {{ {v}: View in {chain} }}");
+            }
             if self.is_lang(name, "view") || self.is_lang(name, "defineModifier") {
                 return self.refuse("view:nested", format!("`{name}(…)` inside an expression"), call.span);
             }
