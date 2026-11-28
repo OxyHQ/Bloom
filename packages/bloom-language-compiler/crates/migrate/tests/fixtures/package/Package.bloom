@@ -1,0 +1,7 @@
+let package = Package(
+  name: "Fixtures",
+  platforms: [.web],
+  targets: [
+    .app("Fixtures", path: "."),
+  ]
+)

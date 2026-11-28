@@ -532,6 +532,9 @@ impl Tr<'_> {
     }
 
     fn static_member(&mut self, object: &Expression, property: &str, optional: bool, _span: Span) -> String {
+        if let Some(read) = self.http_error(object, property) {
+            return read;
+        }
         // `React.Children.toArray(node).length`: a `View` is one child.
         if property == "length"
             && let Expression::CallExpression(call) = object.without_parentheses()
@@ -561,6 +564,48 @@ impl Tr<'_> {
         let object_text = if optional { self.optional_read(object) } else { self.expr(object) };
         let property = if property == "length" { "count" } else { property };
         format!("{object_text}{dot}{property}")
+    }
+
+    /// A read of an Axios-shaped error (`Scope::http_errors`): `err.response?.data?.error` is its
+    /// decoded body's field, `err.response?.data` its body's text and `err.response?.status` its
+    /// status.
+    fn http_error(&mut self, object: &Expression, property: &str) -> Option<String> {
+        fn member<'b, 'a>(e: &'b Expression<'a>) -> Option<(&'b Expression<'a>, &'b str)> {
+            match e.without_parentheses() {
+                Expression::StaticMemberExpression(m) => {
+                    Some((m.object.without_parentheses(), m.property.name.as_str()))
+                }
+                _ => None,
+            }
+        }
+        let root = |e: &Expression| match e {
+            Expression::Identifier(id) if self.scope.http_errors.contains(id.name.as_str()) => {
+                Some((id.name.to_string(), id.span))
+            }
+            _ => None,
+        };
+        if let Some((inner, "data")) = member(object)
+            && let Some((n, "response")) = member(inner)
+            && let Some((id, span)) = root(n)
+        {
+            if !self.server_error_fields.iter().any(|(k, _)| k == property) {
+                return None;
+            }
+            let name = self.ident(&id, span);
+            return Some(format!("{name}Body?.{property}"));
+        }
+        if let Some((n, "response")) = member(object)
+            && let Some((id, span)) = root(n)
+        {
+            let field = match property {
+                "data" => "body",
+                "status" => "status",
+                _ => return None,
+            };
+            let name = self.ident(&id, span);
+            return Some(format!("{name}?.{field}"));
+        }
+        None
     }
 
     fn binary(&mut self, b: &oxc_ast::ast::BinaryExpression) -> String {
