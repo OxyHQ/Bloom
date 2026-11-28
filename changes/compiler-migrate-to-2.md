@@ -51,3 +51,7 @@ section: Added
   - `x || undefined` of a member is JS's falsy `none`; `Boolean(x)` of a TS value stays `!!x` where it is a value (`enabled:`), and is dropped where bloomc types `x` a `Bool` or in an `if` head;
   - React's `useId` is the view's `UniqueID` state, read as `id.string`;
   - `--write`: `export { default } from` and `lazy(() => import(…))` take the default by its name; a non-route module's default `screen()` is named; a renamed default with a platform fork beside it is refused (`module:platform-fork`), and a forked module's importers keep the bare path.
+- Round 15 (lang-mention-15):
+  - `e instanceof Error ? e.message : fallback` is `(e as? JSError)?.message ?? fallback` (needs the compiler's #1066); a TS `===` on an object that holds what has no equality is Swift's `===`;
+  - a local function's `ReactNode` parameter that only goes to a TS component's prop, every call giving it text, is `String?`: the component draws the TS's text in its own `Text`, with no nested `Text`; a fragment's string literals are part of its string;
+  - JS's `Number(s)` of a string the file types is `s.trimmed().isEmpty ? 0 : (Float(s) ?? Double.nan)` (JS's blank 0 and `NaN`), of an `Int` `n.toFloat()`; `Number.isNaN`, `Number.NaN` and `Number.MAX_SAFE_INTEGER` are the stdlib's or the number.
