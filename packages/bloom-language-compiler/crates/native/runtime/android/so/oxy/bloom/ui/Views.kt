@@ -237,9 +237,30 @@ fun Toggle(isOn: Binding<Boolean>, label: String = "", tint: Tone = Tone.primary
   }
 }
 
+/** `Button("Save") { … }`: a label's button. */
 @Composable
 fun Button(
   label: String,
+  onPress: () -> Unit,
+  size: ControlSize = ControlSize.md,
+  style: ButtonStyle = ButtonStyle.solid,
+  tint: Tone = Tone.primary,
+  modifier: Modifier = Modifier,
+) {
+  Button(content = { BasicText(label, style = buttonFont(size).copy(color = LocalForeground.current, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)) }, onPress, size, style, tint, modifier)
+}
+
+private fun buttonFont(size: ControlSize) = when (size) {
+  ControlSize.xs -> Font.caption1
+  ControlSize.sm -> Font.body2
+  ControlSize.md -> Font.body
+  ControlSize.lg -> Font.headline
+}
+
+/** `Button(Text("Like")).onPress { … }`: a button whose content is a view; its text takes the button's foreground. */
+@Composable
+fun Button(
+  content: @Composable () -> Unit,
   onPress: () -> Unit,
   size: ControlSize = ControlSize.md,
   style: ButtonStyle = ButtonStyle.solid,
@@ -251,17 +272,17 @@ fun Button(
     ButtonStyle.subtle, ButtonStyle.glass -> Colors.mutedFill to Colors.foreground
     ButtonStyle.outline, ButtonStyle.plain -> Colors.transparent to tint.color
   }
-  val (h, padX, font) = when (size) {
-    ControlSize.xs -> Triple(24.dp, 8.dp, Font.caption1)
-    ControlSize.sm -> Triple(32.dp, 12.dp, Font.body2)
-    ControlSize.md -> Triple(40.dp, 16.dp, Font.body)
-    ControlSize.lg -> Triple(48.dp, 20.dp, Font.headline)
+  val (h, padX) = when (size) {
+    ControlSize.xs -> 24.dp to 8.dp
+    ControlSize.sm -> 32.dp to 12.dp
+    ControlSize.md -> 40.dp to 16.dp
+    ControlSize.lg -> 48.dp to 20.dp
   }
   Box(
     modifier.height(h).clip(RoundedCornerShape(h / 2)).background(bg).clickable(onClick = onPress).padding(horizontal = padX),
     contentAlignment = Alignment.Center,
   ) {
-    BasicText(label, style = font.copy(color = fg, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
+    CompositionLocalProvider(LocalForeground provides fg) { content() }
   }
 }
 

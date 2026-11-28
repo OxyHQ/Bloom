@@ -1,7 +1,8 @@
 # ADR 0003: Native backends for `.bloom`
 
-- **Status:** draft (2026-11-28). A measured prototype for the owner's decision; nothing here is
-  adopted. Spanish summary: [0003-resumen-es.md](0003-resumen-es.md).
+- **Status:** accepted (2026-11-28; the owner chose to go all in on native: "Go: full native,
+  Android and iOS"). The prototype it measured is in PR #1067, reviewed separately from this
+  record. Spanish summary: [0003-resumen-es.md](0003-resumen-es.md).
 - **Builds on:** [ADR 0001](0001-bloom-own-language.md) (the language) and
   [ADR 0002](0002-swift-grade-language-and-toolchain.md) (the 2.0 surface, the toolchain, phase F).
 - **Question:** should `bloomc` compile `.bloom` straight to native code (SwiftUI on iOS, Kotlin +
@@ -20,9 +21,59 @@ ADR 0002 already measured the JavaScript side's ceiling:
 What remains on the table is the owner's option 3: the same checked program, emitted for the
 platforms' own UI toolkits. The 2.0 surface is SwiftUI's (`struct X: View`, `@State`,
 `VStack(spacing:)`, modifiers, `switch`, `async`), so the mapping is direct on iOS and close on
-Android. This ADR measures it before anyone commits to it.
+Android. This ADR measured it, and the owner decided on it (see "Decision").
+
+## Decision
+
+**Go: full native, Android and iOS.** `bloomc` compiles `.bloom` straight to Kotlin + Jetpack
+Compose on Android and to Swift + SwiftUI on iOS. There is no JavaScript on the device for a
+native target: no Hermes, no React Native, no bundle. The web stays on the TypeScript backend.
+
+- **One front end, three backends.** The parser and checker stay one. The Kotlin and Swift
+  backends work from the same checked program as the TypeScript one, and one conformance suite
+  runs on all three. The TypeScript backend stays the web's, and React Native's while apps
+  migrate.
+- **Android and iOS in parallel, not in sequence.** The prototype's recommendation was to measure
+  SwiftUI on the Mac before committing to iOS; the owner chose both now. iOS mirrors Android's
+  runtime API, agreed in one shared document (`docs/native-runtime-api.mdx`), so a `.bloom`
+  program, its standard library calls and its BloomUI nodes mean the same thing on both.
+- **What each platform gets:**
+  1. the backend over the whole 2.0 language (structs and enums as values, protocols and
+     generics, `@State`/`@Observable`/`@Model` and bindings, closures, `async`/`await`,
+     `throws`/`try`, actors, modules, extensions, label overloading, `Codable`, ranges,
+     collections), with golden tests per construct;
+  2. BloomUI on the platform's toolkit, every node and modifier of `spec/language.json`, at
+     pixel parity with today's Bloom, from `design-tokens/`;
+  3. the standard library (HTTP, `Codable`, stores and persistence, navigation and deep links,
+     images and video, `FormatStyle` and dates with output identical to `Intl`, `JSONValue`,
+     `UniqueID`, timers, the `.task` lifecycle);
+  4. `bloom build android --target native` and `bloom build ios --target native`: a plain Gradle
+     or Xcode app, with no React Native.
+- **Migration by islands, then whole apps.** During the migration a natively compiled screen is
+  hosted inside today's React Native app as one native view (the `BloomImageView` mechanism), so
+  an app switches screen by screen. An app goes whole-app native once its module graph is 100%
+  `.bloom`. Mention goes first, its feed first.
+- **Milestones** (Android; iOS mirrors them on the Mac lane):
+  - **M1:** Mention's feed as a Compose island at pixel parity with today's rows, measured on the
+    Pixel 8a against the current build. This is the measured checkpoint the prototype's
+    recommendation proposed; it now confirms the gains with a complete BloomUI rather than
+    deciding whether to go.
+  - **M2:** Notifications, Profile and Post detail as islands.
+  - **M3:** whole-app native Mention, once its modules are 100% `.bloom`. That needs the Oxy
+    services SDK (`@oxyhq/services`: auth, sessions, the API client) in Bloom too, or as an
+    `extern native` binding with Kotlin and Swift sides.
+- **Decided with it, because every backend depends on them** (the checker's owners carry them):
+  `Int` is 64-bit with trapping overflow; effects run after the update is applied and before the
+  next frame; `VirtualList`'s row closure is typed `VirtualListRow<T>`; `Character` and `count`
+  mean grapheme clusters on every backend.
+- **Accepted costs:** BloomUI in three implementations kept in parity (each component change
+  lands three times), no over-the-air updates for native code (stores only), Gradle and Xcode
+  build times in the edit loop, and the risks below.
 
 ## The prototype
+
+The prototype's code (the crate, the runtime, the bench screens and the scripts) is in PR #1067;
+the paths below are that branch's.
 
 - **A backend, outside the main stack.** `crates/native` (`bloom_native`, binary
   `bloom-native`) depends on `bloom_lang` and on nothing of `bloomc`'s:
@@ -287,7 +338,10 @@ BloomUI twice. Android alone (N1–N4) is 28–38.
   thread and RenderThread, not React Native's blank cells during a fast fling, which gfxinfo
   does not see.
 
-## Recommendation
+## The prototype's recommendation (superseded by the decision)
+
+Kept as written for the record; the owner's decision above goes further (both platforms now,
+whole-app native as the goal, M1 as a confirmation rather than a go/no-go).
 
 **Hybrid, going native in two steps, Android first.** The measurements answer the speed question
 clearly: on the same `.bloom` source, Kotlin + Compose reaches the screen 2.7× sooner, uses a

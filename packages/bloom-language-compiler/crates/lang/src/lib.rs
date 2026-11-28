@@ -10,6 +10,7 @@
 
 pub mod analysis;
 pub mod ast;
+pub mod backend;
 pub mod bindgen;
 pub mod bloomui;
 mod chains;

@@ -22,6 +22,7 @@ use std::fmt::Write as _;
 use std::path::PathBuf;
 
 use bloom_lang::ast::*;
+use bloom_lang::backend::Ty;
 
 use crate::{Decls, Emitted, EnumInfo, ParamInfo, Problem, Program, SourceFile, escape, upper_first};
 
@@ -66,6 +67,12 @@ pub fn package_of(app: &str, module: &str) -> String {
 }
 
 pub fn emit(program: &Program) -> Result<Vec<Emitted>, Vec<Problem>> {
+    let (out, problems) = emit_all(program);
+    if problems.is_empty() { Ok(out) } else { Err(problems) }
+}
+
+/// Every file's Kotlin, and the constructs left uncovered in it (as `TODO()`).
+pub fn emit_all(program: &Program) -> (Vec<Emitted>, Vec<Problem>) {
     let mut out = Vec::new();
     let mut problems = Vec::new();
     let packages: Vec<String> = program.modules.iter().map(|m| package_of(&program.name, &m.name)).collect();
@@ -80,7 +87,7 @@ pub fn emit(program: &Program) -> Result<Vec<Emitted>, Vec<Problem>> {
             out.push(Emitted { path: dir.join(format!("{stem}.kt")), text });
         }
     }
-    if problems.is_empty() { Ok(out) } else { Err(problems) }
+    (out, problems)
 }
 
 /// What a block of statements is emitted as.
@@ -108,6 +115,12 @@ struct Emitter<'a> {
     shorthand_it: bool,
     /// The enum the statement being emitted switches over, for its patterns.
     fresh: u32,
+    /// Emitting an actor's members: its methods run isolated.
+    actor: bool,
+    /// `return` inside a lambda body (an actor's `isolated { }`): `return@label`.
+    return_label: Option<String>,
+    /// The type parameters of the type whose members are being emitted.
+    owner_generics: Vec<String>,
 }
 
 /// A view expression unwound: the node or view call at its base, and the modifiers on it
@@ -212,6 +225,9 @@ impl<'a> Emitter<'a> {
             locals: vec![HashMap::new()],
             shorthand_it: false,
             fresh: 0,
+            actor: false,
+            return_label: None,
+            owner_generics: Vec::new(),
         }
     }
 
@@ -226,6 +242,28 @@ impl<'a> Emitter<'a> {
 
     fn type_at(&self, span: Span) -> Option<&str> {
         self.file.types.get(&span).map(|s| s.as_str())
+    }
+
+    /// The checker's type of `e` (the checked IR, by expression id).
+    fn ty_of(&self, e: &Expr) -> Option<&Ty> {
+        self.file.checked.types.get(&e.id)
+    }
+
+    /// `ty` as Bloom writes it, from the checker's definitions.
+    fn bloom_name(&self, ty: &Ty) -> String {
+        bloom_lang::backend::display(ty, &self.file.checked)
+    }
+
+    /// The definition an expression's type names (a struct, an enum, a class).
+    fn def_of(&self, e: &Expr) -> Option<&bloom_lang::backend::Def> {
+        match self.ty_of(e)? {
+            Ty::Adt(id, _) => self.file.checked.defs.get(*id),
+            Ty::Option(inner) => match inner.as_ref() {
+                Ty::Adt(id, _) => self.file.checked.defs.get(*id),
+                _ => None,
+            },
+            _ => None,
+        }
     }
 
     fn file(&mut self, package: &str, packages: &[String]) -> String {
@@ -275,7 +313,12 @@ impl<'a> Emitter<'a> {
                     "Float" | "Double" => "Double".to_string(),
                     "String" | "Character" => "String".to_string(),
                     "Void" | "Unit" => "Unit".to_string(),
+                    // A view value (a prop, a builder's result): something to draw.
+                    "View" => return "@Composable () -> Unit".into(),
                     "Self" => return "Self".into(),
+                    // `any P`: a value of a type conforming to `P` is a `P` (an interface).
+                    "any" if args.len() == 1 => return self.ty(&args[0]),
+                    "Set" if args.len() == 1 => format!("Set<{}>", self.ty(&args[0])),
                     other => other.to_string(),
                 };
                 if args.is_empty() {
@@ -313,6 +356,8 @@ impl<'a> Emitter<'a> {
         match &item.kind {
             ItemKind::Struct(s) => self.struct_decl(vis, s),
             ItemKind::Enum(e) => self.enum_decl(vis, e),
+            ItemKind::Class(c) => self.class_decl(vis, c),
+            ItemKind::Protocol(p) => self.protocol_decl(vis, p),
             ItemKind::Fn(f) => self.func(vis, f, None, 0),
             ItemKind::View(v) => self.view(vis, v),
             ItemKind::Const(c) => {
@@ -320,34 +365,82 @@ impl<'a> Emitter<'a> {
                 let value = self.expr(&c.value);
                 format!("{vis}val {}{ty} = {value}\n", kw(&c.name.name))
             }
+            // A type the program declares takes its extensions' members inside its class.
+            ItemKind::Extension(x) if self.decls.declared.contains(&x.name.name) => String::new(),
             ItemKind::Extension(x) => self.extension(x),
             ItemKind::Alias(a) => {
                 let ty = self.ty(&a.ty);
                 format!("{vis}typealias {} = {ty}\n", a.name.name)
             }
-            ItemKind::Protocol(p) => self.unsupported(p.span, "a protocol").replace("TODO()", ""),
-            ItemKind::Class(c) => self.unsupported(c.name.span, "a class").replace("TODO()", ""),
             ItemKind::Extern(x) => self.unsupported(x.package.span, "an extern module").replace("TODO()", ""),
             ItemKind::Test(_) => String::new(),
         }
     }
 
-    fn conformances(body: Option<&TypeBody>) -> Vec<String> {
-        body.map(|b| {
-            b.conformances
-                .iter()
-                .filter_map(|c| match &c.kind {
-                    TypeKind::Named { name, .. } => Some(name.name.clone()),
-                    _ => None,
-                })
-                .collect()
-        })
-        .unwrap_or_default()
+    /// A type's Kotlin supertypes: the program's protocols it conforms to, and the runtime's
+    /// `Identifiable`. Equatable, Hashable and CaseIterable are what a data class or an enum
+    /// class already is; Codable is the emitted coder's (`codable.rs`, to come).
+    fn supertypes(&self, ty: &str) -> Vec<String> {
+        self.decls
+            .conforms
+            .get(ty)
+            .into_iter()
+            .flatten()
+            .filter(|p| p.as_str() == "Identifiable" || self.decls.protocols.contains_key(p.as_str()))
+            .cloned()
+            .collect()
+    }
+
+    /// A type's members: its own, then every extension's in the program, in file order.
+    fn members_of(&self, ty: &str, own: &[TypeMember]) -> Vec<TypeMember> {
+        let mut all = own.to_vec();
+        for body in self.decls.extensions.get(ty).into_iter().flatten() {
+            all.extend(body.members.iter().cloned());
+        }
+        all
+    }
+
+    fn generics(names: &[Ident]) -> String {
+        if names.is_empty() {
+            String::new()
+        } else {
+            format!("<{}>", names.iter().map(|g| g.name.clone()).collect::<Vec<_>>().join(", "))
+        }
+    }
+
+    /// A class body's members at `indent`, the static ones in a companion object.
+    fn class_body(&mut self, ty: &str, members: &[TypeMember], indent: usize) -> String {
+        let mut body = String::new();
+        let mut statics = String::new();
+        for m in members {
+            if m.modifiers.is_static {
+                let text = self.member(ty, m, indent + 1);
+                // A companion object is not generic: a static function of a generic type
+                // takes the type's parameters as its own (`Page.codec<T>(…)`).
+                let text = match (self.owner_generics.is_empty(), &m.kind) {
+                    (false, TypeMemberKind::Func(f)) if f.generics.is_empty() => {
+                        text.replacen("fun ", &format!("fun <{}> ", self.owner_generics.join(", ")), 1)
+                    }
+                    _ => text,
+                };
+                statics.push_str(&text);
+            } else {
+                body.push_str(&self.member(ty, m, indent));
+            }
+        }
+        if !statics.is_empty() {
+            let p = pad(indent);
+            let _ = write!(body, "{p}companion object {{\n{statics}{p}}}\n");
+        }
+        body
+    }
+
+    fn braces(body: String) -> String {
+        if body.is_empty() { "\n".into() } else { format!(" {{\n{body}}}\n") }
     }
 
     fn struct_decl(&mut self, vis: &str, s: &StructDecl) -> String {
-        let conforms = Self::conformances(s.surface.as_deref());
-        let identifiable = conforms.iter().any(|c| c == "Identifiable");
+        let name = &s.name.name;
         let mut fields = Vec::new();
         for f in &s.fields {
             let ty = self.ty(&f.ty);
@@ -355,88 +448,354 @@ impl<'a> Emitter<'a> {
                 Some(d) => format!(" = {}", self.expr(d)),
                 None => String::new(),
             };
-            let over = if identifiable && f.name.name == "id" { "override " } else { "" };
+            let over = if self.decls.is_requirement(name, &f.name.name) { "override " } else { "" };
             fields.push(format!("  {over}val {}: {ty}{default},", kw(&f.name.name)));
         }
-        let supers = if identifiable { " : Identifiable" } else { "" };
+        let supers = self.supertypes(name);
+        let supers = if supers.is_empty() { String::new() } else { format!(" : {}", supers.join(", ")) };
+        let own = s.surface.as_ref().map(|b| b.members.clone()).unwrap_or_default();
+        let members = self.members_of(name, &own);
+        self.owner_generics = s.generics.iter().map(|g| g.name.clone()).collect();
+        let body = self.class_body(name, &members, 1);
+        self.owner_generics.clear();
         // A struct is a value: `data class` gives it structural `==`, `hashCode` and `copy`,
         // and Compose treats a class of `val`s of stable types as stable (it skips on `==`).
-        let mut out =
-            format!("@Immutable\n{vis}data class {}(\n{}\n){supers}\n", s.name.name, fields.join("\n"));
-        if s.fields.is_empty() {
-            out = format!("{vis}data object {}\n", s.name.name);
+        if s.fields.is_empty() && s.generics.is_empty() {
+            return format!("{vis}data object {name}{supers}{}", Self::braces(body));
         }
-        // Methods written inside the struct (2.0) are emitted as extensions.
-        if let Some(surface) = &s.surface {
-            for m in &surface.members {
-                out.push_str(&self.type_member(&s.name.name, m));
-            }
-        }
-        out
+        format!(
+            "@Immutable\n{vis}data class {name}{}(\n{}\n){supers}{}",
+            Self::generics(&s.generics),
+            fields.join("\n"),
+            Self::braces(body)
+        )
     }
 
     fn enum_decl(&mut self, vis: &str, e: &EnumDecl) -> String {
-        let info = self.decls.enums.get(&e.name.name).cloned().unwrap_or_default();
+        let name = &e.name.name;
+        let info = self.decls.enums.get(name).cloned().unwrap_or_default();
+        let members = self.members_of(name, &e.members);
+        let supers = self.supertypes(name);
         let mut out = String::new();
         if !info.has_payload() {
             let cases: Vec<String> = e.variants.iter().map(|v| kw(&v.name.name)).collect();
-            let _ = writeln!(out, "{vis}enum class {} {{ {} }}", e.name.name, cases.join(", "));
-        } else {
-            let _ = writeln!(out, "@Immutable\n{vis}sealed interface {} {{", e.name.name);
-            for v in &e.variants {
-                let class = upper_first(&v.name.name);
-                if v.payload.is_empty() {
-                    let _ = writeln!(out, "  data object {class} : {}", e.name.name);
-                } else {
-                    let fields: Vec<String> = v
-                        .payload
-                        .iter()
-                        .enumerate()
-                        .map(|(i, p)| {
-                            let name = p.name.as_ref().map(|n| n.name.clone()).unwrap_or(format!("_{i}"));
-                            format!("val {}: {}", kw(&name), self.ty(&p.ty))
-                        })
-                        .collect();
-                    let _ = writeln!(out, "  data class {class}({}) : {}", fields.join(", "), e.name.name);
+            let supers = if supers.is_empty() { String::new() } else { format!(" : {}", supers.join(", ")) };
+            let body = self.class_body(name, &members, 1);
+            let _ = write!(out, "{vis}enum class {name}{supers} {{\n  {}", cases.join(", "));
+            if body.is_empty() {
+                out.push_str("\n}\n");
+            } else {
+                let _ = write!(out, ";\n\n{body}}}\n");
+            }
+            return out;
+        }
+        let generics = Self::generics(&e.generics);
+        let supers = if supers.is_empty() { String::new() } else { format!(" : {}", supers.join(", ")) };
+        let _ = writeln!(out, "@Immutable\n{vis}sealed interface {name}{generics}{supers} {{");
+        for v in &e.variants {
+            let class = upper_first(&v.name.name);
+            if v.payload.is_empty() {
+                if !e.generics.is_empty() {
+                    self.unsupported(v.name.span, "a case without a payload in a generic enum");
+                }
+                let _ = writeln!(out, "  data object {class} : {name}");
+            } else {
+                let fields: Vec<String> = v
+                    .payload
+                    .iter()
+                    .enumerate()
+                    .map(|(i, p)| {
+                        let field = p.name.as_ref().map(|n| n.name.clone()).unwrap_or(format!("_{i}"));
+                        format!("val {}: {}", kw(&field), self.ty(&p.ty))
+                    })
+                    .collect();
+                let _ =
+                    writeln!(out, "  data class {class}{generics}({}) : {name}{generics}", fields.join(", "));
+            }
+        }
+        let body = self.class_body(name, &members, 1);
+        if !body.is_empty() {
+            out.push('\n');
+            out.push_str(&body);
+        }
+        out.push_str("}\n");
+        out
+    }
+
+    /// `final class` and `@Observable final class` (2.0): a Kotlin class. An `@Observable`
+    /// class's stored `var`s are snapshot state, so a composable that reads one field is
+    /// invalidated by that field's writes only (ADR 0002's field-level subscriptions).
+    fn class_decl(&mut self, vis: &str, c: &ClassDecl) -> String {
+        let name = &c.name.name;
+        let members = self.members_of(name, &c.body.members);
+        let inits: Vec<&FnDecl> = members
+            .iter()
+            .filter_map(|m| match &m.kind {
+                TypeMemberKind::Func(f) if f.name.name == "init" => Some(f),
+                _ => None,
+            })
+            .collect();
+        if inits.len() > 1 {
+            self.unsupported(inits[1].name.span, "a class with more than one `init`");
+        }
+        let init = inits.first().cloned().cloned();
+        let ctor = match &init {
+            Some(f) => format!("({})", self.params(&f.params, f.func)),
+            None => String::new(),
+        };
+        let mut supers = self.supertypes(name);
+        if c.actor {
+            supers.insert(0, "BloomActor()".into());
+        }
+        let supers = if supers.is_empty() { String::new() } else { format!(" : {}", supers.join(", ")) };
+        let mut body = String::new();
+        for m in &members {
+            if let TypeMemberKind::Stored { mutable, name: field, ty, value } = &m.kind {
+                body.push_str(&self.stored(name, c, m, *mutable, field, ty.as_ref(), value.as_ref()));
+            }
+        }
+        if let Some(f) = &init {
+            self.locals.push(HashMap::new());
+            let mut inner = self.rebinds(&f.params, f.func, 2);
+            inner.push_str(&self.block(&f.body.stmts, 2, Mode::Unit));
+            self.locals.pop();
+            let _ = write!(body, "\n  init {{\n{inner}  }}\n");
+        }
+        let rest: Vec<TypeMember> = members
+            .iter()
+            .filter(|m| {
+                !matches!(&m.kind, TypeMemberKind::Stored { .. })
+                    && !matches!(&m.kind, TypeMemberKind::Func(f) if f.name.name == "init")
+            })
+            .cloned()
+            .collect();
+        self.actor = c.actor;
+        let methods = self.class_body(name, &rest, 1);
+        self.actor = false;
+        if !methods.is_empty() {
+            body.push('\n');
+            body.push_str(&methods);
+        }
+        let stable = if c.observable { "@Stable\n" } else { "" };
+        format!(
+            "{stable}{vis}class {name}{}{ctor}{supers}{}",
+            Self::generics(&c.generics),
+            Self::braces(body)
+        )
+    }
+
+    /// A class's stored property.
+    #[allow(clippy::too_many_arguments)]
+    fn stored(
+        &mut self,
+        owner: &str,
+        c: &ClassDecl,
+        m: &TypeMember,
+        mutable: bool,
+        field: &Ident,
+        ty: Option<&TypeExpr>,
+        value: Option<&Expr>,
+    ) -> String {
+        let vis = Self::visibility(m.visibility);
+        let over = if self.decls.is_requirement(owner, &field.name) { "override " } else { "" };
+        let written = ty.map(|t| self.ty(t));
+        let annotated = written.as_ref().map(|t| format!(": {t}")).unwrap_or_default();
+        let setter = match m.modifiers.setter {
+            Some((Visibility::Private, _)) => "\n    private set",
+            _ => "",
+        };
+        let name = kw(&field.name);
+        // `var cursor: String?` starts as none, as Swift's optional does.
+        let none = Expr { id: bloom_lang::backend::ExprId(u32::MAX), kind: ExprKind::None, span: field.span };
+        let value = value.or(match ty.map(|t| &t.kind) {
+            Some(TypeKind::Optional(_)) => Some(&none),
+            _ => None,
+        });
+        match (mutable && c.observable, value) {
+            (true, Some(v)) => {
+                let v = self.expr(v);
+                let state = match &written {
+                    Some(t) => format!("mutableStateOf<{t}>({v})"),
+                    None => format!("mutableStateOf({v})"),
+                };
+                format!("  {over}{vis}var {name}{annotated} by {state}{setter}\n")
+            }
+            (true, None) => {
+                self.unsupported(field.span, "an `@Observable` field with no initial value");
+                String::new()
+            }
+            (false, Some(v)) => {
+                let v = self.expr(v);
+                let kind = if mutable { "var" } else { "val" };
+                format!("  {over}{vis}{kind} {name}{annotated} = {v}{setter}\n")
+            }
+            // Assigned by `init`, in the class's `init { }` block.
+            (false, None) => {
+                let kind = if mutable { "var" } else { "val" };
+                format!("  {over}{vis}{kind} {name}{annotated}{setter}\n")
+            }
+        }
+    }
+
+    /// `protocol P: Q { var x: T { get }; func f(_ a: A) -> R }`: a Kotlin interface.
+    fn protocol_decl(&mut self, vis: &str, p: &ProtocolDecl) -> String {
+        let parents: Vec<String> = p.inherits.iter().filter_map(crate::type_name).collect();
+        let supers = if parents.is_empty() { String::new() } else { format!(" : {}", parents.join(", ")) };
+        let mut body = String::new();
+        for r in &p.requirements {
+            match r {
+                Requirement::Property { is_static: true, span, .. }
+                | Requirement::Func { decl: FnDecl { span, .. }, is_static: true } => {
+                    self.unsupported(*span, "a static requirement (a type's witness)");
+                }
+                Requirement::Property { name, ty, settable, .. } => {
+                    let kind = if *settable { "var" } else { "val" };
+                    let _ = writeln!(body, "  {kind} {}: {}", kw(&name.name), self.ty(ty));
+                }
+                Requirement::Func { decl, .. } => {
+                    let params = self.params(&decl.params, decl.func);
+                    let ret = match &decl.ret {
+                        Some(t) if !Self::is_view_type(t) => format!(": {}", self.ty(t)),
+                        _ => String::new(),
+                    };
+                    let suspend = if decl.is_async { "suspend " } else { "" };
+                    let _ = writeln!(body, "  {suspend}fun {}({params}){ret}", kw(&decl.name.name));
                 }
             }
-            out.push_str("}\n");
         }
-        for m in &e.members {
-            out.push_str(&self.type_member(&e.name.name, m));
-        }
-        out
+        format!("{vis}interface {}{supers}{}", p.name.name, Self::braces(body))
     }
 
     fn extension(&mut self, x: &ExtensionDecl) -> String {
         let mut out = String::new();
+        if !x.body.conformances.is_empty() {
+            self.unsupported(
+                x.name.span,
+                format!("a conformance added to `{}`, a type the program does not declare", x.name.name),
+            );
+        }
         for m in &x.body.members {
-            out.push_str(&self.type_member(&x.name.name, m));
+            out.push_str(&self.extension_member(&x.name.name, m));
         }
         out
     }
 
-    /// A member of a type, as a Kotlin extension on it.
-    fn type_member(&mut self, ty: &str, m: &TypeMember) -> String {
+    /// A member of a type the program does not declare (`String`, `[T]`): a Kotlin extension.
+    fn extension_member(&mut self, ty: &str, m: &TypeMember) -> String {
         let vis = Self::visibility(m.visibility);
+        let receiver = match ty {
+            "String" => "String".to_string(),
+            "Int" => "Int".to_string(),
+            "Double" | "Float" => "Double".to_string(),
+            "Bool" => "Boolean".to_string(),
+            "Array" => "List<Element>".to_string(),
+            other => other.to_string(),
+        };
+        let generic = if ty == "Array" { "<Element> " } else { "" };
         match &m.kind {
-            TypeMemberKind::Func(f) if m.modifiers.is_static && f.name.name == "==" => String::new(),
             TypeMemberKind::Func(f) if m.modifiers.is_static => {
-                // `static func` → a member of the companion is not possible on a data class
-                // declared elsewhere; a top-level function named `Type_name` stands in.
-                self.func(vis, f, Some(&format!("{ty}.Companion")), 0)
+                self.unsupported(f.name.span, format!("a static member of `{ty}`"));
+                String::new()
             }
-            TypeMemberKind::Func(f) => self.func(vis, f, Some(ty), 0),
+            TypeMemberKind::Func(f) => {
+                let text = self.func(vis, f, Some(&receiver), 0);
+                text.replacen("fun ", &format!("fun {generic}"), 1)
+            }
             TypeMemberKind::Computed { name, ty: rty, body } => {
                 let rt = self.ty(rty);
                 self.locals.push(HashMap::new());
-                let body_text = self.block(&body.stmts, 1, Mode::Value);
+                let body_text = self.block(&body.stmts, 2, Mode::Value);
                 self.locals.pop();
-                format!("{vis}val {ty}.{}: {rt}\n  get() {{\n{body_text}  }}\n", kw(&name.name))
+                format!(
+                    "{vis}val {generic}{receiver}.{}: {rt}\n  get() {{\n{body_text}  }}\n",
+                    kw(&name.name)
+                )
             }
-            // Stored properties are the struct's fields.
-            TypeMemberKind::Stored { .. } | TypeMemberKind::Let(_) => String::new(),
+            TypeMemberKind::Stored { name, .. } => {
+                self.unsupported(name.span, "a stored property in an extension");
+                String::new()
+            }
+            TypeMemberKind::Let(l) => {
+                self.unsupported(l.span, "a `let` in an extension of a type the program does not declare");
+                String::new()
+            }
         }
+    }
+
+    /// A member inside its type's Kotlin class, interface or enum class, at `indent`.
+    fn member(&mut self, ty: &str, m: &TypeMember, indent: usize) -> String {
+        let p = pad(indent);
+        let over = if !m.modifiers.is_static && self.decls.is_requirement(ty, Self::member_name(m)) {
+            "override "
+        } else {
+            ""
+        };
+        let vis = format!("{over}{}", Self::visibility(m.visibility));
+        match &m.kind {
+            // `static func ==`: a data class's `==` is structural already.
+            TypeMemberKind::Func(f) if f.name.name == "==" => String::new(),
+            TypeMemberKind::Func(f) if self.actor && !m.modifiers.is_static => {
+                self.actor_method(&vis, f, indent)
+            }
+            TypeMemberKind::Func(f) => self.func(&vis, f, None, indent),
+            TypeMemberKind::Computed { name, ty: rty, body } => {
+                let rt = self.ty(rty);
+                self.locals.push(HashMap::new());
+                let text = match body.stmts.as_slice() {
+                    [Stmt { kind: StmtKind::Expr(e), .. }]
+                        if !matches!(e.kind, ExprKind::If(_) | ExprKind::Match(_)) =>
+                    {
+                        format!("{p}{vis}val {}: {rt}\n{p}  get() = {}\n", kw(&name.name), self.expr(e))
+                    }
+                    stmts => {
+                        let body_text = self.block(stmts, indent + 2, Mode::Value);
+                        format!("{p}{vis}val {}: {rt}\n{p}  get() {{\n{body_text}{p}  }}\n", kw(&name.name))
+                    }
+                };
+                self.locals.pop();
+                text
+            }
+            TypeMemberKind::Let(l) => {
+                let text = self.let_stmt(l, indent);
+                format!("{p}{vis}{}", text.trim_start())
+            }
+            // `static let shared = …`: a companion object's property.
+            TypeMemberKind::Stored { mutable, name, ty: t, value: Some(v) } if m.modifiers.is_static => {
+                let kind = if *mutable { "var" } else { "val" };
+                let t = t.as_ref().map(|t| format!(": {}", self.ty(t))).unwrap_or_default();
+                let v = self.expr(v);
+                format!("{p}{vis}{kind} {}{t} = {v}\n", kw(&name.name))
+            }
+            // A struct's stored properties are its constructor's fields (`struct_decl`).
+            TypeMemberKind::Stored { .. } => String::new(),
+        }
+    }
+
+    fn member_name(m: &TypeMember) -> &str {
+        match &m.kind {
+            TypeMemberKind::Func(f) => &f.name.name,
+            TypeMemberKind::Computed { name, .. } | TypeMemberKind::Stored { name, .. } => &name.name,
+            TypeMemberKind::Let(_) => "",
+        }
+    }
+
+    /// An actor's method: its body runs isolated, on the actor's own serial dispatcher
+    /// (`BloomActor.isolated`), so it is `suspend` to its callers, as Swift's are `async`.
+    fn actor_method(&mut self, vis: &str, f: &FnDecl, indent: usize) -> String {
+        let p = pad(indent);
+        let params = self.params(&f.params, f.func);
+        let ret = match &f.ret {
+            Some(t) => format!(": {}", self.ty(t)),
+            None => String::new(),
+        };
+        self.locals.push(HashMap::new());
+        let saved = self.return_label.replace("isolated".into());
+        let mut body = self.rebinds(&f.params, f.func, indent + 1);
+        let mode = if f.ret.is_some() { Mode::Lambda } else { Mode::Unit };
+        body.push_str(&self.block(&f.body.stmts, indent + 1, mode));
+        self.return_label = saved;
+        self.locals.pop();
+        format!("{p}{vis}suspend fun {}({params}){ret} = isolated {{\n{body}{p}}}\n", kw(&f.name.name))
     }
 
     fn params(&mut self, params: &[Param], func: bool) -> String {
@@ -483,6 +842,7 @@ impl<'a> Emitter<'a> {
         let suspend = if f.is_async { "suspend " } else { "" };
         let composable = if returns_view { "@Composable " } else { "" };
         let recv = receiver.map(|r| format!("{r}.")).unwrap_or_default();
+        let (type_params, where_clause) = self.type_params(f);
         let params = self.params(&f.params, f.func);
         let mut scope = HashMap::new();
         for p in &f.params {
@@ -503,9 +863,45 @@ impl<'a> Emitter<'a> {
         self.locals.pop();
         let p = pad(indent);
         format!(
-            "{p}{composable}{vis}{suspend}fun {recv}{}({params}){ret} {{\n{body}{p}}}\n",
+            "{p}{composable}{vis}{suspend}fun {type_params}{recv}{}({params}){ret}{where_clause} {{\n{body}{p}}}\n",
             kw(&f.name.name)
         )
+    }
+
+    /// A generic function's type parameters and their bounds: `<T : Titled> `, and a
+    /// `where` clause when one has several (`P & Q`, or `where T: P, T: Q`). `Equatable` and
+    /// `Hashable` bound nothing: every Kotlin value has `==` and `hashCode`.
+    fn type_params(&mut self, f: &FnDecl) -> (String, String) {
+        if f.generics.is_empty() {
+            return (String::new(), String::new());
+        }
+        let mut heads = Vec::new();
+        let mut wheres = Vec::new();
+        for g in &f.generics {
+            let mut bounds = Vec::new();
+            for (name, bound) in f.constraints.iter().filter(|(n, _)| n.name == g.name) {
+                let _ = name;
+                match crate::type_name(bound).as_deref() {
+                    Some("Equatable" | "Hashable" | "Sendable") => {}
+                    Some("Comparable") => bounds.push(format!("Comparable<{}>", g.name)),
+                    Some("Codable" | "Encodable" | "Decodable") => {
+                        self.unsupported(bound.span, "a `Codable` bound (a type's witness)");
+                    }
+                    _ => bounds.push(self.ty(bound)),
+                }
+            }
+            match bounds.len() {
+                0 => heads.push(g.name.clone()),
+                1 => heads.push(format!("{} : {}", g.name, bounds[0])),
+                _ => {
+                    heads.push(g.name.clone());
+                    wheres.extend(bounds.into_iter().map(|b| format!("{} : {b}", g.name)));
+                }
+            }
+        }
+        let where_clause =
+            if wheres.is_empty() { String::new() } else { format!(" where {}", wheres.join(", ")) };
+        (format!("<{}> ", heads.join(", ")), where_clause)
     }
 
     fn view(&mut self, vis: &str, v: &ViewDecl) -> String {
@@ -616,22 +1012,22 @@ impl<'a> Emitter<'a> {
             }
             StmtKind::Assign(a) => {
                 let value = self.expr(&a.value);
-                match &a.target.kind {
-                    // `p.likes = v` on a value: a copy with the field changed.
-                    ExprKind::Field(base, field)
-                        if matches!(base.kind, ExprKind::Name(_)) && a.op == AssignOp::Set =>
-                    {
-                        let base = self.expr(base);
-                        format!("{p}{base} = {base}.copy({} = {value})\n", kw(&field.name))
-                    }
-                    _ => {
-                        let target = self.expr(&a.target);
-                        format!("{p}{target} {} {value}\n", a.op.text())
-                    }
-                }
+                // `x op= v` reads the place first: `x = x op v`, so a value's copy is rebuilt.
+                let value = match a.op {
+                    AssignOp::Set => value,
+                    op => format!("{} {} {value}", self.expr(&a.target), op.text().trim_end_matches('=')),
+                };
+                let (place, rebuilt) = self.place(&a.target, value);
+                format!("{p}{place} = {rebuilt}\n")
             }
-            StmtKind::Return(Some(e)) => format!("{p}return {}\n", self.expr(e)),
-            StmtKind::Return(None) => format!("{p}return\n"),
+            StmtKind::Return(Some(e)) => {
+                let label = self.return_label.as_ref().map(|l| format!("@{l}")).unwrap_or_default();
+                format!("{p}return{label} {}\n", self.expr(e))
+            }
+            StmtKind::Return(None) => {
+                let label = self.return_label.as_ref().map(|l| format!("@{l}")).unwrap_or_default();
+                format!("{p}return{label}\n")
+            }
             StmtKind::Defer(_) => unreachable!("handled by block"),
             StmtKind::While(w) => {
                 let cond = self.expr(&w.cond);
@@ -643,6 +1039,17 @@ impl<'a> Emitter<'a> {
                 let name = match &f.pattern.kind {
                     PatternKind::Bind(n) => kw(&n.name),
                     PatternKind::Wildcard => "_".into(),
+                    // `for (i, p) in xs.enumerated()`: Kotlin destructures `withIndex()`'s pairs.
+                    PatternKind::Tuple(items) => {
+                        let names: Vec<String> = items
+                            .iter()
+                            .map(|q| match &q.kind {
+                                PatternKind::Bind(n) => kw(&n.name),
+                                _ => "_".into(),
+                            })
+                            .collect();
+                        format!("({})", names.join(", "))
+                    }
                     _ => self.unsupported(f.pattern.span, "this `for` pattern"),
                 };
                 let body = self.block(&f.body.stmts, indent + 1, Mode::Unit);
@@ -720,6 +1127,46 @@ impl<'a> Emitter<'a> {
         }
         out.push('\n');
         out
+    }
+
+    /// A write to a place, with value semantics: the place's root (a name, or a field of a
+    /// class, which is a reference) and the value rebuilt up to it. `posts[i].likes = v` on
+    /// a list of structs is `posts = posts.replacing(i, posts[i].copy(likes = v))`: each
+    /// struct on the way is copied with its field changed, each list or dictionary replaced.
+    fn place(&mut self, target: &Expr, value: String) -> (String, String) {
+        match &target.kind {
+            ExprKind::Field(base, field) if !self.is_reference(base) => {
+                let b = self.expr(base);
+                self.place(base, format!("{b}.copy({} = {value})", kw(&field.name)))
+            }
+            ExprKind::Index(base, index) => {
+                let b = self.expr(base);
+                let i = self.expr(index);
+                let rebuilt = match self.ty_of(base) {
+                    Some(Ty::Map(_) | Ty::JsMap(..)) => format!("{b} + ({i} to {value})"),
+                    _ => format!("{b}.replacing({i}, {value})"),
+                };
+                if self.is_reference(base) {
+                    return (b, rebuilt);
+                }
+                self.place(base, rebuilt)
+            }
+            _ => (self.expr(target), value),
+        }
+    }
+
+    /// Whether `e` is a class instance (a reference: its fields are written in place) or
+    /// `self` in a class's own members, rather than a value.
+    fn is_reference(&self, e: &Expr) -> bool {
+        if let ExprKind::Name(n) = &e.kind
+            && n == "self"
+        {
+            return self.def_of(e).is_none_or(|d| d.class.is_some());
+        }
+        if let Some(def) = self.def_of(e) {
+            return def.class.is_some();
+        }
+        self.receiver_type(e).is_some_and(|t| self.decls.classes.contains(t.trim_end_matches('?')))
     }
 
     /// An `if` condition: its Kotlin test, and the bindings an `if let` makes in its body.
@@ -804,11 +1251,18 @@ impl<'a> Emitter<'a> {
         let mut has_else = false;
         for arm in &m.arms {
             let (head, binds) = self.arm_head(&arm.pattern, enum_ty.as_ref(), &subject, indent + 2);
-            has_else |= head == "else";
-            let guard = arm.guard.as_ref().map(|g| format!(" -> if ({})", self.expr(g)));
-            if guard.is_some() {
-                self.unsupported(arm.span, "a `where` guard");
-            }
+            has_else |= head == "else" && arm.guard.is_none();
+            // `case .image(let url, _) where url.isEmpty`: Kotlin 2.2's guard condition, the
+            // payload bound inside it as it is inside the body.
+            let guard = match &arm.guard {
+                Some(g) if binds.is_empty() => format!(" if ({})", self.expr(g)),
+                Some(g) => {
+                    let lets: Vec<String> = binds.lines().map(|l| l.trim().to_string()).collect();
+                    format!(" if (run {{ {}; {} }})", lets.join("; "), self.expr(g))
+                }
+                None => String::new(),
+            };
+            let head = if guard.is_empty() { head } else { format!("{head}{guard}") };
             let stmts: Vec<Stmt> = match &arm.body {
                 ArmBody::Expr(e) => vec![Stmt { kind: StmtKind::Expr(e.clone()), span: e.span }],
                 ArmBody::Block(b) => b.stmts.clone(),
@@ -849,6 +1303,8 @@ impl<'a> Emitter<'a> {
             ExprKind::If(i) => self.if_stmt(i, indent, Mode::View, modifier),
             ExprKind::Match(m) => self.match_stmt(m, indent, Mode::View, modifier),
             ExprKind::Paren(inner) => self.view_stmt(inner, indent, modifier),
+            // A view value (`content`, a prop of type `View`): drawn by calling it.
+            ExprKind::Name(n) if matches!(self.ty_of(e), Some(Ty::View(_))) => format!("{p}{}()\n", kw(n)),
             _ => match self.view_expr(e, indent, modifier) {
                 Some(text) => text,
                 None => format!("{p}{}\n", self.unsupported(e.span, "this expression as a view")),
@@ -996,6 +1452,8 @@ impl<'a> Emitter<'a> {
                 }
                 ("NavigationStack", Some("root")) => format!("root = {}", self.expr(&a.value)),
                 (_, Some(l)) => format!("{} = {}", kw(l), self.expr(&a.value)),
+                // A view passed to a node (`Button(Text("Like"))`): a composable lambda.
+                (_, None) if matches!(self.ty_of(&a.value), Some(Ty::View(_))) => self.view_arg(&a.value, indent),
                 (_, None) => self.expr(&a.value),
             };
             if label.is_none() {
@@ -1050,6 +1508,15 @@ impl<'a> Emitter<'a> {
         }
     }
 
+    /// A view value as an argument: `{ Text("Like") }`.
+    fn view_arg(&mut self, e: &Expr, indent: usize) -> String {
+        let p = pad(indent);
+        match self.view_expr(e, indent + 1, None) {
+            Some(text) => format!("{{\n{text}{p}}}"),
+            None => self.expr(e),
+        }
+    }
+
     /// A closure that draws a view: `{ post -> PostRow(…) }`.
     fn view_closure(&mut self, c: &Closure, indent: usize) -> String {
         let p = pad(indent);
@@ -1062,6 +1529,9 @@ impl<'a> Emitter<'a> {
     // ---- expressions --------------------------------------------------------------
 
     fn receiver_type(&self, e: &Expr) -> Option<String> {
+        if let Some(t) = self.ty_of(e) {
+            return Some(self.bloom_name(t));
+        }
         if let Some(t) = self.type_at(e.span) {
             return Some(t.to_string());
         }
@@ -1166,7 +1636,16 @@ impl<'a> Emitter<'a> {
     }
 
     fn implicit(&mut self, e: &Expr, name: &Ident) -> String {
-        match self.type_at(e.span).map(|t| t.trim_end_matches('?').to_string()) {
+        // A token where the spec takes one (`.muted`, `.lg`): the runtime's token constant.
+        if let Some(Ty::Strings(set)) = self.ty_of(e).map(|t| match t {
+            Ty::Option(inner) => inner.as_ref(),
+            t => t,
+        }) && set.token
+        {
+            return format!("{}.{}", token_set_class(&set.name), token_name(&name.name));
+        }
+        let ty = self.ty_of(e).map(|t| self.bloom_name(t)).or_else(|| self.type_at(e.span).map(String::from));
+        match ty.map(|t| t.trim_end_matches('?').to_string()) {
             Some(ty) => match self.decls.enums.get(&ty) {
                 Some(info) if info.has_payload() => format!("{ty}.{}", upper_first(&name.name)),
                 _ => format!("{ty}.{}", kw(&name.name)),
@@ -1240,11 +1719,9 @@ impl<'a> Emitter<'a> {
             ExprKind::Index(base, index) => format!("{}[{}]", self.expr(base), self.expr(index)),
             ExprKind::Call(call) => self.call(e, call),
             ExprKind::Closure(c) => self.closure(c),
+            ExprKind::If(i) if matches!(i.cond, Cond::Let(..)) => self.if_let_value(i),
             ExprKind::If(i) => {
-                let (cond, bind) = self.cond(&i.cond, 0);
-                if !bind.is_empty() {
-                    return self.unsupported(e.span, "`if let` as a value");
-                }
+                let (cond, _) = self.cond(&i.cond, 0);
                 let then = self.value_of(&i.then.stmts);
                 let otherwise = match i.otherwise.as_deref() {
                     Some(Else::Block(b)) => self.value_of(&b.stmts),
@@ -1267,6 +1744,24 @@ impl<'a> Emitter<'a> {
         }
     }
 
+    /// `if let x = v { a } else { b }` as a value: `run { val x = v; if (x != null) a else b }`,
+    /// so the binding is the smart-cast value in `a` and nothing outside.
+    fn if_let_value(&mut self, i: &IfExpr) -> String {
+        let Cond::Let(pat, value) = &i.cond else { unreachable!("an if let") };
+        let PatternKind::Bind(n) = &pat.kind else {
+            return self.unsupported(pat.span, "this `if let` pattern");
+        };
+        let v = self.expr(value);
+        let then = self.value_of(&i.then.stmts);
+        let otherwise = match i.otherwise.as_deref() {
+            Some(Else::Block(b)) => self.value_of(&b.stmts),
+            Some(Else::If(x)) => self.expr(x),
+            None => "Unit".into(),
+        };
+        let name = kw(&n.name);
+        format!("run {{ val {name} = {v}; if ({name} != null) {then} else {otherwise} }}")
+    }
+
     fn value_of(&mut self, stmts: &[Stmt]) -> String {
         match stmts {
             [Stmt { kind: StmtKind::Expr(e), .. }] => self.expr(e),
@@ -1287,9 +1782,14 @@ impl<'a> Emitter<'a> {
         // `PostKind.text`: a payload enum's case without a payload is an object.
         if let ExprKind::Name(n) = &base.kind
             && let Some(info) = self.decls.enums.get(n)
-            && info.has_payload()
         {
-            return format!("{n}.{}", upper_first(&field.name));
+            // `PrefKey.allCases` (`CaseIterable`): an enum class's `entries`.
+            if field.name == "allCases" {
+                return format!("{n}.entries");
+            }
+            if info.has_payload() {
+                return format!("{n}.{}", upper_first(&field.name));
+            }
         }
         match field.name.as_str() {
             "count" if list => format!("{b}.size"),
@@ -1330,6 +1830,14 @@ impl<'a> Emitter<'a> {
                 let params = self.decls.methods.get(&(recv_ty.clone(), method.name.clone())).cloned();
                 let b = self.expr(base);
                 let args = self.args_by(params.as_deref(), call);
+                // Swift's `reduce(_ initial:, _ next:)` is Kotlin's `fold`.
+                if method.name == "reduce" && call.args.len() + usize::from(call.trailing.is_some()) == 2 {
+                    let args = self.args_by(None, call);
+                    return format!("{b}.fold({})", args.join(", "));
+                }
+                if method.name == "enumerated" && call.args.is_empty() {
+                    return format!("{b}.withIndex()");
+                }
                 let name = match (recv_ty.starts_with('['), recv_ty == "String", method.name.as_str()) {
                     (_, true, "lowercased") => "lowercase",
                     (_, true, "uppercased") => "uppercase",
@@ -1345,6 +1853,20 @@ impl<'a> Emitter<'a> {
                 format!("{callee}({})", args.join(", "))
             }
         }
+    }
+}
+
+/// The runtime's class for one of the spec's token sets, by the set's name.
+fn token_set_class(set: &str) -> String {
+    match set {
+        "color" | "colorRole" | "foreground" => "Colors".into(),
+        "space" | "spacing" => "Space".into(),
+        "font" | "textStyle" => "Font".into(),
+        "corner" | "radius" => "Corner".into(),
+        "tone" => "Tone".into(),
+        "controlSize" | "size" => "ControlSize".into(),
+        "weight" | "fontWeight" => "Weight".into(),
+        other => upper_first(other),
     }
 }
 

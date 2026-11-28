@@ -1,6 +1,31 @@
 # Backends nativos para `.bloom`: resumen
 
-Borrador del 2026-11-28. El detalle y los números están en [ADR 0003](0003-native-backends.md).
+Aceptado el 2026-11-28. El detalle y los números están en [ADR 0003](0003-native-backends.md);
+el código del prototipo está en el PR #1067, que se revisa aparte.
+
+## La decisión: nativo del todo, Android e iOS
+
+- `.bloom` se compila directamente a **Kotlin + Jetpack Compose en Android** y a **Swift +
+  SwiftUI en iOS**. En un destino nativo no hay JavaScript en el dispositivo: ni Hermes, ni
+  React Native, ni bundle. **La web sigue con el backend de TypeScript.**
+- Un solo parser y un solo checker; tres backends (TypeScript, Kotlin, Swift) sobre el mismo
+  programa comprobado, con una sola batería de conformidad para los tres.
+- **Android e iOS en paralelo.** iOS refleja la API del runtime de Android, acordada en un
+  documento compartido (`docs/native-runtime-api.mdx`).
+- Cada plataforma recibe: el backend para todo el lenguaje 2.0, BloomUI completo con paridad de
+  píxeles, la biblioteca estándar (HTTP, `Codable`, almacenamiento, navegación y deep links,
+  imágenes y vídeo, fechas y formatos idénticos a `Intl`, temporizadores, `.task`) y
+  `bloom build android|ios --target native`, una app Gradle o Xcode sin React Native.
+- **Migración por islas:** una pantalla nativa vive dentro de la app de React Native actual hasta
+  que toda la app es `.bloom`. Mention va primero, y su feed el primero de todo.
+- **Hitos (Android; iOS los replica en el Mac):**
+  - **M1:** el feed de Mention como isla Compose con paridad de píxeles, medido en el Pixel 8a.
+  - **M2:** Notificaciones, Perfil y el detalle de un post como islas.
+  - **M3:** Mention nativa entera, cuando sus módulos sean 100 % `.bloom`. Para eso el SDK de
+    servicios de Oxy (`@oxyhq/services`) también tiene que existir en Bloom.
+- **Decidido a la vez:** `Int` de 64 bits con desbordamiento que se detiene, los efectos corren
+  tras aplicar el cambio y antes del siguiente fotograma, y la fila de `VirtualList` se tipa
+  `VirtualListRow<T>`.
 
 ## La pregunta
 
@@ -45,7 +70,10 @@ de la app; por eso Static Hermes no lo arreglaba (ADR 0002).
   se compila nativo lo que es 100 % Bloom.
 - Las pantallas nativas no se actualizan por OTA, solo por las tiendas.
 
-## Recomendación: híbrido, en dos pasos, primero Android
+## La recomendación del prototipo (superada por la decisión)
+
+Se conserva tal cual; la decisión va más allá: las dos plataformas ya, y la app nativa entera como
+objetivo.
 
 1. **Sí al backend nativo como destino**, no como reescritura. La web y React Native siguen con
    TypeScript.
