@@ -548,6 +548,9 @@ pub struct Checker<'o> {
     /// A text run's place (`Text(…)`, `RawText(…)`): a conditional there may be a view in one
     /// branch and a string in the other (TS's `<Text>{c ? <Link/> : s}</Text>`).
     pub(super) run_slots: HashSet<ExprId>,
+    /// JS's globals imported from "js" (`Number`, `Math`): functions and namespaces, never a
+    /// TS component, whatever their case.
+    pub(super) js_globals: HashSet<LocalId>,
     /// The pairs of TS object types being compared field by field (a recursive interface
     /// fits itself while it is compared).
     structural: Vec<(DefId, DefId)>,
@@ -687,6 +690,7 @@ impl<'o> Checker<'o> {
             ref_object: false,
             child_slots: HashSet::default(),
             run_slots: HashSet::default(),
+            js_globals: HashSet::default(),
             structural: Vec::new(),
             closure_throws: false,
             paths: Vec::new(),
@@ -2654,6 +2658,7 @@ impl<'o> Checker<'o> {
                     let local = spec.local().clone();
                     let value = Ty::Foreign(format!("typeof globalThis.{}", spec.name.name).into());
                     let id = self.declare_unique(&local, value, LocalKind::Import { hook: false });
+                    self.js_globals.insert(id);
                     // A JS class is constructed by a call: `Date(x)` is `new Date(x)`.
                     if JS_CLASSES.contains(&spec.name.name.as_str()) {
                         self.out.constructors.insert(id);
