@@ -1724,7 +1724,10 @@ impl Tr<'_> {
         }
         let children = &args[split..];
         let conditional = children.iter().any(|a| a.as_expression().is_some_and(|e| is_conditional_child(e)));
-        let builder = !children.is_empty() && (children.len() >= 2 || conditional || STACKS.contains(&ctor));
+        // A spread child (`...xs.map(…)`) is a `for` line, which only a builder takes.
+        let spread = children.iter().any(|a| matches!(a, Argument::SpreadElement(_)));
+        let builder =
+            !children.is_empty() && (children.len() >= 2 || conditional || spread || STACKS.contains(&ctor));
         let leading = if builder { &args[..split] } else { &args[..] };
         let mut values = Vec::new();
         for arg in leading {
