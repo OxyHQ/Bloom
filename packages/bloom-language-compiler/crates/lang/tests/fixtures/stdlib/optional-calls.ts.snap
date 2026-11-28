@@ -1,0 +1,106 @@
+import { Double$$nan, Int$$zero } from "../../.bloom/std/Bloom/Math.bloom";
+import { Date$$init$_$strategy, Date$$init$millisecondsSince1970, Date$$init$timeIntervalSince1970, Date$formatted, Date$timeIntervalSince, Date$timeIntervalSince1970 } from "../../.bloom/std/Bloom/Time.bloom";
+
+export interface Pair {
+  readonly n: number;
+  readonly next?: Pair | undefined;
+  readonly xs: readonly number[];
+  readonly f?: ((p0: number) => number) | undefined;
+}
+
+export function Pair$twice(self: Pair, k: number): number {
+return self.n * k;
+}
+
+export function Pair$step(self: Pair): Pair | undefined {
+return self.next;
+}
+
+export function Pair$items(self: Pair): readonly number[] {
+return self.xs;
+}
+
+export function Pair$half(self: Pair): number {
+return Math.trunc(self.n / 2);
+}
+
+export interface Named$Witness<Self> {
+  name(self: Self): string;
+}
+export type Named = { readonly self: unknown; readonly w: Named$Witness<unknown> };
+
+export interface Tag {
+  readonly text: string;
+}
+
+export function Tag$name(self: Tag): string {
+return self.text;
+}
+
+export function twice(p: Pair | undefined): number {
+return (p == null ? undefined : Pair$twice(p, 2)) ?? 0;
+}
+
+export function chained(p: Pair | undefined): number | undefined {
+const $t0 = (p == null ? undefined : Pair$step(p));
+return ($t0 == null ? undefined : Pair$twice($t0, 3));
+}
+
+export function throughField(p: Pair | undefined): number | undefined {
+const $t1 = p?.next;
+return ($t1 == null ? undefined : Pair$twice($t1, 5));
+}
+
+export function getter(p: Pair | undefined): number | undefined {
+const $t2 = (p == null ? undefined : Pair$step(p));
+return ($t2 == null ? undefined : Pair$half($t2));
+}
+
+export function stored(p: Pair | undefined): number | undefined {
+return p?.f?.(2);
+}
+
+export function subscripted(p: Pair | undefined): number | undefined {
+return p?.xs[0];
+}
+
+export function calledSubscript(p: Pair | undefined): number | undefined {
+return (p == null ? undefined : Pair$items(p))?.[0];
+}
+
+export function witnessed<T>(t: T | undefined, $w_T_Named: Named$Witness<T>): string | undefined {
+return (t == null ? undefined : $w_T_Named.name(t));
+}
+
+export function tagName(t: Tag | undefined): string | undefined {
+return witnessed(t, Tag$$Named);
+}
+
+export function since(d: Date | undefined): number {
+return (d == null ? undefined : Date$timeIntervalSince(d, Date$$init$timeIntervalSince1970(0.0))) ?? (-1.0);
+}
+
+export function shown(s: string): string {
+const $t3 = ((() => {
+try {
+return Date$$init$_$strategy(s, "iso8601");
+} catch {
+return undefined;
+}
+})());
+return ($t3 == null ? undefined : Date$formatted($t3, undefined, "numeric", "omitted", "en", "UTC")) ?? "Invalid Date";
+}
+
+export function orNaN(x: number | undefined): number {
+return x ?? (Double$$nan);
+}
+
+export function orZero(x: number | undefined): number {
+return x ?? (Int$$zero);
+}
+
+export function secondsOrNaN(d: Date | undefined): number {
+return (d == null ? undefined : Date$timeIntervalSince1970(d)) ?? (Double$$nan);
+}
+
+export const Tag$$Named: Named$Witness<Tag> = { name: Tag$name };

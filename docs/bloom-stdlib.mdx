@@ -207,6 +207,7 @@ The length of the vector (`a`, `b`).
 - `static let e: Double`: Euler's number.
 - `static let infinity: Double`: Positive infinity (JS's `Infinity`): greater than every finite value.
 - `static let nan: Double`: Not a number (JS's `NaN`): the result of an undefined operation, unequal to itself.
+- `static let zero: Double`: Zero (Swift's `AdditiveArithmetic.zero`): `x ?? .zero`.
 - `var squareRoot: Double`: The square root.
 - `var isFinite: Bool`: Whether the value is neither infinite nor NaN.
 - `var isNaN: Bool`: Whether the value is NaN.
@@ -216,6 +217,7 @@ The length of the vector (`a`, `b`).
 
 ### `extension Int`
 
+- `static let zero: Int`: Zero (Swift's `AdditiveArithmetic.zero`): `x ?? .zero`.
 - `func formatted(currency: String? = none, locale: String = "") -> String`: The value as a person in `locale` writes it (`1234` is `1,234` in English); with `currency`, in that currency (`$1,234.00`).
 - `func compact(locale: String = "") -> String`: Compact (`1.2K`, `3.4M`): how Mention shows counts.
 - `var isEven: Bool`: Whether the value is even.

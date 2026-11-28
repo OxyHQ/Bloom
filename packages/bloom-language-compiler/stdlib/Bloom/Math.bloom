@@ -56,6 +56,9 @@ extension Double {
   /// Not a number (JS's `NaN`): the result of an undefined operation, unequal to itself.
   public static let nan: Double = NAN
 
+  /// Zero (Swift's `AdditiveArithmetic.zero`): `x ?? .zero`.
+  public static let zero: Double = 0
+
   /// The square root.
   public var squareRoot: Double { sqrt(self) }
 
@@ -105,6 +108,9 @@ extension Double {
 }
 
 extension Int {
+  /// Zero (Swift's `AdditiveArithmetic.zero`): `x ?? .zero`.
+  public static let zero: Int = 0
+
   /// The value as a person in `locale` writes it (`1234` is `1,234` in English); with
   /// `currency`, in that currency (`$1,234.00`).
   public func formatted(currency: String? = none, locale: String = "") -> String {

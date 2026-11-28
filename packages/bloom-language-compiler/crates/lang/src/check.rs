@@ -5034,7 +5034,12 @@ impl<'o> Checker<'o> {
             }
             ExprKind::Index(object, index) => {
                 let ty = self.expr(object, None);
-                match self.resolve(&ty) {
+                // `q?.xs[0]`: a subscript is a link of the chain, as Swift's is.
+                let (ty, chained) = match self.unchain(object, &ty) {
+                    Some(inner) => (inner, true),
+                    None => (ty, false),
+                };
+                let read = match self.resolve(&ty) {
                     // `xs[i]` is the element, as in Swift: out of range is a trap (dev
                     // builds check it), and `xs.at(i)` is the optional read.
                     Ty::List(elem) => {
@@ -5125,7 +5130,8 @@ impl<'o> Checker<'o> {
                         );
                         Ty::Unknown
                     }
-                }
+                };
+                if chained { self.rechain(expr, read) } else { read }
             }
             ExprKind::Call(call) => self.call(expr, call, expected_resolved.as_ref()),
             // `{}` where a struct (or a patch) is expected is an empty record, not a closure;
@@ -5428,6 +5434,14 @@ impl<'o> Checker<'o> {
             {
                 ty
             }
+            // `.nan` where a `Double` is expected, `.zero` where an `Int` is: a static member of
+            // the built-in type's extension.
+            other
+                if let Some(owner) = self.extension_owner(other)
+                    && let Some(ty) = self.static_member(expr, &owner, name) =>
+            {
+                ty
+            }
             _ => {
                 self.report(
                     Diagnostic::error("B0212", expr.span, format!("which type's case is `.{}`?", name.name))
@@ -5697,7 +5711,14 @@ impl<'o> Checker<'o> {
                         // A literal's optional (`c ? "x" : none`) falls back to any string, as TS's
                         // `"x" | ""`: the two are joined (R3).
                         let literal = matches!(self.resolve(&inner), Ty::Strings(set) if !set.token);
+                        // `x ?? .nan`: an implicit member is the left side's type's, as in Swift.
+                        let implicit = matches!(rhs.kind, ExprKind::ImplicitMember(_))
+                            || (matches!(rhs.kind, ExprKind::Call(_) | ExprKind::Field(..))
+                                && implicit_root(rhs).is_some());
                         let hint = match expected {
+                            _ if implicit && !matches!(self.resolve(&inner), Ty::Var(_) | Ty::Unknown) => {
+                                (*inner).clone()
+                            }
                             Some(e) => e.clone(),
                             None if literal => Ty::Str,
                             None => (*inner).clone(),
