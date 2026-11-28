@@ -41,6 +41,18 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                 Some((start, end + 2, format!("formatted({digits})")))
             }
             ("B0205", "size") if collection => Some((start, end, "count".to_string())),
+            // `a === b` on what has no equality (a TS object holding a function, a class
+            // instance): JS compared the references, which is Swift's `===` (`!==`).
+            ("B0210", _)
+                if let Some(op) = ["==", "!="].into_iter().find(|op| d.message.starts_with(&format!("`{op}` cannot compare")))
+                    // An object that holds what has no equality (a function); a type parameter
+                    // or a value has no identity either (B0210 again).
+                    && d.message.contains(" (it holds ")
+                    && text.matches(&format!(" {op} ")).count() == 1 =>
+            {
+                let at = start + text.find(&format!(" {op} ")).unwrap_or_default() + 1;
+                Some((at, at + 2, format!("{op}=")))
+            }
             // `m.values()`, `m.keys()`, `m.entries()`: a Bloom `Map`/`Set`'s lists.
             ("B0209", "values" | "keys" | "entries") if collection && source[end..].starts_with("()") => {
                 Some((start, end + 2, text.to_string()))
@@ -2282,27 +2294,6 @@ fn proven_operand(source: &str, start: usize, text: &str) -> bool {
     simple && (before.contains(&format!("{path} != none")) || before.contains(&format!("{text} != none")))
 }
 
-#[cfg(test)]
-mod tests {
-    use bloom_lang::{Diagnostic, Span};
-
-    fn fixed(source: &str, code: &'static str, at: &str, message: &str) -> Option<String> {
-        let start = source.find(at).expect("the span") as u32;
-        let span = Span { start, end: start + at.len() as u32 };
-        super::fix(source, &[Diagnostic::error(code, span, message)], "")
-    }
-
-    // The standard library's (`Core.bloom`), which a package's files see: a golden is not in one.
-    #[test]
-    fn trim_end_and_start_are_the_standard_librarys() {
-        let source = "let a = name.trimEnd()\nlet b = name.trimStart()\n";
-        let end = fixed(source, "B0209", "trimEnd", "`String` has no method `trimEnd`");
-        assert_eq!(end.as_deref(), Some("let a = name.trimmingEnd()\nlet b = name.trimStart()\n"));
-        let start = fixed(source, "B0209", "trimStart", "`String` has no method `trimStart`");
-        assert_eq!(start.as_deref(), Some("let a = name.trimEnd()\nlet b = name.trimmingStart()\n"));
-    }
-}
-
 /// The callee of the call whose arguments `at` is inside (`xs.slice` for `xs.slice(0, |n)`).
 fn enclosing_call(source: &str, at: usize) -> Option<&str> {
     let mut depth = 0usize;
@@ -2323,4 +2314,25 @@ fn enclosing_call(source: &str, at: usize) -> Option<&str> {
         }
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use bloom_lang::{Diagnostic, Span};
+
+    fn fixed(source: &str, code: &'static str, at: &str, message: &str) -> Option<String> {
+        let start = source.find(at).expect("the span") as u32;
+        let span = Span { start, end: start + at.len() as u32 };
+        super::fix(source, &[Diagnostic::error(code, span, message)], "")
+    }
+
+    // The standard library's (`Core.bloom`), which a package's files see: a golden is not in one.
+    #[test]
+    fn trim_end_and_start_are_the_standard_librarys() {
+        let source = "let a = name.trimEnd()\nlet b = name.trimStart()\n";
+        let end = fixed(source, "B0209", "trimEnd", "`String` has no method `trimEnd`");
+        assert_eq!(end.as_deref(), Some("let a = name.trimmingEnd()\nlet b = name.trimStart()\n"));
+        let start = fixed(source, "B0209", "trimStart", "`String` has no method `trimStart`");
+        assert_eq!(start.as_deref(), Some("let a = name.trimEnd()\nlet b = name.trimmingStart()\n"));
+    }
 }

@@ -2114,8 +2114,13 @@ impl Tr<'_> {
             }
             let ty = self.ty(&t.type_annotation);
             // A function's `ReactNode` parameter takes nothing too (`undefined`, `null`): `View?`.
-            let ty =
-                if ty == "View" && self.is_react_node(&t.type_annotation) { "View?".to_string() } else { ty };
+            // One that every call gives text and that only goes to a TS component's prop is that
+            // text (`Tr::text_params`): the component draws it in its own `Text`, as the TS did.
+            let ty = if ty == "View" && self.is_react_node(&t.type_annotation) {
+                if self.text_params.contains(&param.span.start) { "String?" } else { "View?" }.to_string()
+            } else {
+                ty
+            };
             let declared =
                 if param.optional && param.initializer.is_none() { optional_ty(&ty) } else { ty.clone() };
             self.scope.decl.insert(name.clone(), declared);

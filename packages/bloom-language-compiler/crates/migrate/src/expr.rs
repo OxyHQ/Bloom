@@ -261,6 +261,22 @@ impl Tr<'_> {
                 format!("{object}[{}]", self.expr(&m.expression))
             }
             Expression::ConditionalExpression(c) => {
+                // `e instanceof Error ? e.message : fallback`: a thrown JS `Error` is the stdlib's
+                // `JSError`, so `(e as? JSError)?.message ?? fallback`.
+                if let Expression::BinaryExpression(b) = c.test.without_parentheses()
+                    && b.operator == BinaryOperator::Instanceof
+                    && let Expression::Identifier(class) = b.right.without_parentheses()
+                    && class.name == "Error"
+                    && let Expression::Identifier(value) = b.left.without_parentheses()
+                    && let Expression::StaticMemberExpression(m) = c.consequent.without_parentheses()
+                    && matches!(m.property.name.as_str(), "message" | "name")
+                    && let Expression::Identifier(read) = m.object.without_parentheses()
+                    && read.name == value.name
+                {
+                    let error = self.name(&value.name, value.span);
+                    let fallback = self.expr(&c.alternate);
+                    return format!("({error} as? JSError)?.{} ?? {fallback}", m.property.name);
+                }
                 let test = self.test(&c.test, false);
                 let a = self.expr(&c.consequent);
                 // A conditional in the first branch keeps its parentheses (`a ? (b ? c : d) : e`).
@@ -575,6 +591,19 @@ impl Tr<'_> {
     }
 
     fn static_member(&mut self, object: &Expression, property: &str, optional: bool, _span: Span) -> String {
+        // `Number.NaN`, `Number.MAX_SAFE_INTEGER`, …: the stdlib's or the number itself.
+        if let Expression::Identifier(o) = object.without_parentheses()
+            && o.name == "Number"
+            && !self.imported.contains("Number")
+        {
+            match property {
+                "NaN" => return "Double.nan".to_string(),
+                "POSITIVE_INFINITY" => return "Double.infinity".to_string(),
+                "MAX_SAFE_INTEGER" => return "9007199254740991".to_string(),
+                "MIN_SAFE_INTEGER" => return "(0 - 9007199254740991)".to_string(),
+                _ => {}
+            }
+        }
         // `React.Children.toArray(node).length`: a `View` is one child.
         if property == "length"
             && let Expression::CallExpression(call) = object.without_parentheses()
@@ -1065,6 +1094,9 @@ impl Tr<'_> {
         if let Some(text) = self.date_call(call) {
             return text;
         }
+        if let Some(text) = self.number_call(call) {
+            return text;
+        }
         // `new Intl.NumberFormat(…).format(x)`: `x.formatted(…)`.
         if let Some(text) = self.intl_format_call(call) {
             return text;
@@ -1086,6 +1118,57 @@ impl Tr<'_> {
         let text = self.call_inner(call);
         self.ts_args = saved;
         text
+    }
+
+    /// JS's `Number(x)` where the file says what `x` is, and `Number.isNaN(x)` of a number: a
+    /// string is `s.trimmed().isEmpty ? 0 : (Float(s) ?? Double.nan)` (JS reads a blank string as 0
+    /// and text that is no number as `NaN`; `Float(s)` is `none` for both), an `Int` is
+    /// `n.toFloat()`, a `Float` itself. A `Number(x)` of a TS value stays JS's.
+    fn number_call(&mut self, call: &CallExpression) -> Option<String> {
+        let [arg] = call.arguments.as_slice() else { return None };
+        let value = arg.as_expression()?;
+        match &call.callee {
+            Expression::Identifier(id) if id.name == "Number" && !self.imported.contains("Number") => {
+                let ty = match value.without_parentheses() {
+                    Expression::StringLiteral(_) | Expression::TemplateLiteral(_) => "String".to_string(),
+                    Expression::NumericLiteral(_) => "Float".to_string(),
+                    e => self.declared_type(e)?,
+                };
+                let text = self.expr(value);
+                let text = if is_postfix_text(&text) { text } else { format!("({text})") };
+                match ty.as_str() {
+                    "String" | "String?"
+                        if matches!(
+                            value.without_parentheses(),
+                            Expression::Identifier(_) | Expression::StaticMemberExpression(_)
+                        ) =>
+                    {
+                        Some(format!("({text}.trimmed().isEmpty ? 0 : (Float({text}) ?? Double.nan))"))
+                    }
+                    "Int" => Some(format!("{text}.toFloat()")),
+                    "Float" => Some(text),
+                    _ => None,
+                }
+            }
+            Expression::StaticMemberExpression(m)
+                if m.property.name == "isNaN"
+                    && matches!(&m.object, Expression::Identifier(o) if o.name == "Number" && !self.imported.contains("Number")) =>
+            {
+                let number = match value.without_parentheses() {
+                    Expression::CallExpression(c) => {
+                        matches!(&c.callee, Expression::StaticMemberExpression(g) if g.property.name == "getTime")
+                    }
+                    e => matches!(self.declared_type(e).as_deref(), Some("Float")),
+                };
+                if !number {
+                    return None;
+                }
+                let text = self.expr(value);
+                let text = if is_postfix_text(&text) { text } else { format!("({text})") };
+                Some(format!("{text}.isNaN"))
+            }
+            _ => None,
+        }
     }
 
     /// Whether `callee` is a TS import's (or a member of one): not the language's or React's.

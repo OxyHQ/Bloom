@@ -304,6 +304,13 @@ impl Tr<'_> {
             for child in f.children.iter().filter(|c| !is_blank(c)) {
                 match child {
                     JSXChild::ExpressionContainer(e) => {
+                        // `{' · '}`: its text in the string.
+                        if let Some(Expression::StringLiteral(s)) =
+                            e.expression.as_expression().map(|x| x.without_parentheses())
+                        {
+                            out.push_str(&crate::expr::escape(s.value.as_str().unwrap_or_default()));
+                            continue;
+                        }
                         let value = self.expr(e.expression.to_expression());
                         out.push_str(&format!("${{{value}}}"));
                     }

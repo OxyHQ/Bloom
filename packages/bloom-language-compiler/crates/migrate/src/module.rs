@@ -143,6 +143,10 @@ pub struct Tr<'s> {
     /// Module functions taking one destructured object, every call passing one object or
     /// a name: labelled parameters (key, type, optional), in the pattern's order.
     pub labelled: HashMap<String, Vec<(String, String, bool)>>,
+    /// The `ReactNode` parameters (by span start) of a local function that only hands them to a
+    /// TS component's prop, every call passing text (a string, a fragment of text, nothing):
+    /// `String?`, so the component draws the same text the TS gave it (no nested `Text`).
+    pub text_params: HashSet<u32>,
     /// Views whose props end in a rest (`{ label, ...menu }: P & { label }`): the rest's
     /// name and the own props; a call's other fields are the rest's record.
     pub rest_views: HashMap<String, (String, Vec<String>)>,
@@ -414,6 +418,7 @@ pub fn new_tr<'s>(source: &'s str, filename: &str, comments: Comments) -> Tr<'s>
         scope: Scope::default(),
         wrapped: HashSet::new(),
         labelled: HashMap::new(),
+        text_params: HashSet::new(),
         rest_views: HashMap::new(),
         rest_bases: HashMap::new(),
         tanstack: HashSet::new(),
@@ -534,6 +539,7 @@ pub fn translate(source: &str, filename: &str, path: &str) -> Translated {
         }
     }
     tr.scan_labelled(&program.body);
+    tr.scan_text_params(&program.body);
     tr.scan_tanstack(&program.body);
     tr.scan_throwing(&program);
     let mut items = Vec::new();
@@ -982,6 +988,157 @@ impl<'s> Tr<'s> {
     /// [`Tr::labelled`]: a module function `f({ a, b = 1 }: P)` that nothing exports or reads
     /// except as `f({ … })` or `f(name)` takes `a`/`b` as labelled parameters, so a caller
     /// that holds the fields passes them, with no object built.
+    fn scan_text_params(&mut self, body: &[Statement]) {
+        use oxc_ast::ast::{JSXAttributeValue, JSXChild, JSXElementName, JSXExpression};
+        use oxc_ast_visit::Visit;
+        /// Text TS hands a `ReactNode`: a string, nothing, or a fragment of text runs. A call or a
+        /// name is taken as text too: bloomc then checks it is a `String` (a node is B0201).
+        fn texty(e: &Expression) -> bool {
+            match e.without_parentheses() {
+                Expression::StringLiteral(_)
+                | Expression::TemplateLiteral(_)
+                | Expression::NullLiteral(_) => true,
+                Expression::Identifier(id) => id.name != "children",
+                Expression::CallExpression(c) => !matches!(
+                    &c.callee,
+                    Expression::Identifier(f) if matches!(f.name.as_str(), "toElement" | "Embed" | "createElement")
+                ),
+                Expression::ConditionalExpression(c) => texty(&c.consequent) && texty(&c.alternate),
+                Expression::JSXFragment(f) => {
+                    !f.children.is_empty()
+                        && f.children.iter().all(|child| match child {
+                            JSXChild::Text(_) => true,
+                            JSXChild::ExpressionContainer(c) => match &c.expression {
+                                JSXExpression::EmptyExpression(_) => false,
+                                e => e.as_expression().is_some_and(|e| {
+                                    !matches!(
+                                        e.without_parentheses(),
+                                        Expression::JSXElement(_) | Expression::JSXFragment(_)
+                                    )
+                                }),
+                            },
+                            _ => false,
+                        })
+                }
+                _ => false,
+            }
+        }
+        #[derive(Default)]
+        struct Scan {
+            refs: HashMap<String, usize>,
+            /// name -> each call's arguments: whether each is text.
+            calls: HashMap<String, Vec<Vec<bool>>>,
+        }
+        impl<'a> Visit<'a> for Scan {
+            fn visit_identifier_reference(&mut self, id: &oxc_ast::ast::IdentifierReference<'a>) {
+                *self.refs.entry(id.name.to_string()).or_default() += 1;
+            }
+            fn visit_call_expression(&mut self, call: &oxc_ast::ast::CallExpression<'a>) {
+                if let Expression::Identifier(id) = &call.callee {
+                    // A hook's dependency list reads the function without calling it.
+                    if id.name.starts_with("use") {
+                        for arg in &call.arguments {
+                            if !matches!(arg, Argument::ArrayExpression(_)) {
+                                self.visit_argument(arg);
+                            }
+                        }
+                        return;
+                    }
+                    let texts = call.arguments.iter().map(|a| a.as_expression().is_some_and(texty)).collect();
+                    self.calls.entry(id.name.to_string()).or_default().push(texts);
+                }
+                oxc_ast_visit::walk::walk_call_expression(self, call);
+            }
+        }
+        /// Every read of `name` in `body` is a TS component's prop value (`<Card meta={name} />`).
+        #[derive(Default)]
+        struct PropOnly {
+            name: String,
+            reads: usize,
+            props: usize,
+        }
+        impl<'a> Visit<'a> for PropOnly {
+            fn visit_identifier_reference(&mut self, id: &oxc_ast::ast::IdentifierReference<'a>) {
+                if id.name.as_str() == self.name {
+                    self.reads += 1;
+                }
+            }
+            fn visit_jsx_opening_element(&mut self, el: &oxc_ast::ast::JSXOpeningElement<'a>) {
+                let component = match &el.name {
+                    JSXElementName::IdentifierReference(id) => {
+                        id.name.starts_with(|c: char| c.is_ascii_uppercase())
+                    }
+                    JSXElementName::MemberExpression(_) => true,
+                    _ => false,
+                };
+                if component {
+                    for attr in &el.attributes {
+                        if let oxc_ast::ast::JSXAttributeItem::Attribute(a) = attr
+                            && let Some(JSXAttributeValue::ExpressionContainer(c)) = &a.value
+                            && let Some(Expression::Identifier(id)) = c.expression.as_expression()
+                            && id.name.as_str() == self.name
+                        {
+                            self.props += 1;
+                        }
+                    }
+                }
+                oxc_ast_visit::walk::walk_jsx_opening_element(self, el);
+            }
+        }
+        let mut scan = Scan::default();
+        for statement in body {
+            scan.visit_statement(statement);
+        }
+        /// The local functions (`const f = (…) => …`, `const f = useCallback((…) => …, deps)`):
+        /// each `ReactNode` parameter's index, span start, and whether a TS prop is its only read.
+        struct Locals<'t, 'r> {
+            tr: &'t Tr<'r>,
+            found: Vec<(String, usize, u32)>,
+        }
+        impl<'a> Visit<'a> for Locals<'_, '_> {
+            fn visit_variable_declarator(&mut self, d: &oxc_ast::ast::VariableDeclarator<'a>) {
+                if let BindingPattern::BindingIdentifier(id) = &d.id {
+                    let arrow = match d.init.as_ref().map(|e| e.without_parentheses()) {
+                        Some(Expression::ArrowFunctionExpression(a)) => Some(&**a),
+                        Some(Expression::CallExpression(c)) if matches!(&c.callee, Expression::Identifier(f) if f.name == "useCallback") => {
+                            match c.arguments.first() {
+                                Some(Argument::ArrowFunctionExpression(a)) => Some(&**a),
+                                _ => None,
+                            }
+                        }
+                        _ => None,
+                    };
+                    if let Some(arrow) = arrow {
+                        for (i, param) in arrow.params.items.iter().enumerate() {
+                            let BindingPattern::BindingIdentifier(p) = &param.pattern else { continue };
+                            let Some(t) = &param.type_annotation else { continue };
+                            if !self.tr.is_react_node(&t.type_annotation) {
+                                continue;
+                            }
+                            let mut uses = PropOnly { name: p.name.to_string(), ..PropOnly::default() };
+                            uses.visit_arrow_function_body(&arrow.body);
+                            if uses.reads > 0 && uses.reads == uses.props {
+                                self.found.push((id.name.to_string(), i, param.span.start));
+                            }
+                        }
+                    }
+                }
+                oxc_ast_visit::walk::walk_variable_declarator(self, d);
+            }
+        }
+        let mut locals = Locals { tr: self, found: Vec::new() };
+        body.iter().for_each(|s| locals.visit_statement(s));
+        let found = locals.found;
+        for (name, i, at) in found {
+            let Some(calls) = scan.calls.get(&name) else { continue };
+            if scan.refs.get(&name) == Some(&calls.len())
+                && calls.iter().all(|args| args.get(i).copied().unwrap_or(true))
+            {
+                self.text_params.insert(at);
+            }
+        }
+    }
+
     fn scan_labelled(&mut self, body: &[Statement]) {
         use oxc_ast_visit::Visit;
         #[derive(Default)]
