@@ -244,6 +244,11 @@ pub enum AssignRes {
     Bound {
         local: LocalId,
     },
+    /// `next[keyPath: key] = v` of a `var` or a `@State` (`state`): a copy with that field.
+    KeyPath {
+        local: LocalId,
+        state: bool,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1659,7 +1664,9 @@ impl<'o> Checker<'o> {
                     Ty::Unknown
                 };
             }
-            "KeyPath" => {
+            // `WritableKeyPath<T, V>` is a key path that writes too: a struct's stored fields are
+            // its own to write in a `var` copy (value semantics), so it is `KeyPath<T, V>`.
+            "KeyPath" | "WritableKeyPath" => {
                 if !arity(self, 2) {
                     return Ty::Unknown;
                 }
@@ -1742,7 +1749,17 @@ impl<'o> Checker<'o> {
         let mut candidates: Vec<String> = self.type_names.keys().cloned().collect();
         candidates.extend(
             [
-                "Int", "Float", "Bool", "String", "Unit", "View", "Result", "Binding", "Partial", "KeyPath",
+                "Int",
+                "Float",
+                "Bool",
+                "String",
+                "Unit",
+                "View",
+                "Result",
+                "Binding",
+                "Partial",
+                "KeyPath",
+                "WritableKeyPath",
                 "Error",
             ]
             .map(String::from),
@@ -3820,7 +3837,67 @@ impl<'o> Checker<'o> {
         }
     }
 
+    /// `next[keyPath: key] = value` (Swift's, on a value type): a `var`'s or a `@State`'s copy
+    /// with the field `key` names set. `false` for any other target.
+    fn assign_key_path(&mut self, a: &AssignStmt) -> bool {
+        let ExprKind::KeyPathIndex(object, key) = &a.target.kind else { return false };
+        let field = self.expr(&a.target, None);
+        let ExprKind::Name(name) = &object.kind else {
+            self.report(
+                Diagnostic::error("B0403", object.span, "a key path writes a `var` or a `@State`")
+                    .label("not a name")
+                    .help("copy it first: `var next = value`, then `next[keyPath: key] = …`")
+                    .spec("44-structs"),
+            );
+            self.expr(&a.value, Some(&field));
+            return true;
+        };
+        let _ = key;
+        let Some(local) = self.lookup(name) else {
+            self.expr(&a.value, Some(&field));
+            return true;
+        };
+        let local = self.narrowed_state(local).unwrap_or(local);
+        let info = self.out.locals[local].clone();
+        if !matches!(info.kind, LocalKind::Var | LocalKind::State) {
+            self.report(
+                Diagnostic::error(
+                    "B0403",
+                    object.span,
+                    format!("cannot assign to `{name}`: it is immutable"),
+                )
+                .label("immutable")
+                .with_label(info.span, "declared here")
+                .help(format!("copy it into a `var`: `var next = {name}`"))
+                .spec("44-structs"),
+            );
+        } else if info.kind == LocalKind::Var && info.frame != self.frames.len() - 1 {
+            self.var_captured(&info, a.target.span);
+        }
+        if a.op != AssignOp::Set {
+            self.report(
+                Diagnostic::error(
+                    "B0201",
+                    a.span,
+                    format!("`{}` through a key path is not supported", a.op.text()),
+                )
+                .label("write `x[keyPath: k] = x[keyPath: k] + v`")
+                .spec("44-structs"),
+            );
+        }
+        self.expr(&a.value, Some(&field));
+        let state = info.kind == LocalKind::State;
+        if state {
+            self.frames.last_mut().expect("a frame").written.insert(local);
+        }
+        self.out.assigns.insert(a.span, AssignRes::KeyPath { local, state });
+        true
+    }
+
     fn assign(&mut self, a: &AssignStmt) {
+        if self.assign_key_path(a) {
+            return;
+        }
         if self.assign_place(a) {
             return;
         }
@@ -5832,6 +5909,17 @@ impl<'o> Checker<'o> {
                         Ty::Unknown
                     }
                 }
+            }
+            // `x[keyPath: kp]`: the field `kp` names, of the type it gives.
+            ExprKind::KeyPathIndex(object, key) => {
+                let root = self.expr(object, None);
+                let value = self.fresh();
+                let want = Ty::KeyPath(Box::new(root), Box::new(value.clone()));
+                let given = self.expr(key, Some(&want));
+                if !self.coerce(&given, &want) {
+                    self.mismatch(key.span, &given, &want);
+                }
+                self.resolve(&value)
             }
             ExprKind::Index(object, index) => {
                 let ty = self.expr(object, None);
@@ -8524,7 +8612,10 @@ pub fn walk_names(expr: &Expr, f: &mut dyn FnMut(&str, ExprId)) {
             walk_names(k, f);
             walk_names(v, f);
         }),
-        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) | ExprKind::OptIndex(a, b) => {
+        ExprKind::Binary(_, a, b)
+        | ExprKind::Index(a, b)
+        | ExprKind::OptIndex(a, b)
+        | ExprKind::KeyPathIndex(a, b) => {
             walk_names(a, f);
             walk_names(b, f);
         }
