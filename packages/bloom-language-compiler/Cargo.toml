@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/bloomc", "crates/compiler", "crates/fmt", "crates/lang", "crates/node"]
+members = ["crates/bloomc", "crates/compiler", "crates/fmt", "crates/lang", "crates/native", "crates/node"]
 
 [workspace.package]
 edition = "2024"
