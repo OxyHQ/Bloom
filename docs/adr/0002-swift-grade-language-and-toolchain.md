@@ -489,7 +489,7 @@ out, the production API):
 
 What the numbers say:
 
-- **The hybrid build is not yet at parity at startup.** It reaches `main` ~150 ms later and the
+- **The hybrid build was not yet at parity at startup** (closed below, with the splash hold). It reaches `main` ~150 ms later and the
   first feed row ~500 ms later. A second session, with the bundle transformed for Hermes
   (`hermes-stable`, and Expo's Babel preset told the engine), had the same gap: 840 against
   493 ms to `main`, 1,927 against 850 ms to the first row.
@@ -513,21 +513,75 @@ What the numbers say:
 - `expo-image` stays a stopgap. Bloom's own `MediaSurface` and `LinkPreviewCard`, and
   `@oxy.so/services`, still import it.
 - Built against a local Bloom pack with the native image view (#1027, #1036), the hybrid build
-  drew no avatar and no link poster: blank, with no error in logcat. The Expo path, on expo-image
-  from the same pack, drew them. The before and after numbers wait for that fix; the switch
-  ships with the Bloom release that has it.
+  first drew no avatar and no link poster, with no error. The cause was a file name (#1062).
+  - Metro tries each source extension before each platform. With Mention's `sourceExts`
+    starting `ts, tsx`, `bloom-image-view-draw.ts` (the web's no-op) was found before
+    `bloom-image-view-draw.native.tsx`, so no `BloomImageView` was ever mounted.
+  - #1062 renames the web file to `.tsx`, and a test holds every platform file in `src/` to its
+    default file's extension.
+  - With the rename, the first screen mounts 12 `BloomImageView`s and draws the avatars and
+    posters.
+- Measured against expo-image in the same hybrid build (both without the splash hold below),
+  with medians of 12 cold starts: the first feed row at **1,148** against 1,228 ms and the first
+  feed image at **1,382** against 1,515 ms. BloomImage does not regress.
+
+#### The hybrid build's startup gap, traced and closed (2026-11-28)
+
+The gap was not the JS. It was the hybrid shell drawing early.
+
+All of these ran on hangar-test-36, with release APKs. Sessions were interleaved ABBA, and the
+figures are medians of 10–12 cold starts each.
+
+| Variant | Launch → JS `main` | first feed row | first feed image |
+|---|---|---|---|
+| Expo build | 532 ms | 902 ms | 1,275 ms |
+| Hybrid, expo-image (BloomImage on released Bloom) | 623 ms | 1,228 ms | 1,515 ms |
+| Hybrid, BloomImage (#1062) | 622 ms | 1,148 ms | 1,382 ms |
+| Hybrid, BloomImage, **splash held** (#1068) | **525 ms** | **895 ms** | **1,240 ms** |
+
+What was ruled out:
+
+- **#1036's warm-up thread** is a small part. Started from the first React instance at
+  background priority instead of `onCreate`, it gives 560 against 585 ms to `main`, 1,132 against
+  1,296 ms to the first row and 1,444 against 1,963 ms to the first image. With no warm-up at
+  all: 510 / 1,164 / 1,458 ms. Its move is a follow-up once #1036 lands.
+- **The bundle** is not the cause.
+  - Expo's APK running the hybrid build's bundle (the APK's bundle swapped and re-signed)
+    reaches `main` in 467 ms and the first row in 961 ms, like Expo's own: 512 / 934 ms.
+  - The hybrid APK running Expo's bundle is as slow at `main` as the hybrid build itself.
+- **The signing key** is not the cause. Each APK re-signed with the other's key did not move.
+- What remained was the native shell. The hybrid window drew its first frame at ~300 ms
+  (`am start -W` TotalTime), then every frame of the loading app on the emulator's 4 cores. An
+  Expo build keeps its splash (expo-splash-screen, which Mention holds until its route tree lays
+  out) and draws nothing before then.
+  - The fix is Bloom's own, with no Expo dependency (#1068). `SplashHold` is a pre-draw hold on
+    the content view. It is released at React Native's `CONTENT_APPEARED`, or, after
+    `Splash.preventAutoHide()`, at `Splash.hide()`.
+  - The generated `MainActivity` installs it. An adopted app's `expo-splash-screen` calls reach
+    it through the hybrid build's shim (#1053).
+- TotalTime now matches the Expo build's (965 against 1,015 ms), because both show the splash
+  until the first screen.
+
+Found on the way (#1053): the hybrid bundle task did not track `node_modules`. A `bun install`
+of a different Bloom pack left the bundle UP-TO-DATE, and the APK shipped the old JS. The
+lockfiles beside each `node_modules` the bundle resolves from are now its inputs.
 
 Next in this track:
 
-1. The hybrid build's startup gap: the warm-up thread first, then Expo's CLI as the bundler of
-   an adopted app.
-2. Bloom's image view in Mention: avatars and posters blank.
-3. Mention's route tree on the Bloom router. The router needs nested layouts (Mention's
-   `_layout` files: `AppLayout`, `Stack`, `TabView`, `Slot`), groups and dynamic segments, and
-   the expo-router API Mention and Bloom's adapters use (`Slot`, `Redirect`, `useRouter`,
-   `usePathname`, `useLocalSearchParams`, `useFocusEffect`, `Link`) over the screen host
-   (#1029). Then `expo-router` and `expo-linking` leave the stopgaps.
-4. Then the stopgaps, one line at a time.
+1. Land #1068 (splash hold), #1062 (BloomImage) and #1053 (hybrid). Then the warm-up follow-up
+   after #1036, and Mention #2061 on the Bloom release that carries #1027 and #1062.
+2. Mention's route tree on the Bloom router.
+   - Done: #1059's `bloom routes` reads Mention's `app/` as Expo Router does (124 routes,
+     11 layouts, one shared pattern: `/` in `(app)` and `(auth)`). Its `--out` writes the tree as
+     the router's module.
+   - Next: the router's entry reading that module, with layouts nested by their chain.
+   - Then Mention's `lib/navigation/router.ts` facade over it (`Link`, `Redirect`, `Slot`,
+     `useRouter`, `usePathname`, `useLocalSearchParams`, `useIsFocused`, `useFocusEffect`;
+     159 files use it).
+   - Then the layouts' Bloom adapters over the screen host (#1029). Mention's 13 other direct
+     expo-router imports, five of them into `expo-router/build/…` internals, come last.
+   - Then `expo-router` and `expo-linking` leave the stopgaps.
+3. Then the stopgaps, one line at a time.
 
 ## Consequences
 
