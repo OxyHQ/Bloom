@@ -74,6 +74,9 @@ pub struct Program {
     pub name: String,
     pub modules: Vec<Module>,
     pub decls: Decls,
+    /// The modules hosted as Compose islands in a React Native app (`--module`, from
+    /// `bloom build`'s `native: .island` modules): each gets `<Module>__island(props, emit)`.
+    pub islands: Vec<String>,
 }
 
 /// A construct a backend does not cover yet, or a check error.
@@ -532,7 +535,8 @@ pub fn load_modules(dir: &Path, std: &[&str], only: Option<&[String]>) -> Result
         modules.push(Module { name: module_name, files, std: is_std });
     }
     decls.resolve();
-    if problems.is_empty() { Ok(Program { name, modules, decls }) } else { Err(problems) }
+    let islands = only.map(<[String]>::to_vec).unwrap_or_default();
+    if problems.is_empty() { Ok(Program { name, modules, decls, islands }) } else { Err(problems) }
 }
 
 /// One emitted file: its path relative to the output root, and its text.
