@@ -40,14 +40,46 @@ pub fn external_fields(from: &str, specifier: &str, name: &str) -> Option<(Vec<F
 
 /// The file a relative specifier names (`./types` → `./types.ts`).
 fn resolve(from: &Path, specifier: &str) -> Option<PathBuf> {
-    if !(specifier.starts_with("./") || specifier.starts_with("../")) {
-        return None;
-    }
-    let base = from.parent()?.join(specifier);
+    let base = if specifier.starts_with("./") || specifier.starts_with("../") {
+        from.parent()?.join(specifier)
+    } else {
+        // An app path alias (`@/components/x`) of the nearest `tsconfig.json`'s `paths`; a
+        // package's own types are not written out.
+        alias(from, specifier)?
+    };
     // `./badge.types` is `badge.types.ts`: the extension is appended, not replaced.
     let with = |ext: &str| PathBuf::from(format!("{}.{ext}", base.to_string_lossy()));
     let candidates = [with("ts"), with("tsx"), with("d.ts"), base.join("index.ts"), base.join("index.tsx")];
     candidates.into_iter().find(|p| p.is_file())
+}
+
+/// `specifier` through the `compilerOptions.paths` of the nearest `tsconfig.json` above `from`
+/// that has them (`"@/*": ["./*"]`), read without a JSON parser (keys and string arrays only).
+fn alias(from: &Path, specifier: &str) -> Option<PathBuf> {
+    for dir in from.ancestors().skip(1) {
+        let Ok(text) = std::fs::read_to_string(dir.join("tsconfig.json")) else { continue };
+        let Some(at) = text.find("\"paths\"") else { continue };
+        let rest = &text[at + 7..];
+        let (open, close) = (rest.find('{')?, rest.find('}')?);
+        for entry in rest.get(open + 1..close)?.split(']') {
+            let mut strings = entry.split('"').skip(1).step_by(2);
+            let Some(pattern) = strings.next() else { continue };
+            let Some(tail) = (match pattern.strip_suffix('*') {
+                Some(prefix) => specifier.strip_prefix(prefix),
+                None => (pattern == specifier).then_some(""),
+            }) else {
+                continue;
+            };
+            if let Some(target) = strings.next() {
+                let target = dir.join(target.replace('*', tail));
+                if !target.components().any(|c| c.as_os_str() == "node_modules") {
+                    return Some(target);
+                }
+            }
+        }
+        return None;
+    }
+    None
 }
 
 /// `to` as a specifier from the directory of `from` (`./x`, `../y/z`), without its extension.

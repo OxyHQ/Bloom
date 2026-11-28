@@ -330,6 +330,16 @@ impl Tr<'_> {
                         {
                             if let Some(local) = local_object(module, &id.name) {
                                 members.extend(local);
+                            } else if self.imported.contains(id.name.as_str())
+                                // `{ label, ...menu }: P & { label }` keeps P whole: `menu: P`.
+                                && !matches!(&param.pattern, BindingPattern::ObjectPattern(o) if o.rest.is_some())
+                                && let Some(fields) = self.external_props(&id.name)
+                            {
+                                // Written out (2.0 has no `..P`); a later part's field wins.
+                                for f in fields {
+                                    external.retain(|e| e.name != f.name);
+                                    external.push(f);
+                                }
                             } else if spread.is_none() && self.imported.contains(id.name.as_str()) {
                                 spread = Some(self.name(&id.name, id.span));
                             } else {
@@ -357,6 +367,39 @@ impl Tr<'_> {
                                 }
                                 _ => true,
                             }));
+                        }
+                        // `Pick<P, 'a' | 'b'>` (or `Omit` of an imported P): P's fields, those or but those.
+                        TSType::TSTypeReference(r)
+                            if let TSTypeName::IdentifierReference(util) = &r.type_name
+                                && matches!(util.name.as_str(), "Pick" | "Omit")
+                                && let Some(args) = &r.type_arguments
+                                && let [TSType::TSTypeReference(base), keys] = args.params.as_slice()
+                                && base.type_arguments.is_none()
+                                && let TSTypeName::IdentifierReference(base) = &base.type_name
+                                && let Some(keys) = string_literals(keys) =>
+                        {
+                            let pick = util.name == "Pick";
+                            let keep = |k: &str| keys.iter().any(|x| x == k) == pick;
+                            if let Some(local) = local_object(module, &base.name) {
+                                members.extend(local.into_iter().filter(|m| match m {
+                                    TSSignature::TSPropertySignature(p) => key_name(&p.key).is_none_or(|k| keep(&k)),
+                                    TSSignature::TSMethodSignature(m) => key_name(&m.key).is_none_or(|k| keep(&k)),
+                                    _ => !pick,
+                                }));
+                            } else if self.imported.contains(base.name.as_str())
+                                && let Some(fields) = self.external_props(&base.name)
+                            {
+                                for f in fields.into_iter().filter(|f| keep(&f.name)) {
+                                    external.retain(|e| e.name != f.name);
+                                    external.push(f);
+                                }
+                            } else {
+                                return Some(self.refuse(
+                                    "view:props-type",
+                                    "props of an intersection with a computed type",
+                                    part.span(),
+                                ));
+                            }
                         }
                         other => {
                             return Some(self.refuse(
@@ -485,6 +528,14 @@ impl Tr<'_> {
             }
             out.push(format!("..{spread}"));
         }
+        let own: Vec<String> = members
+            .iter()
+            .filter_map(|m| match m {
+                TSSignature::TSPropertySignature(p) => key_name(&p.key),
+                TSSignature::TSMethodSignature(m) => key_name(&m.key),
+                _ => None,
+            })
+            .collect();
         for member in members {
             if let TSSignature::TSPropertySignature(p) = member
                 && let Some(t) = &p.type_annotation
@@ -509,7 +560,7 @@ impl Tr<'_> {
             out.push(text);
         }
         out.extend(rest_field);
-        for field in external {
+        for field in external.into_iter().filter(|f| !own.contains(&f.name)) {
             let default = defaults.iter().find(|(k, _)| *k == field.name).map(|(_, e)| *e);
             let ty = field.ty;
             let declared = if field.optional && default.is_none() { optional_ty(&ty) } else { ty.clone() };

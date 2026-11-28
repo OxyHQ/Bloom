@@ -1854,12 +1854,28 @@ impl<'s> Tr<'s> {
                     return String::new();
                 }
                 // `interface A extends B { … }` with `B` an object type here: B's fields, then A's.
+                let mut inherited = String::new();
                 let members: Vec<&TSSignature> = if interface.extends.is_empty() {
                     interface.body.body.iter().collect()
                 } else if interface.type_parameters.is_none()
                     && let Some(members) = crate::view::local_object(body, &name)
                 {
                     members
+                } else if interface.type_parameters.is_none()
+                    && let Some(fields) = self.imported_bases(interface)
+                {
+                    // `B` imported: its fields written out (2.0 has no spread members), then A's;
+                    // a field A declares again is A's (TS's narrower).
+                    let own: Vec<String> =
+                        interface.body.body.iter().filter_map(|m| member_name(m)).collect();
+                    for f in fields.into_iter().filter(|f| !own.contains(&f.name)) {
+                        inherited.push_str(&if f.optional {
+                            format!("{}: {} = none\n", f.name, optional_ty(&f.ty))
+                        } else {
+                            format!("{}: {}\n", f.name, f.ty)
+                        });
+                    }
+                    interface.body.body.iter().collect()
                 } else {
                     return self.refuse(
                         "type:extends",
@@ -1868,7 +1884,7 @@ impl<'s> Tr<'s> {
                     );
                 };
                 let generics = self.generics(interface.type_parameters.as_deref());
-                let fields = self.struct_fields(&members);
+                let fields = inherited + &self.struct_fields(&members);
                 let vis = self.visibility(&name, vis, defaults);
                 format!("{vis}struct {name}{generics} {{\n{fields}}}")
             }
@@ -1911,6 +1927,23 @@ impl<'s> Tr<'s> {
             Declaration::ClassDeclaration(c) => self.refuse("class", "a class", c.span),
             other => self.refuse("declaration", "a declaration with no `.bloom` form", other.span()),
         }
+    }
+
+    /// The fields of an interface's bases when each is a plain type imported from another TS
+    /// file the codemod can read (`interface A extends B, C`), in order; `None` otherwise.
+    fn imported_bases(&mut self, interface: &oxc_ast::ast::TSInterfaceDeclaration) -> Option<Vec<crate::props::Field>> {
+        let mut out: Vec<crate::props::Field> = Vec::new();
+        for heritage in &interface.extends {
+            let TSTypeName::IdentifierReference(base) = &heritage.type_name else { return None };
+            if heritage.type_arguments.is_some() || !self.imported.contains(base.name.as_str()) {
+                return None;
+            }
+            for field in self.external_props(&base.name)? {
+                out.retain(|f| f.name != field.name);
+                out.push(field);
+            }
+        }
+        Some(out)
     }
 
     fn generics(&mut self, params: Option<&oxc_ast::ast::TSTypeParameterDeclaration>) -> String {
@@ -2556,4 +2589,13 @@ fn shapes_record(init: &Expression) -> Option<String> {
         .map(|(k, t, n)| if *n == items { format!("{k}: {t}") } else { format!("{k}: {t}?") })
         .collect();
     Some(format!("{{ {} }}", fields.join(", ")))
+}
+
+/// The name a member of an object type declares (`a` of `a: T` or `a(): T`).
+fn member_name(member: &TSSignature) -> Option<String> {
+    match member {
+        TSSignature::TSPropertySignature(p) => crate::view::key_name(&p.key),
+        TSSignature::TSMethodSignature(m) => crate::view::key_name(&m.key),
+        _ => None,
+    }
 }
