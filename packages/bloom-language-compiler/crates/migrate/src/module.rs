@@ -1679,6 +1679,23 @@ impl<'s> Tr<'s> {
                             if builds {
                                 self.view_fns.insert(id.name.to_string());
                             }
+                            // `const Row = ({ a, b }: P) => { const x = useX(); return row(…) }`, drawn
+                            // as `<Row … />`: a component that builds UI with a hook is a view.
+                            if builds
+                                && let Expression::ArrowFunctionExpression(arrow) = init.without_parentheses()
+                                && id.name.starts_with(|c: char| c.is_ascii_uppercase())
+                                && let [param] = arrow.params.items.as_slice()
+                                && matches!(param.pattern, BindingPattern::ObjectPattern(_))
+                                && param.type_annotation.is_some()
+                                && arrow.params.rest.is_none()
+                                && !arrow.r#async
+                                && calls_hook(&self.src[arrow.span.start as usize..arrow.span.end as usize])
+                                && drawn_as_jsx(self.src, &id.name)
+                            {
+                                self.view_fns.remove(id.name.as_str());
+                                self.components.insert(id.name.to_string());
+                                self.views.insert(id.name.to_string());
+                            }
                         }
                     }
                 }
@@ -2716,4 +2733,22 @@ fn member_name(member: &TSSignature) -> Option<String> {
         TSSignature::TSMethodSignature(m) => crate::view::key_name(&m.key),
         _ => None,
     }
+}
+
+/// Whether `body` calls a hook (`useX(`), not as a member (`a.useX(`).
+fn calls_hook(body: &str) -> bool {
+    body.match_indices("use").any(|(i, _)| {
+        let before = body[..i].chars().next_back();
+        let rest = &body[i + 3..];
+        !before.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '.')
+            && rest.starts_with(|c: char| c.is_ascii_uppercase())
+            && rest.find('(').is_some_and(|p| rest[..p].chars().all(|c| c.is_alphanumeric() || c == '_'))
+    })
+}
+
+/// Whether `<name` opens a JSX element in `src` (`<Row`, then a space, a line break, `/` or `>`).
+fn drawn_as_jsx(src: &str, name: &str) -> bool {
+    let open = format!("<{name}");
+    src.match_indices(&open)
+        .any(|(i, _)| src[i + open.len()..].starts_with(|c: char| c.is_whitespace() || c == '/' || c == '>'))
 }

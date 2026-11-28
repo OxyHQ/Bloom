@@ -617,6 +617,16 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             {
                 Some((end, end, "!".to_string()))
             }
+            // `xs.map { (x: T) in … }` over a list of TS values (`Foreign`): TS's annotation was a
+            // claim TS checks, so the closure takes the element as it is (`{ x in … }`).
+            ("B0201", _)
+                if d.message.starts_with("expected `(Foreign(")
+                    && d.message.contains("`, found `(")
+                    && text.starts_with('{')
+                    && let Some(colon) = closure_annotation(text) =>
+            {
+                Some((start + colon.0, start + colon.1, String::new()))
+            }
             // `labels[kind]` where TS typed the value present (`Record<Kind, string>`): `labels[kind]!`.
             ("B0201", _)
                 if d.message.starts_with("expected `")
@@ -2004,6 +2014,24 @@ fn type_end(source: &str, start: usize) -> usize {
         }
     }
     source.len()
+}
+
+/// The `: T` of a closure's one annotated parameter (`{ feed: FeedItem in …`), as offsets in `text`.
+fn closure_annotation(text: &str) -> Option<(usize, usize)> {
+    let head = text.strip_prefix('{')?;
+    let lead = head.len() - head.trim_start().len();
+    let name_len = head.trim_start().find(|c: char| !(c.is_alphanumeric() || c == '_'))?;
+    let after = &head.trim_start()[name_len..];
+    let ty = after.strip_prefix(": ")?;
+    let ty_len = ty.find(" in")?;
+    let ty_text = &ty[..ty_len];
+    if ty_len == 0
+        || !ty_text.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '.' | '?' | '<' | '>'))
+    {
+        return None;
+    }
+    let colon = 1 + lead + name_len;
+    Some((colon, colon + 2 + ty_len))
 }
 
 /// Whether `text` (`p!.w`) is a member path a test of the same expression proved present

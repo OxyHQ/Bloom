@@ -1,0 +1,24 @@
+// A plain arrow component drawn as JSX (`<Row … />`) that reads a hook and builds its UI with a
+// module function is a view: its hook is a member, as React's component held it.
+
+import { useTheme } from "@/lib/theme"
+
+private func row(_ body: Foreign<"ReturnType<typeof RawText>">) -> View {
+  HStack(body).spacing(.md)
+}
+
+private struct Row: View {
+  let label: String
+  let theme = useTheme()
+
+  var body: some View {
+    row(RawText(label).foreground(theme.primary))
+  }
+}
+
+public struct Rows: View {
+  let labels: [String]
+  var body: some View {
+    VStack { Row(label: labels.at(0) ?? "") }
+  }
+}
