@@ -1,0 +1,109 @@
+{
+  "$comment": "Bloom's regex conformance corpus: Regex patterns are ECMAScript's on every backend. Each case is run by the TypeScript runtime (record.mjs writes expected.json from Node) and by each native runtime's tests against expected.json. A case a runtime cannot match yet is listed, with why, in that runtime's known-differences file beside this one.",
+  "replacement": "[$&|$1|$$|$<user>]",
+  "cases": [
+    { "pattern": "@(\\w+)", "flags": "", "text": "hi @nate and @ana_b!" },
+    {
+      "pattern": "(?<user>\\w+)@(?<host>[a-z.]+)",
+      "flags": "i",
+      "text": "Mail NATE@oxy.so or ana@x.io"
+    },
+    { "pattern": "\\s+", "flags": "", "text": "  a  b\tc  " },
+    { "pattern": "(\\d)", "flags": "", "text": "a1b2c3" },
+    { "pattern": "", "flags": "", "text": "abc" },
+    { "pattern": "x*", "flags": "", "text": "axxb" },
+    { "pattern": "^b", "flags": "m", "text": "a\nb\nbc" },
+    { "pattern": "a.c", "flags": "s", "text": "a\nc abc" },
+    { "pattern": "(a)|(b)", "flags": "", "text": "ab" },
+    { "pattern": "[", "flags": "", "text": "x" },
+    {
+      "pattern": "\\d+",
+      "flags": "",
+      "text": "x ١٢٣ 456",
+      "note": "\\d is ASCII in JS; ICU's is Unicode"
+    },
+    { "pattern": "\\d+", "flags": "u", "text": "x ١٢٣ 456", "note": "still ASCII with u" },
+    { "pattern": "\\w+", "flags": "", "text": "café naïve", "note": "\\w is ASCII in JS" },
+    { "pattern": "\\bé", "flags": "", "text": "café é", "note": "\\b is ASCII in JS" },
+    { "pattern": "a\\B", "flags": "", "text": "ab a" },
+    {
+      "pattern": "\\s",
+      "flags": "",
+      "text": "a b﻿c d\u0085e",
+      "note": "JS's \\s has U+FEFF, not U+0085"
+    },
+    {
+      "pattern": "a$",
+      "flags": "",
+      "text": "a\n",
+      "note": "JS's $ without m is the end only; ICU's matches before a final newline"
+    },
+    { "pattern": "a$", "flags": "m", "text": "a\na" },
+    {
+      "pattern": "^",
+      "flags": "m",
+      "text": "a\r\nb",
+      "note": "\\r\\n: JS has a line start after \\r and after \\n"
+    },
+    {
+      "pattern": ".",
+      "flags": "",
+      "text": "a\rb c\u0085d",
+      "note": "JS's . excludes \\n \\r U+2028 U+2029, not U+0085"
+    },
+    { "pattern": "[^]", "flags": "", "text": "a\n", "note": "JS's any character" },
+    { "pattern": "[]a]", "flags": "", "text": "a]", "note": "[] is an empty class in JS" },
+    { "pattern": ".", "flags": "", "text": "😀", "note": "without u, . is one UTF-16 unit in JS" },
+    { "pattern": ".", "flags": "u", "text": "😀" },
+    { "pattern": "\\u{1F600}", "flags": "u", "text": "x😀" },
+    { "pattern": "\\p{L}+", "flags": "u", "text": "héllo 世界 42" },
+    { "pattern": "\\p{L}", "flags": "", "text": "p{L}", "note": "without u, \\p is a p" },
+    { "pattern": "ß", "flags": "i", "text": "SS ß ẞ", "note": "simple case folding only" },
+    {
+      "pattern": "k",
+      "flags": "i",
+      "text": "K k K",
+      "note": "U+212A KELVIN folds to k only with u"
+    },
+    { "pattern": "k", "flags": "iu", "text": "K k K" },
+    { "pattern": "(a)\\1", "flags": "", "text": "aa ab" },
+    { "pattern": "(?<c>.)\\k<c>", "flags": "", "text": "xyyz" },
+    { "pattern": "(?<=\\$)\\d+", "flags": "", "text": "cost $42 or 7" },
+    {
+      "pattern": "(?<=a+)b",
+      "flags": "",
+      "text": "aaab",
+      "note": "JS's look-behind may be unbounded"
+    },
+    { "pattern": "(?<!x)y", "flags": "", "text": "xy ay" },
+    { "pattern": "a+?", "flags": "", "text": "aaa" },
+    { "pattern": "a{2,}", "flags": "", "text": "a aa aaaa" },
+    { "pattern": "a{", "flags": "", "text": "a{", "note": "a lone { is a literal in JS" },
+    { "pattern": "a{,2}", "flags": "", "text": "a{,2}", "note": "{,n} is a literal in JS" },
+    { "pattern": "(?i)a", "flags": "", "text": "A", "note": "inline flags are an error in JS" },
+    { "pattern": "a++", "flags": "", "text": "aa", "note": "possessive: an error in JS" },
+    { "pattern": "(?>a)", "flags": "", "text": "a", "note": "atomic group: an error in JS" },
+    { "pattern": "\\Qa.b\\E", "flags": "", "text": "Qa.bE", "note": "\\Q is a Q in JS" },
+    { "pattern": "\\h", "flags": "", "text": "h \t", "note": "\\h is an h in JS" },
+    { "pattern": "a\\z", "flags": "", "text": "az a", "note": "\\z is a z in JS" },
+    {
+      "pattern": "[[:alpha:]]+",
+      "flags": "",
+      "text": "ab:]",
+      "note": "a POSIX class is a set of its characters in JS"
+    },
+    { "pattern": "\\cJ", "flags": "", "text": "a\nb" },
+    { "pattern": "[\\b]", "flags": "", "text": "a\bb", "note": "[\\b] is a backspace" },
+    { "pattern": "\\0", "flags": "", "text": "a\u0000b" },
+    { "pattern": "\\x41\\u0042", "flags": "", "text": "AB" },
+    { "pattern": "(?:a|b)+", "flags": "y", "text": "abc", "note": "sticky" },
+    { "pattern": "a", "flags": "gimsud", "text": "A" },
+    { "pattern": "a", "flags": "ii", "text": "a" },
+    { "pattern": "(\\w+)\\s(\\w+)", "flags": "", "text": "John Smith" },
+    { "pattern": "x(y)?", "flags": "", "text": "x xy" },
+    { "pattern": ",", "flags": "", "text": "a,,b," },
+    { "pattern": "(,)", "flags": "", "text": "a,b" },
+    { "pattern": "😀", "flags": "", "text": "a😀b😀", "note": "offsets: UTF-16 in TS" },
+    { "pattern": "👍🏽", "flags": "", "text": "x👍🏽y" }
+  ]
+}

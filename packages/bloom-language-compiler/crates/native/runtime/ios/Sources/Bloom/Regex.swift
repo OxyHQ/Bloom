@@ -12,13 +12,11 @@
 // not take part in a match is `nil`, as Swift's optional captures are. Matches, replacements and
 // splits follow JS's `matchAll`, `replace` and `split`.
 //
-// JS and ICU read most patterns alike. Where they differ (documented, not translated):
-// - `\d`, `\w`, `\b` and `\s` are Unicode-aware in ICU, ASCII in JS (without `u`, `\d` in JS
-//   never matches `٣`);
-// - `$` without `m` matches before a final line terminator in ICU, only at the end in JS;
-// - `[^]` (JS's "any character") is an error in ICU (write `[\s\S]`);
-// - ICU's look-behind must be bounded; JS's need not be;
-// - the `y` (sticky) and `v` flags are not supported (a `RegexError`).
+// ICU reads a JS pattern differently in places (`\d` and `\w` are Unicode in ICU, `$` matches
+// before a final newline, `[^]` is an error, a look-behind must be bounded): `RegexTranslate`
+// rewrites the pattern so ICU means what JS means, and the regex conformance corpus
+// (`conformance/regex/`, recorded from Node) holds the two to the same answers. The one case
+// that stays different is in `conformance/regex/known-differences.swift.json`.
 // Offsets (`start`, `end`) count characters (grapheme clusters), as Bloom's strings do; the TS
 // runtime counts UTF-16 units.
 import Foundation
@@ -78,9 +76,12 @@ public struct RegexError: Error, Equatable, Hashable, Sendable, LocalizedError {
 private final class CompiledRegex: @unchecked Sendable {
   let regex: NSRegularExpression
   let names: [String]
-  init(regex: NSRegularExpression, names: [String]) {
+  /// `y`: each match starts where the last ended.
+  let sticky: Bool
+  init(regex: NSRegularExpression, names: [String], sticky: Bool) {
     self.regex = regex
     self.names = names
+    self.sticky = sticky
   }
 }
 
@@ -109,20 +110,24 @@ extension BloomRegex {
       guard seen.insert(flag).inserted else { throw RegexError(pattern: pattern, message: "Invalid flags supplied to RegExp constructor '\(flags)'") }
       switch flag {
       case "i": options.insert(.caseInsensitive)
-      case "m": options.insert(.anchorsMatchLines)
-      case "s": options.insert(.dotMatchesLineSeparators)
-      case "g", "u", "d": break
+      // `m` and `s` are the translation's (`RegexTranslate`): JS's line ends, JS's `.`.
+      case "m", "s", "g", "u", "d", "y": break
       default: throw RegexError(pattern: pattern, message: "Invalid flags supplied to RegExp constructor '\(flags)'")
       }
+    }
+    let translation: RegexTranslation
+    switch RegexTranslate.translate(pattern, flags: flags) {
+    case .success(let t): translation = t
+    case .failure(let e): throw e
     }
     let regex: NSRegularExpression
     do {
       // JS's empty pattern matches the empty string; ICU refuses it.
-      regex = try NSRegularExpression(pattern: pattern.isEmpty ? "(?:)" : pattern, options: options)
+      regex = try NSRegularExpression(pattern: translation.pattern.isEmpty ? "(?:)" : translation.pattern, options: options)
     } catch {
       throw RegexError(pattern: pattern, message: "Invalid regular expression: /\(pattern)/\(flags): \(error.localizedDescription)")
     }
-    let made = CompiledRegex(regex: regex, names: groupNames(pattern))
+    let made = CompiledRegex(regex: regex, names: groupNames(pattern), sticky: translation.sticky)
     compiledRegexes.withLock { $0[key] = made }
     return made
   }
@@ -189,6 +194,19 @@ extension BloomRegex {
   private func rawMatches(_ text: String, limit: Int) -> [NSTextCheckingResult] {
     guard let compiled = try? compiled() else { return [] }
     let range = NSRange(location: 0, length: (text as NSString).length)
+    if compiled.sticky {
+      // Each match where the last ended, until one does not start there (an empty one ends it).
+      var out: [NSTextCheckingResult] = []
+      var at = 0
+      while at <= range.length, limit == 0 || out.count < limit {
+        let rest = NSRange(location: at, length: range.length - at)
+        guard let m = compiled.regex.firstMatch(in: text, options: [.anchored, .withoutAnchoringBounds], range: rest) else { break }
+        out.append(m)
+        if m.range.length == 0 { break }
+        at = m.range.location + m.range.length
+      }
+      return out
+    }
     if limit == 1 { return compiled.regex.firstMatch(in: text, range: range).map { [$0] } ?? [] }
     return compiled.regex.matches(in: text, range: range)
   }
