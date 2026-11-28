@@ -1,0 +1,18 @@
+// A list TS types present but the source tests (`!communities`) is declared optional, and its test
+// is whether it is there (an empty JS array is truthy). A number after a string's `||` in a key is
+// its text.
+
+public struct Community {
+  var id: String? = none
+  let name: String
+}
+
+public struct Communities: View {
+  let communities: [Community]?
+  var body: some View {
+    if !((communities == none) || communities.count == 0) {
+      // bloom: review: spread children are one `[View]` child: one keyed slot (+1 fiber), not siblings
+      VStack { for (index, c) in communities!.enumerated() { Text(c.name).id(c.id || "\(index)") } }
+    }
+  }
+}
