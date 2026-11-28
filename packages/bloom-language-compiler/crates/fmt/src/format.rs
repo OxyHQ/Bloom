@@ -1269,6 +1269,13 @@ impl<'a> Formatter<'a> {
     fn cond(&mut self, cond: &Cond) -> Doc {
         match cond {
             Cond::Expr(e) => self.expr(e),
+            // `if let x { … }` (Swift 5.7's shorthand): written as it was.
+            Cond::Let(pattern, value)
+                if value.span == pattern.span
+                    && matches!((&pattern.kind, &value.kind), (PatternKind::Bind(a), ExprKind::Name(b)) if a.name == *b) =>
+            {
+                concat(vec![text("let "), self.pattern(pattern)])
+            }
             Cond::Let(pattern, value) => {
                 concat(vec![text("let "), self.pattern(pattern), text(" = "), self.expr(value)])
             }
