@@ -58,3 +58,7 @@ section: Added
   - an `effect(id:)` whose top-level `defer` would run as soon as its `.task` body returns (React ran it on unmount or a deps change) is refused until the stdlib's `Task.cancellation` (`repros/mention15/task-defer-runs-at-once`);
   - TS `unknown` is the stdlib's `JSONValue`, and `typeof x === "object"` on one, with `null` ruled out by its chain, is `x.object != none || x.array != none`;
   - JS regexes are the stdlib `Regex`: `Regex(pattern:flags:)`, `isMatch`, `firstMatch(in:)` and `group(n)`, `replacing(in:with:)` and `split`.
+- Round 16 (lang-mention-16):
+  - an `effect(id:)` with a cleanup is a `.task(id:)` that ends with `await Task.cancellation`, so its `defer` runs on unmount or a new id, as React ran the cleanup (lifts round 15's refusal; needs the compiler's `Task.cancellation`); a debounce, a `setTimeout` its cleanup clears, is `try? await sleep(for: .milliseconds(ms))` before the work, and the "js" timers leave the imports;
+  - a string's JS `length`, `slice`/`substring` and `padStart`/`padEnd` read its `utf16` view (`s.utf16.count`, `s.utf16.slice(…)`), since a Bloom `String` counts characters (needs the compiler's `utf16` view, #1081);
+  - `--write`: `require('./X').default` in a mock factory is `require('./X.bloom').Name`, and a TS file that takes a migrated view through a barrel draws it as `toElement(X({ … }))`.
