@@ -1,0 +1,19 @@
+// A TS indexed access type (`Slice['context']`) is that member's type, so its fields are typed
+// (spec 4.7); and `a ?? b` whose sides both fit what is expected is that type (`[Author]` and
+// `[Person]` where `[Person]` is taken).
+import { useAuthors, useRow, type Person } from "@/corpus"
+
+public struct Context: View {
+  let row = useRow()
+  let authors = useAuthors()
+
+  var body: some View {
+    let people: [Person] = authors ?? []
+    VStack {
+      if let context = row.context {
+        Text("\(context.total - 1) \(context.actors.map { a in a.name }.joined(separator: ", "))")
+      }
+      Text("\(people.count)")
+    }
+  }
+}

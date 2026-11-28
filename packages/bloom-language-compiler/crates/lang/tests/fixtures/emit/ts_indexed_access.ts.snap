@@ -1,0 +1,24 @@
+// @ts-expect-error: React's types hide the compiler runtime, which only compiled code calls.
+import { c as $c } from "react/compiler-runtime";
+import { Text, VStack, view } from "@oxy.so/bloom-language";
+import { useAuthors, useRow, type Person } from "@/corpus";
+
+const $fn0 = (a: NonNullable<NonNullable<ReturnType<typeof useRow>["context"]>>["actors"][number]) => a.name;
+export const Context = view(function Context() {
+"use no memo";
+const $ = $c(3);
+const row = useRow();
+const authors = useAuthors();
+let $t0;
+if ($[0] !== authors || $[1] !== row.context) {
+const people: readonly Person[] = authors ?? [];
+$t0 = VStack((row.context != null) ? Text(`${row.context.total - 1} ${row.context.actors.map((v0) => ($fn0)(v0)).join(", ")}`) : null, Text(`${people.length}`));
+$[0] = authors;
+$[1] = row.context;
+$[2] = $t0;
+} else {
+$t0 = $[2];
+}
+return $t0;
+});
+
