@@ -22,11 +22,14 @@ return $t0;
 export function count(s: string, retry: boolean): number {
 try {
 return parse(s);
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
+{
 if (retry) {
 return 0;
 }
 fail("not a number");
+}
 }
 }
 
@@ -49,11 +52,14 @@ return async () => {
 try {
 const n = await (fetchCount());
 return [n];
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
+{
 if (retry) {
 return [];
 }
 fail("offline");
+}
 }
 };
 }

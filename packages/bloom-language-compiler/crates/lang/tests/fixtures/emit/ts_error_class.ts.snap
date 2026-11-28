@@ -4,7 +4,9 @@ export async function record(id: string): Promise<string> {
 try {
 await (vote(id));
 return "ok";
-} catch (err) {
+} catch ($error) {
+const err = $error as Error;
+{
 if ((err instanceof PollClosedError)) {
 return "closed";
 }
@@ -13,6 +15,7 @@ if ($t0 != null) {
 return ($t0.code satisfies string);
 }
 return ((err instanceof PollContractError)) ? "not understood" : "failed";
+}
 }
 }
 

@@ -39,8 +39,11 @@ try {
 const page = await (MentionAPI$get(api, "feeds/home", FeedPage$$self, query, cancellation));
 Logger$debug(log, `loaded ${page.items.length} posts`);
 return FeedState$merging(state, page, refresh, Date$$get$now());
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
+{
 return { posts: state.posts, cursor: state.cursor, hasMore: state.hasMore, isLoading: false, failure: normalized(error), loadedAt: state.loadedAt };
+}
 }
 }
 
@@ -56,9 +59,12 @@ await (MentionAPI$delete(api, `posts/${percentEncoded(post.id)}/like`));
 await (MentionAPI$post(api, `posts/${percentEncoded(post.id)}/like`));
 }
 return state;
-} catch (error) {
+} catch ($error) {
+const error = $error as Error;
+{
 Logger$error(log, `like failed: ${normalized(error).message}`);
 return FeedState$updating(state, post.id, (_: Post) => post);
+}
 }
 }
 

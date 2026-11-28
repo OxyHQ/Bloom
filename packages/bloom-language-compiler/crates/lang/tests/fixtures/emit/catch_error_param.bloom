@@ -1,0 +1,28 @@
+// A caught error is Bloom's `Error`, TS's `Error`: it is handed to a function that takes one.
+struct Failure: Error {
+  let message: String
+}
+
+func parse(_ s: String) throws -> Int {
+  guard let n = Int(s) else { throw Failure(message: s) }
+  return n
+}
+
+func isRetryable(_ error: Error) -> Bool { false }
+
+public func count(_ s: String) -> Int {
+  do {
+    return try parse(s)
+  } catch {
+    return isRetryable(error) ? 1 : 0
+  }
+}
+
+public func named(_ s: String) -> Bool {
+  do {
+    let _ = try parse(s)
+    return true
+  } catch let failure {
+    return isRetryable(failure)
+  }
+}
