@@ -1,0 +1,3 @@
+import type { ComposedView } from "@oxy.so/bloom-language";
+/** A Bloom view: a node factory, not a JSX component. Use it in a chain (`VStack(Title())`), or from TSX as `toElement(Title())`. */
+export declare const Title: () => ComposedView;

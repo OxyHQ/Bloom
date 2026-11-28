@@ -5368,7 +5368,7 @@ impl<'a> Emitter<'a> {
                 }
                 // A method reads its receiver whole.
                 match &call.callee.kind {
-                    ExprKind::Field(receiver, _) => go(receiver),
+                    ExprKind::Field(receiver, _) | ExprKind::OptField(receiver, _) => go(receiver),
                     _ => go(&call.callee),
                 }
                 call.args.iter().for_each(|a| go(&a.value));
