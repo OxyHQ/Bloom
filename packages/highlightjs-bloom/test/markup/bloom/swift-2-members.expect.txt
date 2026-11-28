@@ -42,3 +42,8 @@
 <span class="hljs-keyword">func</span> <span class="hljs-title function_">fill</span>(_ grid: <span class="hljs-keyword">inout</span> [<span class="hljs-type">Int</span>], with v: <span class="hljs-type">Int</span>) {
   grid.<span class="hljs-title function_ invoke__">append</span>(v)
 }
+
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">packed</span>(_ a: <span class="hljs-type">Int</span>, _ b: <span class="hljs-type">Int</span>) <span class="hljs-operator">-&gt;</span> <span class="hljs-type">Int</span> {
+  <span class="hljs-keyword">let</span> argb <span class="hljs-operator">=</span> a <span class="hljs-operator">&lt;&lt;</span> <span class="hljs-number">24</span> <span class="hljs-operator">|</span> b <span class="hljs-operator">&amp;+</span> <span class="hljs-number">1</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-operator">~</span>argb
+}

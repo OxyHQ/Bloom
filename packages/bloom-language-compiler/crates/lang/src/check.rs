@@ -4027,7 +4027,12 @@ impl<'o> Checker<'o> {
             }
             op => {
                 let value = self.expr(&a.value, Some(&ty));
-                let numeric = matches!(self.resolve(&ty), Ty::Int | Ty::Float | Ty::Unknown);
+                // `&=`, `|=`, `^=`, `<<=`, `>>=` take an `Int`.
+                let numeric = if op.is_bitwise() {
+                    matches!(self.resolve(&ty), Ty::Int | Ty::Unknown)
+                } else {
+                    matches!(self.resolve(&ty), Ty::Int | Ty::Float | Ty::Unknown)
+                };
                 // `s += "x"` of a string, and Swift's `xs += [x]` of an array.
                 let text = op == AssignOp::Add && matches!(self.resolve(&ty), Ty::Str | Ty::List(_));
                 if !numeric && !text {
@@ -4173,7 +4178,12 @@ impl<'o> Checker<'o> {
             // `next[keyPath: key] += 1`, as on any place.
             op => {
                 let value = self.expr(&a.value, Some(&field));
-                let numeric = matches!(self.resolve(&field), Ty::Int | Ty::Float | Ty::Unknown);
+                // `&=`, `|=`, `^=`, `<<=`, `>>=` take an `Int`.
+                let numeric = if op.is_bitwise() {
+                    matches!(self.resolve(&field), Ty::Int | Ty::Unknown)
+                } else {
+                    matches!(self.resolve(&field), Ty::Int | Ty::Float | Ty::Unknown)
+                };
                 let text = op == AssignOp::Add && matches!(self.resolve(&field), Ty::Str | Ty::List(_));
                 if !numeric && !text {
                     self.report(
@@ -4333,7 +4343,12 @@ impl<'o> Checker<'o> {
             }
             op => {
                 let value = self.expr(&a.value, Some(&place_ty));
-                let numeric = matches!(self.resolve(&place_ty), Ty::Int | Ty::Float | Ty::Unknown);
+                // `&=`, `|=`, `^=`, `<<=`, `>>=` take an `Int`.
+                let numeric = if op.is_bitwise() {
+                    matches!(self.resolve(&place_ty), Ty::Int | Ty::Unknown)
+                } else {
+                    matches!(self.resolve(&place_ty), Ty::Int | Ty::Float | Ty::Unknown)
+                };
                 // `s += "x"` of a string, and Swift's `xs += [x]` of an array.
                 let text = op == AssignOp::Add && matches!(self.resolve(&place_ty), Ty::Str | Ty::List(_));
                 if !numeric && !text {
@@ -5982,6 +5997,17 @@ impl<'o> Checker<'o> {
                     self.expr(operand, Some(&Ty::Bool));
                     Ty::Bool
                 }
+                UnaryOp::BitNot => {
+                    let ty = self.expr(operand, Some(&Ty::Int));
+                    match self.resolve(&ty) {
+                        Ty::Int | Ty::Unknown | Ty::Never => {}
+                        Ty::Var(_) => {
+                            self.unify(&ty, &Ty::Int);
+                        }
+                        other => self.operand_error(operand.span, "`~`", &other),
+                    }
+                    Ty::Int
+                }
                 UnaryOp::Neg => {
                     // A number, whatever optional is expected of the negation (`x ?? -1`).
                     let hint = match &expected_resolved {
@@ -7221,6 +7247,27 @@ impl<'o> Checker<'o> {
                 let hint = if matches!(left, Ty::Strings(_)) { Ty::Str } else { left };
                 self.expr(rhs, Some(&hint));
                 Ty::Bool
+            }
+            // `a & b`, `a << n`, `a &+ b` (Swift's): `Int`s only, an `Int` out.
+            BinaryOp::BitAnd
+            | BinaryOp::BitOr
+            | BinaryOp::BitXor
+            | BinaryOp::Shl
+            | BinaryOp::Shr
+            | BinaryOp::WrapAdd
+            | BinaryOp::WrapSub
+            | BinaryOp::WrapMul => {
+                for side in [lhs, rhs] {
+                    let ty = self.expr(side, Some(&Ty::Int));
+                    match self.resolve(&ty) {
+                        Ty::Int | Ty::Unknown | Ty::Never => {}
+                        Ty::Var(_) => {
+                            self.unify(&ty, &Ty::Int);
+                        }
+                        other => self.operand_error(side.span, &format!("`{}`", op.text()), &other),
+                    }
+                }
+                Ty::Int
             }
             BinaryOp::Add | BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div | BinaryOp::Rem => {
                 let left = self.expr(lhs, expected.filter(|e| matches!(e, Ty::Int | Ty::Float)));

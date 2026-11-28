@@ -882,6 +882,11 @@
           "match": "===|!=="
         },
         {
+          "comment": "`Int`'s bit and overflow operators (Swift's), before the shorter ones they start with.",
+          "name": "keyword.operator.bitwise.bloom",
+          "match": "<<=|>>=|&=|\\|=|\\^=|<<|>>|&\\+|&-|&\\*|\\^|~"
+        },
+        {
           "name": "keyword.operator.comparison.bloom",
           "match": "==|!=|<=|>=|<|>"
         },

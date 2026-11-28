@@ -1026,9 +1026,14 @@ impl<'a> Formatter<'a> {
                 });
                 entries.wrap("{", line, "}")
             }
-            ExprKind::Unary(op, inner) => {
-                concat(vec![text(if *op == UnaryOp::Not { "!" } else { "-" }), self.expr(inner)])
-            }
+            ExprKind::Unary(op, inner) => concat(vec![
+                text(match op {
+                    UnaryOp::Not => "!",
+                    UnaryOp::Neg => "-",
+                    UnaryOp::BitNot => "~",
+                }),
+                self.expr(inner),
+            ]),
             ExprKind::InOut(inner) => concat(vec![text("&"), self.expr(inner)]),
             ExprKind::Binary(op, ..) => self.binary(e, *op),
             ExprKind::Ternary(c, a, b) => {

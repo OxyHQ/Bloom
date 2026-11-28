@@ -74,3 +74,10 @@ func fill(_ grid: inout [Int], with v: Int) {
 //                ^^^^^ storage.modifier.bloom
   grid.append(v)
 }
+
+func packed(_ a: Int, _ b: Int) -> Int {
+  let argb = a << 24 | b &+ 1
+//             ^^ keyword.operator.bitwise.bloom
+//                       ^^ keyword.operator.bitwise.bloom
+  return ~argb
+}

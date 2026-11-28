@@ -43,6 +43,11 @@ func fill(_ grid: inout [Int], with v: Int) {
   grid.append(v)
 }
 
+func packed(_ a: Int, _ b: Int) -> Int {
+  let argb = a << 24 | b &+ 1
+  return ~argb
+}
+
 ----------------------------------------------------
 [
 	[
@@ -1205,6 +1210,108 @@ func fill(_ grid: inout [Int], with v: Int) {
 		"punctuation",
 		")"
 	],
+	[
+		"punctuation",
+		"}"
+	],
+	[
+		"keyword",
+		"func"
+	],
+	[
+		"function-definition",
+		"packed"
+	],
+	[
+		"punctuation",
+		"("
+	],
+	"_ ",
+	[
+		"argument-label",
+		"a"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"class-name-reference",
+		"Int"
+	],
+	[
+		"punctuation",
+		","
+	],
+	" _ ",
+	[
+		"argument-label",
+		"b"
+	],
+	[
+		"punctuation",
+		":"
+	],
+	[
+		"class-name-reference",
+		"Int"
+	],
+	[
+		"punctuation",
+		")"
+	],
+	[
+		"operator",
+		"->"
+	],
+	[
+		"class-name-reference",
+		"Int"
+	],
+	[
+		"punctuation",
+		"{"
+	],
+	[
+		"keyword",
+		"let"
+	],
+	" argb ",
+	[
+		"operator",
+		"="
+	],
+	" a ",
+	[
+		"operator",
+		"<<"
+	],
+	[
+		"number",
+		"24"
+	],
+	[
+		"operator",
+		"|"
+	],
+	" b ",
+	[
+		"operator",
+		"&+"
+	],
+	[
+		"number",
+		"1"
+	],
+	[
+		"keyword",
+		"return"
+	],
+	[
+		"operator",
+		"~"
+	],
+	"argb\n",
 	[
 		"punctuation",
 		"}"

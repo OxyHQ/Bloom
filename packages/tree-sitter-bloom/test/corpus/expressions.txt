@@ -658,3 +658,51 @@ func f(p: P, k: WritableKeyPath<P, Bool>) -> P {
             (identifier))))
       (return_statement
         (identifier)))))
+
+==================================================
+Int bit and overflow operators
+==================================================
+
+let argb = a << 24 | r << 16 | b & 255
+let h = ~x &+ y &* 3 ^ z >> 1
+let g: Array<Array<Int>> = []
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (binary_expression
+          (identifier)
+          (integer_literal))
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (binary_expression
+        (identifier)
+        (integer_literal))))
+  (property_declaration
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (prefix_expression
+          (identifier))
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (binary_expression
+        (identifier)
+        (integer_literal))))
+  (property_declaration
+    (identifier)
+    (user_type
+      (type_identifier)
+      (type_arguments
+        (user_type
+          (type_identifier)
+          (type_arguments
+            (user_type
+              (type_identifier))))))
+    (array_literal)))

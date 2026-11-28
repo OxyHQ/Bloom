@@ -810,9 +810,10 @@ react-i18next's `useTranslation()` (declared with a conditional type) is read as
 | Level | Operators | Assoc. |
 |---|---|---|
 | postfix | call, `.x`, `?.x`, `[i]`, `?`, `!` (no space before it) | left |
-| prefix | `!` `-` `await` | right |
-| multiplicative | `*` `/` `%` | left |
-| additive | `+` `-` (`+` also joins `String`s) | left |
+| prefix | `!` `-` `~` `await` (`&x` passes an `inout` argument) | right |
+| shift | `<<` `>>` | left |
+| multiplicative | `*` `/` `%` `&` `&*` | left |
+| additive | `+` `-` `\|` `^` `&+` `&-` (`+` also joins `String`s) | left |
 | range | `..<` `...` | none |
 | comparison | `<` `<=` `>` `>=` | none |
 | equality | `==` `!=` `===` `!==` | none |
@@ -820,6 +821,13 @@ react-i18next's `useTranslation()` (declared with a conditional type) is read as
 | or | `\|\|` | left |
 | default | `??` | right |
 | conditional | `c ? a : b` | right |
+
+**`Int`'s bit and overflow operators (Swift's).** `a & b`, `a | b`, `a ^ b`, `~a`, `a << n` and `a >> n`, the wrapping `a &+ b`, `a &- b` and `a &* b`, and the compound `&=`, `|=`, `^=`, `<<=` and `>>=` all take `Int`s and give an `Int`. They use 64-bit two's complement semantics on every backend. Shifts are Swift's smart shifts: a negative count shifts the other way, and a count of 64 or more shifts every bit out (`>>` of a negative gives `-1`). Precedence is Swift's too: shifts bind above multiplication, `&` and `&*` sit with `*`, and `|`, `^`, `&+` and `&-` sit with `+`. `&+` needs spaces around it, because `f(&x)` is an `inout` argument.
+
+**The TS cost:** an `Int` is a JS number there, exact within ±(2^53 − 1).
+- A lone `a & b`, `a | b` or `a ^ b` of two 32-bit values is JS's own operator, and so is a `>>`. Anything else goes through BigInt.
+- A tree of these operators (`(h &* 16777619) & 0xffffffff`, `a << 24 | r << 16`) is one BigInt expression, 64-bit at every step. Only the result has to be within ±(2^53 − 1): a dev build traps outside that range, as `+` does, and a release build rounds.
+- So a 32-bit hash or an ARGB colour is exact on TS, and a full 64-bit hash value is not. Kotlin's `Long` and Swift's `Int` are 64-bit natively.
 
 `if`/`else` and `match` are expressions; every branch has the same type (an `if` without
 `else` in a builder yields an optional child).

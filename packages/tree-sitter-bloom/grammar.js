@@ -26,8 +26,9 @@ const PREC = {
   range: 7,
   additive: 8,
   multiplicative: 9,
-  prefix: 10,
-  postfix: 11,
+  shift: 10,
+  prefix: 11,
+  postfix: 12,
 };
 
 /** Words the lexer reserves (`Kw` in lexer.rs). */
@@ -618,7 +619,7 @@ export default grammar({
     assignment: ($) =>
       seq(
         field('target', $._expression),
-        field('operator', choice('=', '+=', '-=', '*=')),
+        field('operator', choice('=', '+=', '-=', '*=', '&=', '|=', '^=', '<<=', '>>=')),
         field('value', $._expression),
       ),
 
@@ -1096,8 +1097,10 @@ function expressionFamily(head) {
     [`${p}binary_expression`]: ($) =>
       choice(
         ...[
-          [PREC.multiplicative, choice('*', '/', '%')],
-          [PREC.additive, choice('+', '-')],
+          // Swift's: `<<`/`>>` above multiplication, `&`/`&*` with it, `|`/`^`/`&+`/`&-` with `+`.
+          [PREC.shift, choice('<<', '>>')],
+          [PREC.multiplicative, choice('*', '/', '%', '&', '&*')],
+          [PREC.additive, choice('+', '-', '|', '^', '&+', '&-')],
           [PREC.range, choice('..<', '...')],
           [PREC.comparison, choice('<', '<=', '>', '>=')],
           [PREC.equality, choice('==', '!=', '===', '!==')],
@@ -1136,10 +1139,10 @@ function expressionFamily(head) {
       ),
 
     [`${p}prefix_expression`]: ($) =>
-      // `&x`: a place passed to an `inout` parameter.
+      // `&x`: a place passed to an `inout` parameter; `~x`: an `Int`'s bits inverted.
       prec.right(
         PREC.prefix,
-        seq(field('operator', choice('!', '-', '&')), field('operand', expr($))),
+        seq(field('operator', choice('!', '-', '~', '&')), field('operand', expr($))),
       ),
 
     /** `try f()`, `try? f()`, `try! f()`. */

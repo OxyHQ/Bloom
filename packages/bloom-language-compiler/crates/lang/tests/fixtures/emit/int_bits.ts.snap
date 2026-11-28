@@ -1,0 +1,59 @@
+function $band(a: number, b: number): number {
+  return (a | 0) === a && (b | 0) === b ? a & b : Number(BigInt.asIntN(64, BigInt(a) & BigInt(b)));
+}
+function $bor(a: number, b: number): number {
+  return (a | 0) === a && (b | 0) === b ? a | b : Number(BigInt.asIntN(64, BigInt(a) | BigInt(b)));
+}
+function $bxor(a: number, b: number): number {
+  return (a | 0) === a && (b | 0) === b ? a ^ b : Number(BigInt.asIntN(64, BigInt(a) ^ BigInt(b)));
+}
+function $shl(a: number, n: number): number {
+  if (n < 0) return n <= -64 ? (a < 0 ? -1 : 0) : Math.floor(a / 2 ** -n);
+  if (n >= 64) return 0;
+  return Number(BigInt.asIntN(64, BigInt(a) << BigInt(n)));
+}
+function $shr(a: number, n: number): number {
+  if (n < 0) return n <= -64 ? 0 : Number(BigInt.asIntN(64, BigInt(a) << BigInt(-n)));
+  if (n >= 64) return a < 0 ? -1 : 0;
+  return Math.floor(a / 2 ** n);
+}
+function $wadd(a: number, b: number): number {
+  const sum = a + b;
+  return Number.isSafeInteger(sum) ? sum : Number(BigInt.asIntN(64, BigInt(a) + BigInt(b)));
+}
+function $wmul(a: number, b: number): number {
+  const product = a * b;
+  return Number.isSafeInteger(product) ? product : Number(BigInt.asIntN(64, BigInt(a) * BigInt(b)));
+}
+function $wsub(a: number, b: number): number {
+  const difference = a - b;
+  return Number.isSafeInteger(difference) ? difference : Number(BigInt.asIntN(64, BigInt(a) - BigInt(b)));
+}
+
+export function pack(a: number, r: number, g: number, b: number): number {
+return Number(BigInt.asIntN(64, (((BigInt.asIntN(64, ((BigInt(a) & 255n) << 24n)) | BigInt.asIntN(64, ((BigInt(r) & 255n) << 16n))) | BigInt.asIntN(64, ((BigInt(g) & 255n) << 8n))) | (BigInt(b) & 255n))));
+}
+
+export function unpack(argb: number): readonly number[] {
+return [Number(BigInt.asIntN(64, ((BigInt(argb) >> 24n) & 255n))), Number(BigInt.asIntN(64, ((BigInt(argb) >> 16n) & 255n))), Number(BigInt.asIntN(64, ((BigInt(argb) >> 8n) & 255n))), $band(argb, 255)];
+}
+
+export function ops(a: number, b: number): readonly number[] {
+let h = a;
+h = $bxor(h, b);
+h = $band(h, 65535);
+h = $bor(h, 1);
+h = $shl(h, 2);
+h = $shr(h, 1);
+return [$band(a, b), $bor(a, b), $bxor(a, b), (-a - 1), $shl(a, 3), $shr(a, 1), $wadd(a, b), $wsub(a, b), $wmul(a, b), h, $shl(1, 40), $shr(-8, 1)];
+}
+
+export function fnv32(bytes: readonly number[]): number {
+let h = 2166136261;
+for (const byte of bytes) {
+h = $bxor(h, byte);
+h = Number(BigInt.asIntN(64, (BigInt.asIntN(64, (BigInt(h) * 16777619n)) & 4294967295n)));
+}
+return h;
+}
+

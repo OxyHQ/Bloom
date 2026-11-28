@@ -514,8 +514,68 @@ fn is_atom(expr: &Expr) -> bool {
     )
 }
 
+/// Whether `expr` is an `Int` bit or overflow operation (through parentheses).
+fn is_bit_tree(expr: &Expr) -> bool {
+    match &expr.kind {
+        ExprKind::Paren(inner) => is_bit_tree(inner),
+        ExprKind::Binary(op, ..) => bit_helper(*op).is_some(),
+        ExprKind::Unary(UnaryOp::BitNot, _) => true,
+        _ => false,
+    }
+}
+
+/// The 64-bit helper of an `Int` bit or overflow operator (`helper_text`).
+fn bit_helper(op: BinaryOp) -> Option<&'static str> {
+    Some(match op {
+        BinaryOp::BitAnd => "band",
+        BinaryOp::BitOr => "bor",
+        BinaryOp::BitXor => "bxor",
+        BinaryOp::Shl => "shl",
+        BinaryOp::Shr => "shr",
+        BinaryOp::WrapAdd => "wadd",
+        BinaryOp::WrapSub => "wsub",
+        BinaryOp::WrapMul => "wmul",
+        _ => return None,
+    })
+}
+
 fn helper_text(name: &str) -> &'static str {
     match name {
+        // `Int`'s 64-bit two's complement bit and overflow operators. JS's `&`, `|`, `^` are
+        // 32-bit: two 32-bit operands take them, any other through BigInt. A result is exact
+        // within ±(2^53 − 1), where an `Int` is exact on JS.
+        "band" => {
+            "function $band(a: number, b: number): number {\n  return (a | 0) === a && (b | 0) === b ? a & b : Number(BigInt.asIntN(64, BigInt(a) & BigInt(b)));\n}"
+        }
+        "bor" => {
+            "function $bor(a: number, b: number): number {\n  return (a | 0) === a && (b | 0) === b ? a | b : Number(BigInt.asIntN(64, BigInt(a) | BigInt(b)));\n}"
+        }
+        "bxor" => {
+            "function $bxor(a: number, b: number): number {\n  return (a | 0) === a && (b | 0) === b ? a ^ b : Number(BigInt.asIntN(64, BigInt(a) ^ BigInt(b)));\n}"
+        }
+        // Swift's smart shifts: a negative count shifts the other way; 64 or more shifts every bit out.
+        "shl" => {
+            "function $shl(a: number, n: number): number {\n  if (n < 0) return n <= -64 ? (a < 0 ? -1 : 0) : Math.floor(a / 2 ** -n);\n  if (n >= 64) return 0;\n  return Number(BigInt.asIntN(64, BigInt(a) << BigInt(n)));\n}"
+        }
+        "shr" => {
+            "function $shr(a: number, n: number): number {\n  if (n < 0) return n <= -64 ? 0 : Number(BigInt.asIntN(64, BigInt(a) << BigInt(-n)));\n  if (n >= 64) return a < 0 ? -1 : 0;\n  return Math.floor(a / 2 ** n);\n}"
+        }
+        // A BigInt tree's smart shifts (a count that is not a literal in 0..<64).
+        "bshl" => {
+            "function $bshl(a: bigint, n: number): bigint {\n  if (n < 0) return n <= -64 ? (a < 0n ? -1n : 0n) : a >> BigInt(-n);\n  return n >= 64 ? 0n : BigInt.asIntN(64, a << BigInt(n));\n}"
+        }
+        "bshr" => {
+            "function $bshr(a: bigint, n: number): bigint {\n  if (n < 0) return n <= -64 ? 0n : BigInt.asIntN(64, a << BigInt(-n));\n  return n >= 64 ? (a < 0n ? -1n : 0n) : a >> BigInt(n);\n}"
+        }
+        "wadd" => {
+            "function $wadd(a: number, b: number): number {\n  const sum = a + b;\n  return Number.isSafeInteger(sum) ? sum : Number(BigInt.asIntN(64, BigInt(a) + BigInt(b)));\n}"
+        }
+        "wsub" => {
+            "function $wsub(a: number, b: number): number {\n  const difference = a - b;\n  return Number.isSafeInteger(difference) ? difference : Number(BigInt.asIntN(64, BigInt(a) - BigInt(b)));\n}"
+        }
+        "wmul" => {
+            "function $wmul(a: number, b: number): number {\n  const product = a * b;\n  return Number.isSafeInteger(product) ? product : Number(BigInt.asIntN(64, BigInt(a) * BigInt(b)));\n}"
+        }
         // Swift's mutating members, on an array or a record nothing else holds (`crate::cow`):
         // each changes it in place and gives the member's result; an index out of range traps.
         "mutated" => {
@@ -2031,7 +2091,17 @@ impl<'a> Emitter<'a> {
             AssignOp::Add => Some("+"),
             AssignOp::Sub => Some("-"),
             AssignOp::Mul => Some("*"),
+            AssignOp::BitAnd => Some("&"),
+            AssignOp::BitOr => Some("|"),
+            AssignOp::BitXor => Some("^"),
+            AssignOp::Shl => Some("<<"),
+            AssignOp::Shr => Some(">>"),
         };
+        // `h ^= x`: through the 64-bit helper its operator is (`$bxor(h, x)`).
+        let bit_helper = a.op.binary().and_then(bit_helper);
+        if let Some(helper) = bit_helper {
+            self.helpers.insert(helper);
+        }
         // `xs += ys` of an array: a new one, `[...xs, ...ys]` (a literal's items in place).
         let list = op.is_some() && matches!(self.ck.types.get(&a.value.id), Some(Ty::List(_)));
         let awaited = expr_awaits(&a.value) && matches!(res, AssignRes::State { functional: true, .. });
@@ -2100,6 +2170,11 @@ impl<'a> Emitter<'a> {
                     let mut out = Frag::of("[...");
                     out.f(current).s(", ").f(value).s("]");
                     out
+                }
+                Some(_) if bit_helper.is_some() => {
+                    let mut out = Frag::of(format!("${}(", bit_helper.unwrap_or_default()));
+                    out.f(current).s(", ").f(value).s(")");
+                    if int_check { out.wrap("$int(", ")") } else { out }
                 }
                 Some(op) => {
                     let mut out = current;
@@ -3125,6 +3200,12 @@ impl<'a> Emitter<'a> {
                     .collect();
                 if entries.is_empty() { Frag::of("{}") } else { Frag::join(entries, ", ").wrap("{ ", " }") }
             }
+            // `~x`: `-x - 1`, the 64-bit inversion, exact for every `Int` JS holds.
+            ExprKind::Unary(UnaryOp::BitNot, operand) => {
+                let mut out = Frag::of("(-");
+                out.f(self.operand(operand)).s(" - 1)");
+                out
+            }
             ExprKind::Unary(op, operand) => {
                 let mut out = Frag::of(if *op == UnaryOp::Not { "!" } else { "-" });
                 out.f(self.operand(operand));
@@ -3331,6 +3412,34 @@ impl<'a> Emitter<'a> {
     }
 
     fn binary(&mut self, op: BinaryOp, lhs: &Expr, rhs: &Expr, expr: &Expr) -> Frag {
+        // A tree of them (`(h &* p) & mask`, `a << 24 | b`): one BigInt expression, 64-bit
+        // throughout, so only the result has to be within ±(2^53 − 1).
+        if bit_helper(op).is_some() && [lhs, rhs].iter().any(|side| is_bit_tree(side)) {
+            let tree = self.bit_tree(expr);
+            let mut out = Frag::of("Number(BigInt.asIntN(64, ");
+            out.f(tree).s("))");
+            if self.options.dev {
+                self.helpers.insert("int");
+                return out.wrap("$int(", ")");
+            }
+            return out;
+        }
+        // `a & b`, `a << n`, `a &+ b`: 64-bit, through a helper (JS's own operators are 32-bit).
+        if let Some(helper) = bit_helper(op) {
+            self.helpers.insert(helper);
+            let (left, right) = (self.expr(lhs), self.expr(rhs));
+            let mut out = Frag::of(format!("${helper}("));
+            out.f(left).s(", ").f(right).s(")");
+            // A shift or a wrapping result may leave ±(2^53 − 1), where an `Int` is exact on JS:
+            // a dev build traps it, as `+` does.
+            if self.options.dev
+                && matches!(op, BinaryOp::Shl | BinaryOp::WrapAdd | BinaryOp::WrapSub | BinaryOp::WrapMul)
+            {
+                self.helpers.insert("int");
+                return out.wrap("$int(", ")");
+            }
+            return out;
+        }
         // An `Int` is 64-bit, exact on the JS backend within ±(2^53 − 1): a dev build traps a
         // `+`, `-` or `*` whose result leaves that range, as Swift traps an overflow.
         if self.options.dev
@@ -4158,6 +4267,55 @@ impl<'a> Emitter<'a> {
                 out.f(Frag::join(values, ", ")).s(")");
                 out
             }
+        }
+    }
+
+    /// An `Int` bit-operation tree as one BigInt expression: its operators BigInt's, each
+    /// overflow operator wrapped to 64 bits, each other operand `BigInt(x)` (a literal `5n`).
+    fn bit_tree(&mut self, expr: &Expr) -> Frag {
+        let wrap = |inner: Frag| inner.wrap("BigInt.asIntN(64, ", ")");
+        match &expr.kind {
+            ExprKind::Paren(inner) => self.bit_tree(inner),
+            ExprKind::Unary(UnaryOp::BitNot, inner) => {
+                let mut out = Frag::of("(~");
+                out.f(self.bit_tree(inner)).s(")");
+                out
+            }
+            ExprKind::Binary(op, lhs, rhs) if bit_helper(*op).is_some() => {
+                let left = self.bit_tree(lhs);
+                // A shift's count: Swift's smart shift, through `$bshl`/`$bshr` unless it is a
+                // literal in 0..<64.
+                if matches!(op, BinaryOp::Shl | BinaryOp::Shr) {
+                    if let ExprKind::Int(n) = rhs.kind
+                        && (0..64).contains(&n)
+                    {
+                        let mut out = Frag::of("(");
+                        out.f(left).s(&format!(" {} {n}n)", op.text()));
+                        return if *op == BinaryOp::Shl { wrap(out) } else { out };
+                    }
+                    let helper = if *op == BinaryOp::Shl { "bshl" } else { "bshr" };
+                    self.helpers.insert(helper);
+                    let mut out = Frag::of(format!("${helper}("));
+                    out.f(left).s(", ").f(self.expr(rhs)).s(")");
+                    return out;
+                }
+                let right = self.bit_tree(rhs);
+                let symbol = match op {
+                    BinaryOp::WrapAdd => "+",
+                    BinaryOp::WrapSub => "-",
+                    BinaryOp::WrapMul => "*",
+                    other => other.text(),
+                };
+                let mut out = Frag::of("(");
+                out.f(left).s(&format!(" {symbol} ")).f(right).s(")");
+                if matches!(op, BinaryOp::WrapAdd | BinaryOp::WrapSub | BinaryOp::WrapMul) {
+                    wrap(out)
+                } else {
+                    out
+                }
+            }
+            ExprKind::Int(n) => Frag::of(format!("{n}n")),
+            _ => self.expr(expr).wrap("BigInt(", ")"),
         }
     }
 

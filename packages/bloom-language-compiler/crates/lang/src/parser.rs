@@ -2530,16 +2530,23 @@ impl<'s, 'i> Parser<'s, 'i> {
             }
             _ => {
                 let expr = self.expr(Ctx::Normal);
-                let op = match self.tok() {
-                    Tok::P(P::Eq) => Some(AssignOp::Set),
-                    Tok::P(P::PlusEq) => Some(AssignOp::Add),
-                    Tok::P(P::MinusEq) => Some(AssignOp::Sub),
-                    Tok::P(P::StarEq) => Some(AssignOp::Mul),
-                    _ => None,
+                let (op, width) = match (self.tok(), self.nth(1)) {
+                    (Tok::P(P::Eq), _) => (Some(AssignOp::Set), 1),
+                    (Tok::P(P::PlusEq), _) => (Some(AssignOp::Add), 1),
+                    (Tok::P(P::MinusEq), _) => (Some(AssignOp::Sub), 1),
+                    (Tok::P(P::StarEq), _) => (Some(AssignOp::Mul), 1),
+                    (Tok::P(P::AmpEq), _) => (Some(AssignOp::BitAnd), 1),
+                    (Tok::P(P::PipeEq), _) => (Some(AssignOp::BitOr), 1),
+                    (Tok::P(P::CaretEq), _) => (Some(AssignOp::BitXor), 1),
+                    (Tok::P(P::Lt), Tok::P(P::Le)) if self.joined() => (Some(AssignOp::Shl), 2),
+                    (Tok::P(P::Gt), Tok::P(P::Ge)) if self.joined() => (Some(AssignOp::Shr), 2),
+                    _ => (None, 0),
                 };
                 match op {
                     Some(op) => {
-                        self.bump();
+                        for _ in 0..width {
+                            self.bump();
+                        }
                         if !is_place(&expr) {
                             self.error(
                                 Diagnostic::error(
@@ -2573,8 +2580,18 @@ impl<'s, 'i> Parser<'s, 'i> {
     fn statement_word(&self) -> bool {
         !matches!(
             self.nth(1),
-            Tok::P(P::Eq | P::Dot | P::LParen | P::PlusEq | P::MinusEq | P::StarEq | P::QuestionDot)
-                | Tok::Newline
+            Tok::P(
+                P::Eq
+                    | P::Dot
+                    | P::LParen
+                    | P::PlusEq
+                    | P::MinusEq
+                    | P::StarEq
+                    | P::AmpEq
+                    | P::PipeEq
+                    | P::CaretEq
+                    | P::QuestionDot
+            ) | Tok::Newline
                 | Tok::Eof
         )
     }
@@ -2743,8 +2760,32 @@ impl<'s, 'i> Parser<'s, 'i> {
         if self.at(P::Dot) { self.postfix_loop(expr, ctx, None) } else { expr }
     }
 
+    /// Whether the token after this one starts where this one ends (`>>`, `<<=`).
+    fn joined(&self) -> bool {
+        self.tokens.get(self.pos + 1).is_some_and(|next| next.span.start == self.token().span.end)
+    }
+
+    /// A binary operator here, and how many tokens it is (`<<` and `>>` are two `<`s or `>`s
+    /// against each other, so a type's `Array<Array<Int>>` still closes).
+    fn binary_op2(&self) -> Option<(BinaryOp, usize)> {
+        match (self.tok(), self.nth(1)) {
+            (Tok::P(P::Lt), Tok::P(P::Lt)) if self.joined() => return Some((BinaryOp::Shl, 2)),
+            (Tok::P(P::Gt), Tok::P(P::Gt)) if self.joined() => return Some((BinaryOp::Shr, 2)),
+            // `<<=` and `>>=` are assignments, never a comparison.
+            (Tok::P(P::Lt), Tok::P(P::Le)) | (Tok::P(P::Gt), Tok::P(P::Ge)) if self.joined() => return None,
+            _ => {}
+        }
+        self.binary_op().map(|op| (op, 1))
+    }
+
     fn binary_op(&self) -> Option<BinaryOp> {
         Some(match self.tok() {
+            Tok::P(P::Amp) => BinaryOp::BitAnd,
+            Tok::P(P::Pipe) => BinaryOp::BitOr,
+            Tok::P(P::Caret) => BinaryOp::BitXor,
+            Tok::P(P::AmpPlus) => BinaryOp::WrapAdd,
+            Tok::P(P::AmpMinus) => BinaryOp::WrapSub,
+            Tok::P(P::AmpStar) => BinaryOp::WrapMul,
             Tok::P(P::Star) => BinaryOp::Mul,
             Tok::P(P::Slash) => BinaryOp::Div,
             Tok::P(P::Percent) => BinaryOp::Rem,
@@ -2791,12 +2832,15 @@ impl<'s, 'i> Parser<'s, 'i> {
                 lhs = self.expr_node(ExprKind::CastAs(Box::new(lhs), ty, forced), span);
                 continue;
             }
-            let Some(op) = self.binary_op() else { break };
+            let Some((op, width)) = self.binary_op2() else { break };
             let prec = op.precedence();
             if prec < min {
                 break;
             }
-            let op_span = self.bump();
+            let mut op_span = self.bump();
+            if width == 2 {
+                op_span = op_span.to(self.bump());
+            }
             let rhs =
                 if op == BinaryOp::Default { self.binary(prec, ctx) } else { self.binary(prec + 1, ctx) };
             // Comparisons do not chain: `a < b < c` says nothing clear.
@@ -2864,6 +2908,13 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let operand = self.unary(ctx);
                 let span = start.to(operand.span);
                 self.expr_node(ExprKind::Unary(UnaryOp::Neg, Box::new(operand)), span)
+            }
+            // `~x`: an `Int`'s bits inverted.
+            Tok::P(P::Tilde) => {
+                self.bump();
+                let operand = self.unary(ctx);
+                let span = start.to(operand.span);
+                self.expr_node(ExprKind::Unary(UnaryOp::BitNot, Box::new(operand)), span)
             }
             // `&x` (Swift's): a place passed to an `inout` parameter.
             Tok::P(P::Amp) => {
