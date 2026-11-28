@@ -1,0 +1,17 @@
+function $toFloat(text: string): number | undefined {
+  const value = Number(text.trim());
+  return text.trim() !== "" && !Number.isNaN(value) ? value : undefined;
+}
+
+export function below(s: string): boolean {
+return ($toFloat(s) ?? ((s.length === 0) ? 0 : 1)) < 1;
+}
+
+export function parsed(s: string): number {
+return $toFloat(s) ?? ((s.length === 0) ? 0.0 : 1.0);
+}
+
+export function maybe(s: string, c: boolean): number | undefined {
+return $toFloat(s) ?? (c ? 2.0 : undefined);
+}
+

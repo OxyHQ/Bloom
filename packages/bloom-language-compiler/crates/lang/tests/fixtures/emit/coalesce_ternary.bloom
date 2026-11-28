@@ -1,0 +1,5 @@
+// `x ?? (c ? a : b)` with no `none` branch is the branches' type, as Swift's `T? ?? T` is `T`
+// (mention15 coalesce-ternary-optional); `x ?? (c ? a : none)` stays optional.
+public func below(_ s: String) -> Bool { (Float(s) ?? (s.isEmpty ? 0 : 1)) < 1 }
+public func parsed(_ s: String) -> Float { Float(s) ?? (s.isEmpty ? 0.0 : 1.0) }
+public func maybe(_ s: String, _ c: Bool) -> Float? { Float(s) ?? (c ? 2.0 : none) }

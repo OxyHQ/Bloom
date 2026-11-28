@@ -6073,7 +6073,17 @@ impl<'o> Checker<'o> {
                             None if literal => Ty::Str,
                             None => (*inner).clone(),
                         };
-                        let right = self.expr(rhs, Some(&Ty::Option(Box::new(hint.clone()))));
+                        // `x ?? (c ? a : b)` with no `none` branch: the branches are the value
+                        // (Swift's `T? ?? T` is `T`), so they are not read as optionals.
+                        let mut inner_rhs = rhs;
+                        while let ExprKind::Paren(e) = &inner_rhs.kind {
+                            inner_rhs = e;
+                        }
+                        let plain_ternary =
+                            matches!(inner_rhs.kind, ExprKind::Ternary(..)) && !ends_in_none(inner_rhs);
+                        let rhs_expected =
+                            if plain_ternary { hint.clone() } else { Ty::Option(Box::new(hint.clone())) };
+                        let right = self.expr(rhs, Some(&rhs_expected));
                         let _ = right;
                         // `x ?? y` is optional only when `y` is.
                         let right_ty = self.out.types.get(&rhs.id).cloned().unwrap_or(Ty::Unknown);
