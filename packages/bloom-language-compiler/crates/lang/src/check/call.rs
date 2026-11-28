@@ -2623,6 +2623,19 @@ impl Checker<'_> {
 
     fn view_call(&mut self, expr: &Expr, call: &Call, ty: &Ty) -> Ty {
         let Ty::Fn(generic) = ty else { return Ty::Unknown };
+        // A `struct X: ViewModifier` is applied to a view, never drawn itself.
+        if generic.ret == Ty::View(Some("viewModifier")) && self.modifier_arg != Some(expr.id) {
+            let name = match &call.callee.kind {
+                ExprKind::Name(name) => name.clone(),
+                _ => "X".into(),
+            };
+            self.report(
+                Diagnostic::error("B0421", expr.span, format!("`{name}` is a modifier, applied to a view"))
+                    .label("a `ViewModifier` is not a view")
+                    .help(format!("apply it: `content.modifier({name}(…))`"))
+                    .spec("72b-view-modifiers"),
+            );
+        }
         // A generic view's witness props, by its type parameters' names (`$w_T_Titled`).
         let witnesses: Vec<String> = generic
             .bounds
@@ -2642,6 +2655,59 @@ impl Checker<'_> {
         self.witnesses_of(expr, call.callee.span, &f);
         self.out.calls.insert(expr.id, CallRes::View { params, trailing, witnesses });
         f.ret.clone()
+    }
+
+    /// `view.modifier(Gate(…))` with `struct Gate: ViewModifier`. A stateful one (its members
+    /// keep state or call hooks) is called once per render at the top of the view applying it,
+    /// so it is applied in the view's `body` itself, from names declared before the body.
+    fn view_modifier(&mut self, expr: &Expr, arg: &Arg, callee: &str, stateful: bool) -> Ty {
+        let saved = self.modifier_arg.replace(arg.value.id);
+        self.expr(&arg.value, None);
+        self.modifier_arg = saved;
+        if stateful {
+            let in_closure = self.frames.last().is_some_and(|f| f.closure);
+            match self.modifier_site.filter(|_| !in_closure) {
+                None => self.report(
+                    Diagnostic::error(
+                        "B0422",
+                        arg.value.span,
+                        format!("`{callee}` keeps state, so it is applied in a view's `body`"),
+                    )
+                    .label("in a closure, a `for` row or a member, which may run any number of times")
+                    .help(format!(
+                        "apply it outside the rows (`VStack {{ … }}.modifier({callee}(…))`), or make `{callee}` keep no state"
+                    ))
+                    .spec("72b-view-modifiers"),
+                ),
+                Some(first) => {
+                    let mut late: Vec<(String, Span)> = Vec::new();
+                    super::walk_names(&arg.value, &mut |name, id| {
+                        if let Some(super::NameRes::Local(local)) = self.out.names.get(&id)
+                            && *local >= first
+                            && !late.iter().any(|(n, _)| n == name)
+                        {
+                            late.push((name.to_string(), self.out.locals[*local].span));
+                        }
+                    });
+                    if let Some((name, declared)) = late.first() {
+                        self.report(
+                            Diagnostic::error(
+                                "B0422",
+                                arg.value.span,
+                                format!("`{callee}(…)` reads `{name}`, declared in the body"),
+                            )
+                            .label("a modifier that keeps state is set up before the body runs")
+                            .with_label(*declared, "declared here")
+                            .help(format!("make `{name}` a member of the view (`let {name} = …` beside the props)"))
+                            .spec("72b-view-modifiers"),
+                        );
+                    }
+                }
+            }
+        }
+        self.out.view_modifiers.insert(expr.id, stateful);
+        self.out.calls.insert(expr.id, CallRes::Modifier { object: false });
+        Ty::View(None)
     }
 
     /// `.name(…)` on a view: the node takes it, with that many arguments, each
@@ -2671,6 +2737,16 @@ impl Checker<'_> {
         }
         if name.name == "onChange" {
             return self.on_change(expr, call, name, recv, task_allowed);
+        }
+        // `.modifier(Gate(…))`, a `struct Gate: ViewModifier`: its body wraps the view.
+        if name.name == "modifier"
+            && let [arg] = call.args.as_slice()
+            && arg.label.is_none()
+            && let ExprKind::Call(inner) = &arg.value.kind
+            && let ExprKind::Name(callee) = &inner.callee.kind
+            && let Some(&stateful) = self.modifier_decls.get(callee.as_str())
+        {
+            return self.view_modifier(expr, arg, callee, stateful);
         }
         let kind = kind.unwrap_or("view");
         let Some(spec) = ui::node(kind) else { return recv.clone() };

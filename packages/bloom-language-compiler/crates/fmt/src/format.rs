@@ -652,7 +652,7 @@ impl<'a> Formatter<'a> {
     fn view_decl(&mut self, v: &ViewDecl) -> Doc {
         let keyword = match v.kind {
             // A menu's actions or content is 2.0 only (`struct X: MenuActions`): printed as a struct.
-            ViewKind::View | ViewKind::MenuActions | ViewKind::MenuContent => "view ",
+            ViewKind::View | ViewKind::MenuActions | ViewKind::MenuContent | ViewKind::Modifier => "view ",
             ViewKind::Screen => "screen ",
             ViewKind::Layout => "layout ",
         };
@@ -729,6 +729,7 @@ impl<'a> Formatter<'a> {
             ViewKind::Layout => "Layout",
             ViewKind::MenuActions => "MenuActions",
             ViewKind::MenuContent => "MenuContent",
+            ViewKind::Modifier => "ViewModifier",
         };
         let equatable =
             if v.members.iter().any(|m| matches!(m, Member::Equal(_))) { ", Equatable" } else { "" };

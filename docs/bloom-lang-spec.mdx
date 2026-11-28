@@ -1055,6 +1055,40 @@ condition may choose between two tokens (`.tint(isLiked ? .danger : .neutral)`).
 set is B0502 with the closest name; an opacity not on the scale is B0502. The string tokens still compile. SwiftUI's modifier names (`.foregroundStyle`,
 `.background(_:)` as a style) are BloomUI's, phase B.
 
+### 7.2b View modifiers
+
+`struct X: ViewModifier` (SwiftUI's) is a reusable wrapper: its stored properties are its
+props, it may keep `@State`, read `@Environment` and call hooks in `let` members as a view does,
+and `func body(content: Content) -> some View` draws it around `content`, the view it is applied
+to. `view.modifier(X(…))` applies it:
+
+```swift
+struct SupervisedGate: ViewModifier {
+  var allowSupervised = false
+  let state = useSupervisionState()
+  func body(content: Content) -> some View {
+    if !state.ready { DetailSkeleton().header(false) }
+    else if state.supervised && !allowSupervised { LockedState().header(false) }
+    else { content }
+  }
+}
+
+FeedsList().title("Feeds").modifier(SupervisedGate())
+```
+
+- Its result is the view's place in the tree. On a screen's root it is the root, so the screen's
+  chrome is the drawn view's: `content` keeps its `.title`/`.toolbar`/`.header`, and a state
+  drawn instead declares its own (`.header(false)` hides the header and its toolbar).
+- A modifier with no member but `func`s (and no `.task`/`.onChange` on its body) keeps no
+  state: it is called where it is applied (`X({ … })(view)`), rows included.
+- One that keeps state is called once per render at the top of the view applying it (`const
+  $mod0 = X({ … })`, before the body), so its state and hooks are that view's. It is applied in
+  the view's `body` itself (an `if` branch is fine), not in a closure, a `for` row or a member,
+  and its arguments read only names declared before the body (props, state, members): B0422.
+- `X(…)` anywhere but `.modifier(X(…))` is B0421: a modifier is not a view.
+- TS sees `function X(props): (content: ComposedView) => Child`. The native backends emit a
+  Swift `ViewModifier` and a Kotlin `@Composable` wrapper.
+
 ### 7.3 Reactivity (compile-time)
 
 | Declaration | Meaning | Compiles to |

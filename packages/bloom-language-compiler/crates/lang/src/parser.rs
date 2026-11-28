@@ -812,6 +812,7 @@ impl<'s, 'i> Parser<'s, 'i> {
                 "Layout" => Some(ViewKind::Layout),
                 "MenuActions" => Some(ViewKind::MenuActions),
                 "MenuContent" => Some(ViewKind::MenuContent),
+                "ViewModifier" => Some(ViewKind::Modifier),
                 _ => None,
             },
             _ => None,
@@ -991,6 +992,7 @@ impl<'s, 'i> Parser<'s, 'i> {
         let mut params = Vec::new();
         let mut members = Vec::new();
         let mut body: Option<(Span, Block)> = None;
+        let mut content: Option<Ident> = None;
         for member in &surface.members {
             let attr = member.modifiers.attrs.first();
             let attr_name = attr.map(|a| a.name.name.as_str());
@@ -1173,15 +1175,40 @@ impl<'s, 'i> Parser<'s, 'i> {
                         ),
                     }
                 }
+                // A `ViewModifier`'s `func body(content: Content) -> some View`: its body, with
+                // the view it wraps in scope.
+                TypeMemberKind::Func(f) if kind == ViewKind::Modifier && f.name.name == "body" => {
+                    match f.params.as_slice() {
+                        [param] => {
+                            content = Some(param.name.clone());
+                            body = Some((f.name.span, f.body.clone()));
+                        }
+                        _ => self.error(
+                            Diagnostic::error(
+                                "B0101",
+                                f.name.span,
+                                "a modifier's `body` takes the view it wraps: `body(content: Content)`",
+                            )
+                            .label("expected one parameter")
+                            .help("write `func body(content: Content) -> some View { … }`")
+                            .spec("72b-view-modifiers"),
+                        ),
+                    }
+                }
                 TypeMemberKind::Func(f) => members.push(Member::Fn(f.clone())),
                 TypeMemberKind::Let(l) => members.push(Member::Let(l.clone())),
             }
         }
         let (body_keyword, mut body) = body.unwrap_or_else(|| {
+            let (what, help) = if kind == ViewKind::Modifier {
+                ("modifier", "add `func body(content: Content) -> some View { … }`")
+            } else {
+                ("view", "add `var body: some View { … }`")
+            };
             self.error(
-                Diagnostic::error("B0106", name.span, format!("view `{}` has no body", name.name))
+                Diagnostic::error("B0106", name.span, format!("{what} `{}` has no body", name.name))
                     .label("this view draws nothing")
-                    .help("add `var body: some View { … }`")
+                    .help(help)
                     .spec("71-a-view"),
             );
             (name.span, Block { stmts: Vec::new(), span: name.span })
@@ -1199,6 +1226,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             body,
             span,
             surface: Some(Box::new(surface)),
+            content,
         }
     }
 
@@ -1705,6 +1733,11 @@ impl<'s, 'i> Parser<'s, 'i> {
                 let span = self.bump();
                 Ident { name: "==".into(), span }
             }
+            // `func body(content: Content) -> some View`: a `ViewModifier`'s requirement.
+            Tok::Kw(Kw::Body) => {
+                let span = self.bump();
+                Ident { name: "body".into(), span }
+            }
             _ => self.ident("the function's name"),
         };
         let (generics, mut constraints) = self.constrained_generics();
@@ -1987,6 +2020,7 @@ impl<'s, 'i> Parser<'s, 'i> {
             body,
             span: start.to(end),
             surface: None,
+            content: None,
         }
     }
 

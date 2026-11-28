@@ -379,6 +379,12 @@ pub enum ViewKind {
     MenuActions,
     /// `struct X: MenuContent` (2.0): a menu's rows, through `menu()`, built only while it is open.
     MenuContent,
+    /// `struct X: ViewModifier` (2.0, SwiftUI's): `func body(content: Content) -> some View`
+    /// wraps the view it is applied to (`.modifier(X(…))`). Its result is that view's place in
+    /// the tree (a screen's root keeps its chrome through it). Emitted as a function from its
+    /// props to `(content) => node`; one with state or hooks is called once per render at the
+    /// top of the view applying it, as a hook is.
+    Modifier,
 }
 
 impl ViewKind {
@@ -408,6 +414,8 @@ pub struct ViewDecl {
     /// Its stored `let`s are the props, `@State` the states, `var body` the body, and
     /// `.task`, `.onAppear`, `.onDisappear` and `.onChange` on the body its effects.
     pub surface: Option<Box<TypeBody>>,
+    /// A `ViewModifier`'s `body(content:)` parameter: the view it wraps, in scope in the body.
+    pub content: Option<Ident>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

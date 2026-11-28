@@ -178,6 +178,9 @@ struct Emitter<'a> {
     /// The type parameters the next arrow function [`Self::function`] writes declares.
     arrow_generics: Option<String>,
     hoisted_names: HashMap<Span, String>,
+    /// A stateful `.modifier(X(…))` (its id) → the name its function's result was given at the
+    /// top of the view (`const $mod0 = X({ … })`), called in place with the view it wraps.
+    modifier_names: HashMap<ExprId, String>,
     /// The `$fn` numbers taken by closures hoisted to module scope.
     hoisted_fns: HashSet<usize>,
     /// Each narrowed local (`x` inside `if x != none`) → the one it narrows.
@@ -266,6 +269,7 @@ pub fn emit(file: &File, ck: &CheckResult, _source: &str, filename: &str, option
         view_generics: String::new(),
         arrow_generics: None,
         hoisted_names: HashMap::default(),
+        modifier_names: HashMap::default(),
         hoisted_fns: HashSet::default(),
         narrowed_from: ck.narrowed.values().map(|(narrowed, original)| (*narrowed, *original)).collect(),
         hoisted_trees: HashMap::default(),
@@ -3811,6 +3815,18 @@ impl<'a> Emitter<'a> {
                 out.f(Frag::join(values, ", ").wrap("(", ")"));
                 out
             }
+            // `view.modifier(Gate(…))`, a `struct Gate: ViewModifier`: `Gate({ … })(view)`, or the
+            // result a stateful one was given at the top of the view, `$mod0(view)`.
+            CallRes::Modifier { .. } if self.ck.view_modifiers.contains_key(&expr.id) => {
+                let ExprKind::Field(receiver, _) = &call.callee.kind else { unreachable!() };
+                let receiver = self.expr(receiver);
+                let mut out = match self.modifier_names.get(&expr.id) {
+                    Some(name) => Frag::of(name.clone()),
+                    None => self.expr(&call.args[0].value),
+                };
+                out.f(receiver.wrap("(", ")"));
+                out
+            }
             CallRes::Modifier { object } => {
                 let ExprKind::Field(receiver, name) = &call.callee.kind else { unreachable!() };
                 let receiver = self.operand(receiver);
@@ -5916,7 +5932,8 @@ impl<'a> Emitter<'a> {
         }
         // The props, and a name for their whole value (`..props: P`), are what a render reads.
         let reactive = info.props.iter().chain(self.ck.whole_props.iter()).copied().collect();
-        let menu = v.kind.is_menu();
+        // A modifier's body is built per call, with no memo cache of its own, as a menu's is.
+        let menu = v.kind.is_menu() || v.kind == ViewKind::Modifier;
         self.view = Some(ViewState { slots: 0, reactive, setters, versions: HashMap::default(), menu });
         self.memo_group = None;
         self.bufs.push(Vec::new());
@@ -6040,7 +6057,7 @@ impl<'a> Emitter<'a> {
             self.member(member, locals);
             self.subscribe(&observed, locals);
         }
-        if menu {
+        if v.kind.is_menu() {
             return self.menu_decl(
                 item,
                 v,
@@ -6064,12 +6081,19 @@ impl<'a> Emitter<'a> {
                 }
             }
         }
+        if v.kind == ViewKind::Modifier {
+            let has_props = !info.props.is_empty() || !witness_props.is_empty();
+            return self.modifier_decl(item, v, props_decl, &props_name, has_props);
+        }
         // A stateless view whose body is one node: no component of its own (`inlineView`).
         if self.inlinable(index, v) {
             return self.inline_view(item, v, props_decl, &props_name, !info.props.is_empty());
         }
+        // The stateful modifiers its body applies, called here, and what the body then reads.
+        let applied = self.hoist_modifiers(&v.body);
         // The body, cached on what it reads.
-        let deps = self.deps(&v.body.stmts);
+        let mut deps = self.deps(&v.body.stmts);
+        deps.extend(applied);
         self.bufs.push(Vec::new());
         self.scope = Some(deps.clone());
         self.body_span = Some(v.body.span);
@@ -6130,6 +6154,7 @@ impl<'a> Emitter<'a> {
             ViewKind::Screen => ("screen", ROUTER, "export default ".to_string()),
             ViewKind::Layout => ("layout", ROUTER, "export default ".to_string()),
             ViewKind::MenuActions | ViewKind::MenuContent => unreachable!("emitted by `menu_decl`"),
+            ViewKind::Modifier => unreachable!("emitted by `modifier_decl`"),
         };
         self.import_name(module, wrapper);
         let mut out = props_decl;
@@ -6173,8 +6198,120 @@ impl<'a> Emitter<'a> {
     /// caller's). Its semantics are a view's: the body is built from the props it is called
     /// with, and the modifiers chained on it apply around its body (`inlineView`). A generic
     /// view keeps its component (its witnesses are props).
+    /// The stateful `.modifier(X(…))` calls of a body (outside closures and rows, B0422), in order.
+    fn stateful_modifiers<'b>(&self, body: &'b Block) -> Vec<&'b Expr> {
+        let mut out = Vec::new();
+        for stmt in &body.stmts {
+            crate::analysis::walk_stmt(stmt, &mut |node| {
+                if let crate::analysis::Node::Expr(e) = node
+                    && self.ck.view_modifiers.get(&e.id) == Some(&true)
+                {
+                    out.push(e);
+                }
+            });
+        }
+        out
+    }
+
+    /// Calls each stateful modifier a body applies, once per render, before the body:
+    /// `const $mod0 = Gate({ … });` (its state is the view's, as a hook's is). The names, which
+    /// the body reads.
+    fn hoist_modifiers(&mut self, body: &Block) -> Vec<String> {
+        let mut names = Vec::new();
+        for use_site in self.stateful_modifiers(body) {
+            let ExprKind::Call(call) = &use_site.kind else { continue };
+            let Some(arg) = call.args.first() else { continue };
+            let name = format!("$mod{}", self.modifier_names.len());
+            let mut line = Frag::at(arg.value.span, format!("const {name} = "));
+            line.f(self.expr(&arg.value)).s(";");
+            self.push_stmt(line);
+            self.modifier_names.insert(use_site.id, name.clone());
+            names.push(name);
+        }
+        names
+    }
+
+    /// `struct Gate: ViewModifier` (2.0), once its props and members are in the buffer:
+    /// `function Gate(props) { …members; return (content) => body; }`. A stateless one is called
+    /// where it is applied (`Gate({ … })(view)`); a stateful one once per render at the top of the
+    /// view applying it, so its members' hooks are that view's. Either way its result is the
+    /// view's place in the tree: a screen's root keeps the chrome `content` declares, or the one
+    /// the body's other view declares (`.header(false)` hides the header and its toolbar).
+    fn modifier_decl(
+        &mut self,
+        item: &Item,
+        v: &ViewDecl,
+        props_decl: Frag,
+        props_name: &str,
+        has_props: bool,
+    ) -> Frag {
+        self.hoist_modifiers(&v.body);
+        self.bufs.push(Vec::new());
+        let mut value = Frag::default();
+        for stmt in &v.body.stmts {
+            match &stmt.kind {
+                StmtKind::Expr(expr) => value = self.child(expr),
+                _ => self.stmt(stmt),
+            }
+        }
+        let prelude = self.bufs.pop().expect("the modifier's body");
+        let child = self.ts_type(&Ty::View(None));
+        // What `.modifier(…)` is applied to: a view node, which takes modifiers.
+        self.type_imports.entry(LANGUAGE.into()).or_default().insert("ComposedView".into());
+        let content = v.content.as_ref().map_or_else(|| "content".to_string(), |c| js_name(&c.name));
+        let mut closure = Frag::of(format!("return ({content}: ComposedView): {child} => "));
+        if prelude.is_empty() {
+            closure.f(value.wrap("(", ")")).s(";");
+        } else {
+            closure.s("{\n");
+            for line in prelude {
+                closure.f(line).s("\n");
+            }
+            closure.s("return ").f(value).s(";\n};");
+        }
+        self.push_stmt(closure);
+        let lines = self.bufs.pop().expect("the modifier");
+        let slots = self.view.take().expect("the modifier").slots;
+        let mut body = Frag::of("\"use no memo\";\n");
+        if slots > 0 {
+            self.import_name("react/compiler-runtime", "c");
+            body.s(&format!("const $ = $c({slots});\n"));
+        }
+        body.reserve_lines(&lines);
+        for line in lines {
+            body.f(line).s("\n");
+        }
+        // Every prop with a default: `Card()` passes none.
+        let defaulted = v.params.iter().flatten().all(|p| p.default.is_some());
+        let param = if has_props {
+            format!(
+                "{}: {props_name}{}{}",
+                self.props_param(),
+                self.generics(&v.generics),
+                if defaulted { " = {}" } else { "" }
+            )
+        } else {
+            String::new()
+        };
+        let generics = self.shaped_generics(&v.generics, v.span);
+        let export = if item.visibility.exported(self.options.modules) { "export " } else { "" };
+        let name = &v.name.name;
+        let mut out = props_decl;
+        out.mark(item.span)
+            .s(&format!(
+                "{export}function {name}{generics}({param}): ({content}: ComposedView) => {child} {{\n"
+            ))
+            .f(body)
+            .s("}\n");
+        self.view_generics.clear();
+        out
+    }
+
     fn inlinable(&self, index: usize, v: &ViewDecl) -> bool {
         if v.kind != ViewKind::View || !v.generics.is_empty() || !v.members.is_empty() {
+            return false;
+        }
+        if !self.stateful_modifiers(&v.body).is_empty() {
             return false;
         }
         if self.ck.observed.get(&index).is_some_and(|o| !o.is_empty()) {
@@ -6683,6 +6820,19 @@ impl<'a> Emitter<'a> {
                 if visibility == Visibility::PubDefault {
                     out.push_str(&format!("export default {};\n", v.name.name));
                 }
+            }
+            ViewKind::Modifier => {
+                self.type_imports.entry(LANGUAGE.into()).or_default().insert("Child".into());
+                self.type_imports.entry(LANGUAGE.into()).or_default().insert("ComposedView".into());
+                let props = if v.params.iter().flatten().all(|p| p.default.is_some()) {
+                    props.replacen("props:", "props?:", 1)
+                } else {
+                    props
+                };
+                out.push_str(&format!(
+                    "/** A Bloom `ViewModifier`: `Gate(props)(view)` wraps a view; one that keeps state is called once per render, as a hook. */\nexport declare function {}{generics}({props}): (content: ComposedView) => Child;\n",
+                    v.name.name
+                ));
             }
             ViewKind::MenuActions | ViewKind::MenuContent => {
                 let node =

@@ -398,6 +398,10 @@ pub struct CheckResult {
     /// `x as? JSError` (or `HTTPError`) on a TS value: the cast's argument is that value, which
     /// TS takes as an `Error` there (`x as unknown as Error`).
     pub foreign_casts: HashSet<ExprId>,
+    /// `.modifier(X(…))` with `X` a `struct X: ViewModifier` (2.0): the `.modifier` call's id,
+    /// and whether `X` keeps state (hooks, `@State`, effects), so its function is called once
+    /// per render at the top of the view applying it, where a stateless one is called in place.
+    pub view_modifiers: HashMap<ExprId, bool>,
     /// The keys of dictionary elements assigned in place (`table[k] = v`), by the key's id: the
     /// dictionary rebuilt with the key (`{ ...table, [k]: v }`), not a list's `$at`.
     pub map_writes: HashSet<ExprId>,
@@ -553,6 +557,14 @@ pub struct Checker<'o> {
     pending: HashMap<LocalId, (bool, usize)>,
     /// The outermost call of a view member's value may be a hook.
     hook_allowed: bool,
+    /// The `struct X: ViewModifier`s in scope, by name: whether each keeps state.
+    modifier_decls: HashMap<String, bool>,
+    /// Checking a view's `body` directly (not a member, a closure or a `for` row): the first
+    /// local the body declares. A stateful modifier is applied only here, reading what is
+    /// declared before it.
+    modifier_site: Option<usize>,
+    /// The `.modifier(X(…))` argument being checked: the one place `X(…)` is not B0421.
+    modifier_arg: Option<ExprId>,
     /// Calls that may be hooks as that call's arguments (`useAccount(useRoutedName())`): they
     /// run on every render, in the same order, as the call does.
     hook_args: HashSet<ExprId>,
@@ -716,6 +728,9 @@ impl<'o> Checker<'o> {
             view: None,
             pending: HashMap::default(),
             hook_allowed: false,
+            modifier_decls: HashMap::default(),
+            modifier_site: None,
+            modifier_arg: None,
             hook_args: HashSet::default(),
             hook_body: None,
             unique_id_state: None,
@@ -1766,6 +1781,9 @@ impl<'o> Checker<'o> {
                     Some(self.declare_unique(&f.name, ty, LocalKind::ModuleFn))
                 }
                 ItemKind::View(v) => {
+                    if v.kind == ViewKind::Modifier {
+                        self.modifier_decls.insert(v.name.name.clone(), modifier_keeps_state(v));
+                    }
                     let ty = self.view_type(v);
                     Some(self.declare_unique(&v.name, ty, LocalKind::View))
                 }
@@ -2394,6 +2412,8 @@ impl<'o> Checker<'o> {
         let node = match v.kind {
             ViewKind::MenuActions => "menuActions",
             ViewKind::MenuContent => "menuContent",
+            // Applied with `.modifier(X(…))`, never drawn itself (B0421).
+            ViewKind::Modifier => "viewModifier",
             _ => "view",
         };
         Ty::Fn(Rc::new(FnTy {
@@ -2655,6 +2675,15 @@ impl<'o> Checker<'o> {
                 self.builder(&v.body.stmts);
                 self.pop();
             }
+            // A modifier's body: the view it wraps (`content`) in scope.
+            ViewKind::Modifier => {
+                self.push();
+                if let Some(content) = &v.content {
+                    self.declare(content, Ty::View(None), LocalKind::Let);
+                }
+                self.body(&v.body);
+                self.pop();
+            }
             _ => self.body(&v.body),
         }
         self.frames.pop();
@@ -2664,6 +2693,12 @@ impl<'o> Checker<'o> {
 
     /// A view's `body { … }`: one view, whose root chain may carry `.task`.
     fn body(&mut self, block: &Block) {
+        let site = self.modifier_site.replace(self.out.locals.len());
+        self.body_in_site(block);
+        self.modifier_site = site;
+    }
+
+    fn body_in_site(&mut self, block: &Block) {
         self.push();
         let mut views = 0;
         for stmt in &block.stmts {
@@ -3064,7 +3099,12 @@ impl<'o> Checker<'o> {
                     let ty = self.fn_signature(f);
                     self.declare(&f.name, ty, LocalKind::ModuleFn);
                 }
-                ItemKind::View(v) if v.kind == ViewKind::View || v.kind.is_menu() => {
+                ItemKind::View(v)
+                    if v.kind == ViewKind::View || v.kind.is_menu() || v.kind == ViewKind::Modifier =>
+                {
+                    if v.kind == ViewKind::Modifier {
+                        self.modifier_decls.insert(v.name.name.clone(), modifier_keeps_state(v));
+                    }
                     let ty = self.view_type(v);
                     self.declare(&v.name, ty, LocalKind::View);
                 }
@@ -3777,7 +3817,10 @@ impl<'o> Checker<'o> {
                 let elem = self.iterable(&f.iter);
                 self.push();
                 self.bind_irrefutable(&f.pattern, &elem, LocalKind::Let);
+                // A row: no stateful modifier is applied in it (one call per render, B0422).
+                let site = self.modifier_site.take();
                 self.builder(&f.body.stmts);
+                self.modifier_site = site;
                 self.pop();
             }
             _ => self.report(
@@ -7667,6 +7710,28 @@ fn shift_def(def: &Def, offset: usize) -> Def {
         })
     });
     Def { kind, tagged, ..def.clone() }
+}
+
+/// Whether a `struct X: ViewModifier` keeps state, so it is called once per render at the top of
+/// the view applying it: a member other than a `func` (`@State`, `@Environment`, a `let`, which
+/// may call a hook, an effect), or a `.task`/`.onChange` on its body.
+pub fn modifier_keeps_state(v: &ViewDecl) -> bool {
+    if v.members.iter().any(|m| !matches!(m, Member::Fn(_))) {
+        return true;
+    }
+    let mut effects = false;
+    for stmt in &v.body.stmts {
+        crate::analysis::walk_stmt(stmt, &mut |node| {
+            if let crate::analysis::Node::Expr(e) = node
+                && let ExprKind::Call(call) = &e.kind
+                && let ExprKind::Field(_, name) = &call.callee.kind
+                && matches!(name.name.as_str(), "task" | "onChange")
+            {
+                effects = true;
+            }
+        });
+    }
+    effects
 }
 
 /// `let Alias = SomeView` where `SomeView` is a view this file declares: that view.
