@@ -1,26 +1,17 @@
 error[B0223]: this call can throw, and it is not marked with `try`
- --> check/try_covers_right.bloom:4:43
+ --> check/try_covers_right.bloom:5:43
   |
-4 | public func bad(_ a: Int) throws -> Int { g(a) + (try h(a)) }
+5 | public func bad(_ a: Int) throws -> Int { g(a) + (try h(a)) }
   |                                           ^^^^ a throwing call
   |
 help: write `try` before it (`try?` for `none` on an error, `do { try … } catch { … }` to handle it)
   = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#6-expressions-and-control-flow
 
-error[B0223]: this call can throw, and it is not marked with `try`
- --> check/try_covers_right.bloom:5:51
+warning[B0225]: `??` never falls back: the `try?` covers it, and this is `Int`
+ --> check/try_covers_right.bloom:6:44
   |
-5 | public func bad2(_ a: Int) -> Int { (try? g(a) ?? h(a)) ?? 0 }
-  |                                                   ^^^^ a throwing call
+6 | public func never(_ a: Int) -> Int? { try? g(a) ?? h(a) }
+  |                                            ^^^^ never `none`
   |
-help: write `try` before it (`try?` for `none` on an error, `do { try … } catch { … }` to handle it)
-  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#6-expressions-and-control-flow
-
-error[B0201]: `??` gives a fallback for an optional, and this is `Int`
- --> check/try_covers_right.bloom:5:37
-  |
-5 | public func bad2(_ a: Int) -> Int { (try? g(a) ?? h(a)) ?? 0 }
-  |                                     ^^^^^^^^^^^^^^^^^^^ never `none`
-  |
-help: remove `?? …`: the value is always there
-  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#45-enums-option-and-result
+help: for the fallback of the `try?`, write `(try? g(a)) ?? …`
+  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-lang-spec.mdx#62-control-flow-and-errors-20

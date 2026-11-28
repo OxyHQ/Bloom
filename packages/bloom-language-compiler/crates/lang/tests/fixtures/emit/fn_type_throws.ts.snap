@@ -33,7 +33,7 @@ const lenient: (p0: string) => number = doubled;
 const later = () => parsed("5");
 const a = runThrowing(parsed, "1");
 const b = runThrowing(doubled, "2");
-const c = runThrowing((s: string) => (parsed(s)) + 1, "3");
+const c = runThrowing((s: string) => parsed(s) + 1, "3");
 const mapped = ["4", "6"].map((v0) => (parsed)(v0));
 return [a, b, c, strict("7"), lenient("8"), later(), mapped[0]!, mapped[1]!];
 }
