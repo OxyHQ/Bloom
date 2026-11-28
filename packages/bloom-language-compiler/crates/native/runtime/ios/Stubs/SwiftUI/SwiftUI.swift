@@ -402,6 +402,7 @@ public struct GeometryReader<Content: View>: _PrimitiveView {
 public struct GeometryProxy {
   public var size: CGSize { .zero }
   public var safeAreaInsets: EdgeInsets { EdgeInsets() }
+  public func frame(in coordinateSpace: NamedCoordinateSpace) -> CGRect { .zero }
 }
 public struct ViewThatFits<Content: View>: _PrimitiveView {
   public init(in axes: Axis.Set = [.horizontal, .vertical], @ViewBuilder content: () -> Content) {}
@@ -842,4 +843,62 @@ public struct WindowGroup<Content: View>: Scene {
 public struct TextField<Label: View>: _PrimitiveView {}
 extension TextField where Label == Text {
   public init<S: StringProtocol>(_ title: S, text: Binding<String>) {}
+}
+
+// ---- preferences, scroll geometry, masks, animation completion (the material's effects) ----
+
+public protocol PreferenceKey {
+  associatedtype Value
+  static var defaultValue: Value { get }
+  static func reduce(value: inout Value, nextValue: () -> Value)
+}
+
+public struct ScrollGeometry: Equatable, Sendable {
+  public var contentOffset: CGPoint
+  public var contentSize: CGSize
+  public var contentInsets: EdgeInsets
+  public var containerSize: CGSize
+  public var visibleRect: CGRect
+  public var bounds: CGRect
+}
+
+public struct AnimationCompletionCriteria: Hashable, Sendable {
+  public static let logicallyComplete = AnimationCompletionCriteria()
+  public static let removed = AnimationCompletionCriteria()
+}
+
+@MainActor public func withAnimation<Result>(
+  _ animation: Animation? = .default, completionCriteria: AnimationCompletionCriteria = .logicallyComplete,
+  _ body: () throws -> Result, completion: @escaping () -> Void
+) rethrows -> Result { try body() }
+
+extension View {
+  public func preference<K: PreferenceKey>(key: K.Type = K.self, value: K.Value) -> some View { self }
+  public func overlayPreferenceValue<K: PreferenceKey, V: View>(
+    _ key: K.Type, alignment: Alignment = .center, @ViewBuilder _ transform: @escaping (K.Value) -> V
+  ) -> some View { self }
+  public func backgroundPreferenceValue<K: PreferenceKey, V: View>(
+    _ key: K.Type, alignment: Alignment = .center, @ViewBuilder _ transform: @escaping (K.Value) -> V
+  ) -> some View { self }
+  @available(iOS 18.0, macOS 15.0, *)
+  public func onScrollGeometryChange<T: Equatable>(
+    for type: T.Type, of transform: @escaping (ScrollGeometry) -> T, action: @escaping (_ oldValue: T, _ newValue: T) -> Void
+  ) -> some View { self }
+  public func mask<Mask: View>(alignment: Alignment = .center, @ViewBuilder _ mask: () -> Mask) -> some View { self }
+  public func coordinateSpace(_ name: NamedCoordinateSpace) -> some View { self }
+}
+
+public struct NamedCoordinateSpace: Sendable {
+  public static func named(_ name: some Hashable) -> NamedCoordinateSpace { NamedCoordinateSpace() }
+}
+
+public struct Transaction {
+  public init() {}
+  public init(animation: Animation?) {}
+  public var animation: Animation?
+  public var disablesAnimations: Bool = false
+}
+@MainActor public func withTransaction<Result>(_ transaction: Transaction, _ body: () throws -> Result) rethrows -> Result { try body() }
+extension View {
+  public func transformPreference<K: PreferenceKey>(_ key: K.Type = K.self, _ callback: @escaping (inout K.Value) -> Void) -> some View { self }
 }

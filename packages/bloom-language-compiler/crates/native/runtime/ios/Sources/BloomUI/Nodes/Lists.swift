@@ -14,8 +14,21 @@ public struct ScrollView<Content: View>: View {
   public var body: some View {
     SwiftUI.ScrollView(.vertical, showsIndicators: indicators) {
       BloomFlexLayout(axis: .vertical) { content }
+        // The offset for the chrome over it (the header's scrim), on every iOS: the content's
+        // top in the scroll view's own space.
+        .background {
+          GeometryReader { proxy in
+            SwiftUI.Color.clear.preference(
+              key: BloomScrollOffsetKey.self, value: -Double(proxy.frame(in: .named(ScrollSpace.name)).minY))
+          }
+        }
     }
+    .coordinateSpace(.named(ScrollSpace.name))
   }
+}
+
+enum ScrollSpace {
+  static let name = "bloom.scroll"
 }
 
 /// A row of a `VirtualList`: the item and its position; `row.name` reads `row.item.name`.
@@ -60,6 +73,8 @@ public struct VirtualList<Item, Row: View>: View {
     self.id = { _, pair in AnyHashable(pair.1.id) }
   }
 
+  @State private var offset = 0.0
+
   struct Entry: Identifiable {
     let id: AnyHashable
     let index: Int
@@ -75,6 +90,7 @@ public struct VirtualList<Item, Row: View>: View {
     }
     .listStyle(.plain)
     .scrollContentBackground(.hidden)
+    .bloomReportsScrollOffset($offset)
   }
 }
 #endif
