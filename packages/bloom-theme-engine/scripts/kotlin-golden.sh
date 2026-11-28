@@ -27,7 +27,7 @@ java -cp "$CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler -no-stdlib -no-reflect
   $(find "$OUT/src" -name '*.kt') "$STD/Std.kt" "$STD/Builtins.kt" "$STD/MathExterns.kt" "$PKG"/test/jvm/*.kt 2>&1 | grep -v "^warning" || true
 # HARNESS: the golden checks to run (default: every slice's).
 status=0
-for harness in ${HARNESS:-Slice1ConformanceKt Slice2ConformanceKt Slice3ConformanceKt}; do
+for harness in ${HARNESS:-Slice1ConformanceKt Slice2ConformanceKt Slice3ConformanceKt ImageSeedConformanceKt}; do
   java -cp "$OUT/classes:$STDLIB:$COROUTINES" "$harness" "$ROOT/src/theme/__tests__/__fixtures__/golden-color-engine.txt" || status=1
 done
 exit $status
