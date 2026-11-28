@@ -7,3 +7,11 @@ export interface ClaimPost {
 export function permalink(postId: string): string {
   return `https://mention.earth/p/${postId}`;
 }
+
+// A handle TS may not have (`@oxy.so/core`'s getNormalizedUserHandle), beside a TS optional member.
+export interface ClaimUser {
+  displayName?: string;
+}
+export function handleOf(user: ClaimUser): string | null {
+  return user.displayName ?? null;
+}

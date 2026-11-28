@@ -5763,8 +5763,13 @@ impl<'o> Checker<'o> {
             ExprKind::Ternary(_, then, otherwise) => {
                 self.may_be_absent(then) || self.may_be_absent(otherwise)
             }
+            // `a || "user"` of an optional or a TS value (`displayName || "user"`): absent only when
+            // its right side may be, in parentheses or not.
             ExprKind::Binary(BinaryOp::Or | BinaryOp::Default, lhs, rhs)
-                if matches!(self.out.types.get(&lhs.id).map(|t| self.resolve(t)), Some(Ty::Option(_))) =>
+                if matches!(
+                    self.out.types.get(&lhs.id).map(|t| self.resolve(t)),
+                    Some(Ty::Option(_) | Ty::Foreign(_))
+                ) =>
             {
                 self.may_be_absent(rhs)
             }
@@ -6618,6 +6623,7 @@ impl<'o> Checker<'o> {
             }];
         }
         let mut ret = expected_fn.as_ref().map_or_else(|| self.fresh(), |f| f.ret.clone());
+
         // TS's `() => Promise<void> | void` (read as `Promise<Unit>?`): a closure that returns
         // nothing, or one that awaits (its promise), fits it (R1).
         if let Ty::Option(inner) = self.resolve(&ret) {
