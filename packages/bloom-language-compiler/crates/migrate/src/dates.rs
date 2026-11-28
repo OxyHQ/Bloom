@@ -191,7 +191,9 @@ impl Tr<'_> {
                 let text = format!("{test} ? {} : {}", a.value(), b.value());
                 Some(DateVal { text, kind: if maybe { DateKind::MaybeInvalid } else { DateKind::Valid } })
             }
-            _ if self.type_of(e).as_deref() == Some("Date") => {
+            _ if self.type_of(e).as_deref() == Some("Date")
+                || matches!(self.declared_type(e).as_deref(), Some("Date" | "Date?")) =>
+            {
                 Some(DateVal { text: self.expr(e), kind: DateKind::Valid })
             }
             _ => None,
@@ -211,7 +213,10 @@ impl Tr<'_> {
             Expression::ConditionalExpression(c) => {
                 self.is_date_expr(&c.consequent) && self.is_date_expr(&c.alternate)
             }
-            _ => self.type_of(e).as_deref() == Some("Date"),
+            _ => {
+                self.type_of(e).as_deref() == Some("Date")
+                    || matches!(self.declared_type(e).as_deref(), Some("Date" | "Date?"))
+            }
         }
     }
 
@@ -535,6 +540,23 @@ impl Tr<'_> {
             let day = self.expr(day);
             return Some(format!(
                 "{name} = Calendar.current.date(year: {name}.components().year, month: {name}.components().month, day: {day})"
+            ));
+        }
+        // `d.setHours(h, m, s, 0)` of a local: every time field is set, so it is the calendar's date
+        // of `d`'s day at that time (`h`/`m`/`s` past their range carry, as JS's do).
+        if setter
+            && method == "setHours"
+            && let Expression::Identifier(id) = &m.object
+            && self.scope.dates.contains_key(id.name.as_str())
+            && let [h, mi, sec, ms] = call.arguments.as_slice()
+            && matches!(ms.as_expression().map(|e| e.without_parentheses()), Some(Expression::NumericLiteral(n)) if n.value == 0.0)
+            && let (Some(h), Some(mi), Some(sec)) =
+                (h.as_expression(), mi.as_expression(), sec.as_expression())
+        {
+            let name = self.expr(&m.object);
+            let (h, mi, sec) = (self.expr(h), self.expr(mi), self.expr(sec));
+            return Some(format!(
+                "{name} = Calendar.current.date(year: {name}.components().year, month: {name}.components().month, day: {name}.components().day, hour: {h}, minute: {mi}, second: {sec})"
             ));
         }
         if setter {

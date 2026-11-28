@@ -1241,6 +1241,10 @@ impl Tr<'_> {
             && let Some(kind) = self.date_local_kind(init)
         {
             self.scope.dates.insert(id.name.to_string(), kind);
+            // `d.setHours(…)` reassigns it.
+            if self.src.contains(&format!("{}.setHours(", id.name)) {
+                immutable = false;
+            }
             if self.is_midnight(init) {
                 self.scope.midnights.insert(id.name.to_string());
                 // `d.setDate(n)` reassigns it.

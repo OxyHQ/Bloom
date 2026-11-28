@@ -31,6 +31,19 @@ private func isYesterday(_ d: Date) -> Bool {
   Calendar.current.startOfDay(d).millisecondsSince1970 == yesterday.millisecondsSince1970
 }
 
+private func atTime(_ day: Date, _ h: Float, _ m: Float) -> String {
+  var merged = day
+  merged = Calendar.current.date(
+    year: merged.components().year,
+    month: merged.components().month,
+    day: merged.components().day,
+    hour: h.truncated(),
+    minute: m.truncated(),
+    second: 0,
+  )
+  merged.iso8601
+}
+
 private func tomorrow() -> String {
   Date(millisecondsSince1970: Date.now.millisecondsSince1970 + 86400000).iso8601
 }

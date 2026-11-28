@@ -26,6 +26,12 @@ function isYesterday(d: Date): boolean {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() === yesterday.getTime();
 }
 
+function atTime(day: Date, h: number, m: number): string {
+  const merged = new Date(day);
+  merged.setHours(h, m, 0, 0);
+  return merged.toISOString();
+}
+
 function tomorrow(): string {
   return new Date(Date.now() + 86400000).toISOString();
 }

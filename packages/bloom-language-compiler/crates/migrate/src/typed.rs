@@ -163,6 +163,25 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
             {
                 Some((start, end, format!("RawText({text})")))
             }
+            // `Calendar.current.date(hour: h, …)` of a TS `number`: JS's date parts are truncated
+            // (ToIntegerOrInfinity), so the part is `h.truncated()`.
+            ("B0201", _)
+                if d.message == "expected `Int`, found `Float`"
+                    && ["year: ", "month: ", "day: ", "hour: ", "minute: ", "second: "]
+                        .iter()
+                        .any(|l| source[..start].ends_with(l))
+                    && source[start.saturating_sub(400)..start].rfind("Calendar").is_some_and(|at| {
+                        let from = start.saturating_sub(400) + at;
+                        source[from..start].contains(".date(")
+                    }) =>
+            {
+                let simple = text.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.');
+                Some((
+                    start,
+                    end,
+                    if simple { format!("{text}.truncated()") } else { format!("({text}).truncated()") },
+                ))
+            }
             ("B0201", _) if d.message == "expected `Int`, found `Float`" => {
                 let before = &source[..start];
                 [" < ", " <= ", " > ", " >= ", " == ", " != "]
@@ -626,6 +645,18 @@ pub fn fix(source: &str, diagnostics: &[Diagnostic], ts: &str) -> Option<String>
                     && let Some(colon) = closure_annotation(text) =>
             {
                 Some((start + colon.0, start + colon.1, String::new()))
+            }
+            // `new Date(d)` of a value the codemod could not type, read as a parse, where bloomc
+            // says it is a `Date`: a copy, the date itself (a Bloom `Date` is a value).
+            ("B0201", _)
+                if d.message == "expected `String`, found `Date`"
+                    && source[..start].ends_with("((try? Date(")
+                    && let Some(tail) = spaced_prefix(
+                        &source[end..],
+                        ",strategy:.iso8601))??Date(millisecondsSince1970:.nan))",
+                    ) =>
+            {
+                Some((start - "((try? Date(".len(), end + tail, text.to_string()))
             }
             // `labels[kind]` where TS typed the value present (`Record<Kind, string>`): `labels[kind]!`.
             ("B0201", _)
@@ -2032,6 +2063,21 @@ fn closure_annotation(text: &str) -> Option<(usize, usize)> {
     }
     let colon = 1 + lead + name_len;
     Some((colon, colon + 2 + ty_len))
+}
+
+/// The length of `text`'s prefix that is `squeezed` with whitespace between its characters
+/// (the formatter's line breaks), or `None`.
+fn spaced_prefix(text: &str, squeezed: &str) -> Option<usize> {
+    let mut want = squeezed.chars().peekable();
+    for (i, c) in text.char_indices() {
+        let Some(&w) = want.peek() else { return Some(i) };
+        if c == w {
+            want.next();
+        } else if !c.is_whitespace() {
+            return None;
+        }
+    }
+    want.peek().is_none().then_some(text.len())
 }
 
 /// Whether `text` (`p!.w`) is a member path a test of the same expression proved present
