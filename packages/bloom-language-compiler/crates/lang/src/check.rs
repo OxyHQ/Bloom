@@ -306,6 +306,8 @@ pub struct CheckResult {
     /// A `break` (by its span) that leaves a `switch` (by its scrutinee's span), Swift's
     /// `break` in a case: the `switch`'s statement takes a label and the `break` names it.
     pub switch_breaks: HashMap<Span, Span>,
+    /// `date + seconds` / `date - seconds`: a `Date` that much later or earlier.
+    pub date_arithmetic: HashSet<ExprId>,
     /// `if x is T`: the narrowed local and the one it narrows.
     pub narrowed: HashMap<ExprId, (LocalId, LocalId)>,
     /// `@ref` names passed as the ref itself (`.ref(x)`), not its value.
@@ -1425,6 +1427,8 @@ impl<'o> Checker<'o> {
             "Double" => Some(Ty::Float),
             "View" => Some(Ty::View(None)),
             "Error" => Some(Ty::JsError),
+            // The standard library's `Date`, unless the package declares its own.
+            "Date" if !self.type_names.contains_key("Date") => Some(Ty::Date),
             "Foreign" => Some(Ty::Foreign("".into())),
             _ => None,
         };
@@ -2083,7 +2087,10 @@ impl<'o> Checker<'o> {
         // A type's member (`T$m`): what an observable `self` it reads; an `init` makes `self`.
         let outer_member =
             std::mem::replace(&mut self.member_fn, f.name.name.contains('$').then(|| f.name.name.clone()));
-        let init = f.name.name.ends_with("$$init");
+        // A class's `init` makes `self`; a built-in type's gives the value its body ends with.
+        let init = f.name.name.ends_with("$$init")
+            && !crate::extensions::demangle(&f.name.name)
+                .is_some_and(|(owner, _, _)| crate::extensions::BUILTIN.contains(&owner));
         let outer_init = std::mem::replace(&mut self.in_init, init);
         if init {
             let self_ty = fn_ty.ret.clone();
@@ -5840,8 +5847,10 @@ impl<'o> Checker<'o> {
                     }
                     return Ty::Bool;
                 }
-                if !matches!(left, Ty::Int | Ty::Float | Ty::Str | Ty::Strings(_) | Ty::Unknown | Ty::Var(_))
-                {
+                if !matches!(
+                    left,
+                    Ty::Int | Ty::Float | Ty::Str | Ty::Strings(_) | Ty::Date | Ty::Unknown | Ty::Var(_)
+                ) {
                     self.operand_error(lhs.span, &format!("`{}`", op.text()), &left);
                 }
                 let hint = if matches!(left, Ty::Strings(_)) { Ty::Str } else { left };
@@ -5873,6 +5882,13 @@ impl<'o> Checker<'o> {
                     Ty::Float => {
                         self.expr(rhs, Some(&left));
                         left
+                    }
+                    // Swift's `date + seconds`, `date - seconds`: the instant that much later or
+                    // earlier.
+                    Ty::Date if matches!(op, BinaryOp::Add | BinaryOp::Sub) => {
+                        self.expr(rhs, Some(&Ty::Float));
+                        self.out.date_arithmetic.insert(expr.id);
+                        Ty::Date
                     }
                     // `Int` with a `Float` is a `Float` (the `Int` widens).
                     Ty::Int => {
@@ -6456,6 +6472,7 @@ impl<'o> Checker<'o> {
             Ty::Option(_) => "Optional".into(),
             Ty::Result(..) => "Result".into(),
             Ty::JsError => "Error".into(),
+            Ty::Date => "Date".into(),
             Ty::Adt(def, _) => self.out.defs[*def].name.clone(),
             _ => return None,
         })
@@ -7278,6 +7295,8 @@ fn equality_in(defs: &[Def], ty: &Ty, seen: &mut Vec<DefId>) -> Equality {
             Equality::Identity => Equality::Identity,
             other => other,
         },
+        // Two `Date`s are equal at the same instant (a JS `Date` is an object).
+        Ty::Date => Equality::Structural,
         // A class is compared by identity, as Swift's `===`; an existential has no `==`.
         Ty::Adt(def, _) if defs[*def].class.is_some() => Equality::Identity,
         Ty::Any(_) => Equality::None(ty.clone()),

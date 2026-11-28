@@ -225,8 +225,11 @@ The length of the vector (`a`, `b`).
 
 Bloom (time): `Date`, `Duration`, `Clock`, `Calendar` and formatting.
 
-A `Date` is a value: an instant, as seconds since 1970-01-01T00:00:00Z. It encodes
-as an ISO 8601 string (`Codable`), compares with `<`, and formats for a locale:
+A `Date` is a value: an instant, as seconds since 1970-01-01T00:00:00Z (Swift's). At runtime and
+in TS it is a JS `Date`, in both directions, as Swift's `Date` bridges to `NSDate`: a TS function
+taking or returning a `Date` takes and gives this one. It is equal to another at the same
+instant, encodes as an ISO 8601 string (`Codable`), compares with `<`, moves with `+`/`-` (in
+seconds), and formats for a locale:
 
 ```swift
 Text(post.createdAt.formatted(.relative))                       // "2 minutes ago"
@@ -234,11 +237,17 @@ Text(event.startsAt.formatted(date: .abbreviated, time: .shortened)) // "Nov 26,
 Text(event.startsAt.formatted(.dateTime.month(.abbreviated).day()))   // "Nov 26"
 ```
 
-### `struct Date: Equatable`
+### `enum DateParseStrategy`
 
-An instant in time.
+How `Date(_:strategy:)` reads a date's text.
 
-- `let timeIntervalSince1970: Double`: Seconds since 1970-01-01T00:00:00Z.
+- `case iso8601`: ISO 8601 (`2026-11-26T18:30:00Z`), as JS's `Date.parse` reads it.
+
+### `struct DateParseError: Equatable`
+
+Text `Date(_:strategy:)` could not read as a date.
+
+- `let text: String`
 
 ### `struct Duration: Equatable`
 
@@ -320,10 +329,17 @@ The calendar fields of a date (`month` 1–12, `weekday` 1 = Sunday … 7).
 
 ### `extension Date`
 
+- `init()`: The current instant: `Date()`.
+- `init(timeIntervalSince1970 seconds: Double)`: The instant `seconds` after 1970-01-01T00:00:00Z.
+- `init(millisecondsSince1970 ms: Double)`: The instant `ms` milliseconds after 1970 (what JS APIs and many servers send).
+- `init(_ text: String, strategy: DateParseStrategy) throws`: The instant `text` names, read by `strategy` (`try? Date(text, strategy: .iso8601)`); throws a `DateParseError` when it names none.
 - `static var now: Date`: The current instant.
-- `static func fromMilliseconds(_ ms: Double) -> Date`: The instant `ms` milliseconds after 1970 (what JS APIs and many servers send).
+- `static func fromMilliseconds(_ ms: Double) -> Date`: The instant `ms` milliseconds after 1970.
 - `static func parse(iso8601 text: String) -> Date?`: The instant an ISO 8601 string names (`2026-11-26T18:30:00Z`), or `none`.
+- `var timeIntervalSince1970: Double`: Seconds since 1970-01-01T00:00:00Z.
 - `var millisecondsSince1970: Double`: Milliseconds since 1970.
+- `func addingTimeInterval(_ seconds: Double) -> Date`: The instant `seconds` later (earlier when negative): `date + seconds`.
+- `func timeIntervalSince(_ other: Date) -> Double`: The seconds from `other` to this instant (negative when `other` is later).
 - `var iso8601: String`: The instant as ISO 8601, in UTC.
 - `func adding(_ duration: Duration) -> Date`: The instant `duration` later (earlier when negative).
 - `func distance(to other: Date) -> Duration`: How long from this instant to `other` (negative when `other` is earlier).

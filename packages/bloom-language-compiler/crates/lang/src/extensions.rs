@@ -23,6 +23,21 @@ pub fn mangle(owner: &str, member: &str, is_static: bool) -> String {
     format!("{owner}{}{member}", if is_static { "$$" } else { "$" })
 }
 
+/// The built-in types an extension extends under their Bloom names.
+pub const BUILTIN: &[&str] =
+    &["String", "Int", "Double", "Bool", "Array", "Dictionary", "Set", "Optional", "Error", "Date"];
+
+/// A built-in type's `init` by its labels (`_` for an unlabelled parameter): `T$$init` when it
+/// takes none, else `T$$init$label$…`.
+pub fn init_name<'a>(owner: &str, labels: impl Iterator<Item = Option<&'a str>>) -> String {
+    let mut name = mangle(owner, "init", true);
+    for label in labels {
+        name.push('$');
+        name.push_str(label.unwrap_or("_"));
+    }
+    name
+}
+
 /// A written type name's extension key: `Float` is `Double`.
 pub fn key(name: &str) -> &str {
     match name {
@@ -158,7 +173,20 @@ fn lower_member(owner: &Owner, member: &TypeMember, ids: &mut Ids, out: &mut Vec
         // `init(…)`: the static `T$$init`, which makes `self` and returns it (a class's).
         TypeMemberKind::Func(f) if f.name.name == "init" => {
             let mut f = f.clone();
-            f.name = Ident { name: mangle(&owner.key, "init", true), span: f.name.span };
+            // A built-in type's `init`s (`Date(timeIntervalSince1970:)`, `Date(_:strategy:)`) are
+            // told apart by their labels, as Swift's are: `Date$$init$timeIntervalSince1970`. Each
+            // body gives the value it makes.
+            let name = if BUILTIN.contains(&owner.key.as_str()) {
+                init_name(
+                    &owner.key,
+                    f.params
+                        .iter()
+                        .map(|p| Some(p.label.as_ref().map_or(p.name.name.as_str(), |l| l.name.as_str()))),
+                )
+            } else {
+                mangle(&owner.key, "init", true)
+            };
+            f.name = Ident { name, span: f.name.span };
             f.generics = owner.generics.iter().cloned().chain(f.generics).collect();
             for p in &mut f.params {
                 replace_self(&mut p.ty, &owner.self_ty);

@@ -1,0 +1,19 @@
+import { Date$$init, Date$$init$_$strategy, Date$$init$millisecondsSince1970, Date$$init$timeIntervalSince1970, Date$addingTimeInterval, Date$timeIntervalSince, Date$timeIntervalSince1970 } from "../../.bloom/std/Bloom/Time.bloom";
+
+export function dates(text: string, s: number): readonly (Date | undefined)[] {
+const a = Date$$init$timeIntervalSince1970(s);
+const b = Date$$init$millisecondsSince1970(s * 1000.0);
+const c = (() => {
+try {
+return Date$$init$_$strategy(text, "iso8601");
+} catch {
+return undefined;
+}
+})();
+return [a, b, c, Date$$init(), new Date(a.getTime() + 60.0 * 1000), Date$addingTimeInterval(a, -1.0)];
+}
+
+export function reads(a: Date, b: Date): boolean {
+return (((Date$timeIntervalSince1970(a) > 0.0) && (a < b)) && (Date$timeIntervalSince(a, b) < 0.0)) && (!(a.getTime() === b.getTime()));
+}
+

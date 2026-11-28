@@ -3,10 +3,10 @@
  * Intl, in English, Spanish, Japanese and Arabic.
  */
 
-type D = { timeIntervalSince1970: number };
+type D = Date;
 
 // Required, not imported: see bloom.cost.test.tsx.
-const f = require('./bloom/format-app/Sources/App/FormatStyle.bloom') as {
+const f = require('./packages/format-app/Sources/App/FormatStyle.bloom') as {
   number: (x: number, locale: string) => string;
   atMostOne: (x: number, locale: string) => string;
   exact: (x: number, locale: string) => string;
@@ -24,7 +24,7 @@ const f = require('./bloom/format-app/Sources/App/FormatStyle.bloom') as {
 
 const LOCALES = ['en', 'es', 'ja', 'ar'];
 const ms = Date.UTC(2026, 10, 26, 18, 5, 9);
-const date: D = { timeIntervalSince1970: ms / 1000 };
+const date: D = new Date(ms);
 
 describe.each(LOCALES)('%s', (locale) => {
   it('writes numbers as toLocaleString does', () => {
@@ -87,7 +87,5 @@ describe.each(LOCALES)('%s', (locale) => {
 
 it('keeps formatted(fractionDigits: n) as toFixed, and .relative', () => {
   expect(f.fixed(3.14159)).toBe('3.14');
-  expect(f.relative(date, { timeIntervalSince1970: date.timeIntervalSince1970 + 120 })).toBe(
-    '2 minutes ago',
-  );
+  expect(f.relative(date, new Date(ms + 120_000))).toBe('2 minutes ago');
 });

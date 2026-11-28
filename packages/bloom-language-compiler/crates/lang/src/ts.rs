@@ -1693,6 +1693,8 @@ impl Mapper<'_> {
             // `ReturnType<typeof useX>` (R7): what the hook returns, inferred or annotated.
             "ReturnType" if args.len() == 1 => return self.returns(file, &args[0], scope, path, depth + 1),
             "Error" => return Ty::JsError,
+            // A JS `Date` is the standard library's `Date` (the same value).
+            "Date" => return Ty::Date,
             "AbortSignal" => return Ty::Foreign("AbortSignal".into()),
             _ => {}
         }

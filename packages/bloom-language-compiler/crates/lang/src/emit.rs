@@ -584,7 +584,7 @@ impl<'a> Emitter<'a> {
                     .chain(self.ck.casts.values().chain(self.ck.catch_casts.values()).map(|f| &**f))
                     // `Box(0)`: the class's `init` (`Box$$init`).
                     .chain(self.ck.names.values().filter_map(|n| match n {
-                        NameRes::Local(l) if self.ck.locals[*l].name.ends_with("$$init") => {
+                        NameRes::Local(l) if self.ck.locals[*l].name.contains("$$init") => {
                             Some(self.ck.locals[*l].name.as_str())
                         }
                         _ => None,
@@ -672,6 +672,7 @@ impl<'a> Emitter<'a> {
             Ty::Unit => "undefined".into(),
             Ty::Never => "never".into(),
             Ty::JsError => "Error".into(),
+            Ty::Date => "Date".into(),
             Ty::List(t) => format!("readonly {}[]", self.ts_operand(t)),
             Ty::Map(v) => format!("Readonly<Record<string, {}>>", self.ts_type(v)),
             Ty::JsMap(k, v) => format!("ReadonlyMap<{}, {}>", self.ts_type(k), self.ts_type(v)),
@@ -1244,7 +1245,10 @@ impl<'a> Emitter<'a> {
             _ => self.shaped_generics(&f.generics, f.span),
         };
         // A class's `init` (`T$$init`): makes `self`, runs, and returns it.
-        let body = if f.name.name.ends_with("$$init") {
+        let body = if f.name.name.ends_with("$$init")
+            && !crate::extensions::demangle(&f.name.name)
+                .is_some_and(|(owner, _, _)| crate::extensions::BUILTIN.contains(&owner))
+        {
             let class = self.ts_type(&ret_ty);
             let new = match &ret_ty {
                 Ty::Adt(def, _) => self.ck.defs[*def].name.clone(),
@@ -2734,6 +2738,16 @@ impl<'a> Emitter<'a> {
                 }
                 out.s(&format!(" }}, ($_, i) => {lo} + i)"));
             }
+            return out;
+        }
+        // `date + seconds`: a new `Date`, `seconds` later (earlier for `-`).
+        if self.ck.date_arithmetic.contains(&expr.id) {
+            let (a, b) = (self.operand(lhs), self.operand(rhs));
+            let mut out = Frag::at(expr.span, "new Date(");
+            out.f(a)
+                .s(&format!(".getTime() {} ", if op == BinaryOp::Sub { "-" } else { "+" }))
+                .f(b)
+                .s(" * 1000)");
             return out;
         }
         // `a == b` on a `T: Equatable`: its witness.
@@ -4417,6 +4431,7 @@ impl Emitter<'_> {
             }
         };
         match ty {
+            Ty::Date => format!("{a}.getTime() === {b}.getTime()"),
             Ty::Option(inner) => {
                 let inner = self.equal(a, b, inner, seen);
                 format!("{a} == null || {b} == null ? ({a} == null) === ({b} == null) : {inner}")

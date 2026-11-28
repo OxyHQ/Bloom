@@ -594,6 +594,7 @@ impl Checker<'_> {
             Ty::Int => named("Int", &[]),
             Ty::Float => named("Double", &[]),
             Ty::Bool => named("Bool", &[]),
+            Ty::Date => named("Date", &[]),
             Ty::List(t) => named("Array", &[*t]),
             Ty::Option(t) => named("Optional", &[*t]),
             Ty::Map(t) => named("Dictionary", &[*t]),

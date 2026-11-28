@@ -40,7 +40,7 @@ test('bloom-lang-check --tsc reports a planted boundary error at its .bloom span
   assert.equal(run.status, 1, run.stderr);
   assert.match(
     run.stderr,
-    /error\[B0620\]: TS2345: Argument of type 'string' is not assignable to parameter of type 'Date'\./,
+    /error\[B0620\]: TS2345: Argument of type 'string' is not assignable to parameter of type 'RegExp'\./,
   );
   assert.match(run.stderr, /--> \S*tsc-project\/src\/screens\/stamp\.bloom:4:33\n/);
   // The fixtures' 0.x forms warn (B0950); the one error is tsc's.

@@ -477,8 +477,13 @@ cases are an enum's, matched with `match`. A Bloom file reads no JS global impli
 come from the prelude (section 12), timers are `task { await sleep(ms) … }`, and any other global
 is imported by name, `import { encodeURIComponent, JSON } from "js"`: nothing is emitted for
 the import, and its names are `Foreign`, typed by TypeScript (lib.es, lib.dom) where they cross.
-A JS class imported so (`Date`, `URL`, `AbortController`, `URLSearchParams`, `Error`, …) is
-built by a call: `Date(at)` is `new Date(at)`; Bloom has no `new`. `Foreign<"T">` writes out a
+A JS class imported so (`URL`, `AbortController`, `URLSearchParams`, `Error`, …) is
+built by a call: `URL(at)` is `new URL(at)`; Bloom has no `new`. `Date` is the standard library's
+(Swift's), a JS `Date` at runtime and in TS in both directions, as Swift's `Date` bridges to
+`NSDate`: a TS `Date` parameter takes it and a TS `Date` result is one. Its initializers are told
+apart by their labels, `Date()`, `Date(timeIntervalSince1970:)`, `Date(millisecondsSince1970:)`,
+`try Date(text, strategy: .iso8601)` (JS's `Date.parse`); two are `==` at the same instant, compare
+with `<`, and move with `+`/`-` in seconds. A `"js"` import of `Date` does not shadow it. `Foreign<"T">` writes out a
 TS type Bloom does not express (`Foreign<"ReturnType<typeof setTimeout>">`,
 `Foreign<"AvatarProps['source']">`, `Foreign<"string | number">`): its values are `Foreign`,
 and the emitted TS names the type as written, so TS checks every use.
