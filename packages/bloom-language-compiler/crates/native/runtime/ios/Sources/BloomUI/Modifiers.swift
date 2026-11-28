@@ -137,7 +137,29 @@ extension View {
   /// `.corner(.lg)`: a radius, circular as React Native draws it (`.cornerCurve(.smooth)`
   /// is continuous).
   public func bloomCorner(_ corner: Tokens.Corner) -> some View {
-    clipShape(RoundedRectangle(cornerRadius: CGFloat(corner.value ?? 0), style: .circular))
+    bloomCorner(corner.value ?? 0)
+  }
+
+  /// `.corner("15")`: points. A border inside it follows the radius (`.border(…).corner(…)`).
+  public func bloomCorner(_ points: Double) -> some View {
+    environment(\.bloomCornerRadius, points)
+      .clipShape(RoundedRectangle(cornerRadius: CGFloat(points), style: .circular))
+  }
+
+  /// `.border(.border, .hairline)`, `.border(.border, .hairline, .bottom)`: a line in a colour
+  /// role, inside the view's bounds (React Native's border), round with the view's corner.
+  public func bloomBorder(_ color: BloomColor, _ width: Tokens.BorderWidth = .hairline, _ edge: Tokens.BorderEdge = .all) -> some View {
+    modifier(BorderPaint(color: color, width: width, edge: edge))
+  }
+
+  /// `.offset(x: -16)`: moved where it is drawn, its room kept.
+  public func bloomOffset(x: Double = 0, y: Double = 0) -> some View { offset(x: CGFloat(x), y: CGFloat(y)) }
+
+  /// `.frame(maxWidth: 420)`: bounds on the view's size.
+  public func bloomFrame(minWidth: Double? = nil, maxWidth: Double? = nil, minHeight: Double? = nil, maxHeight: Double? = nil) -> some View {
+    frame(
+      minWidth: minWidth.map { CGFloat($0) }, maxWidth: maxWidth.map { CGFloat($0) },
+      minHeight: minHeight.map { CGFloat($0) }, maxHeight: maxHeight.map { CGFloat($0) })
   }
 
   public func bloomOpacity(_ opacity: Double) -> some View { self.opacity(opacity) }
@@ -191,6 +213,45 @@ struct FrameHost<Content: View>: View {
   private func points(_ l: Tokens.Length?) -> CGFloat? {
     guard let l, let space = Tokens.Space(rawValue: l.rawValue) else { return nil }
     return CGFloat(space.value)
+  }
+}
+
+struct CornerRadiusKey: EnvironmentKey {
+  static let defaultValue = 0.0
+}
+
+extension EnvironmentValues {
+  /// The radius of the `.corner` around the view: what a border inside it follows.
+  public var bloomCornerRadius: Double {
+    get { self[CornerRadiusKey.self] }
+    set { self[CornerRadiusKey.self] = newValue }
+  }
+}
+
+struct BorderPaint: ViewModifier {
+  let color: BloomColor
+  let width: Tokens.BorderWidth
+  let edge: Tokens.BorderEdge
+  @Environment(\.bloomPalette) private var palette
+  @Environment(\.bloomCornerRadius) private var radius
+  @Environment(\.displayScale) private var scale
+  @Environment(\.layoutDirection) private var direction
+
+  func body(content: Content) -> some View {
+    // `hairline` is React Native's `StyleSheet.hairlineWidth`: one device pixel.
+    let w = CGFloat(width.value ?? Double(1 / scale))
+    let ink = palette.color(color)
+    return content.overlay {
+      switch edge {
+      case .all:
+        RoundedRectangle(cornerRadius: CGFloat(radius), style: .circular).inset(by: w / 2).stroke(ink, lineWidth: w)
+      case .top, .bottom:
+        Rectangle().fill(ink).frame(height: w).frame(maxHeight: .infinity, alignment: edge == .top ? .top : .bottom)
+      default:
+        let leading = edge == .leading || (edge == .left) == (direction == .leftToRight)
+        Rectangle().fill(ink).frame(width: w).frame(maxWidth: .infinity, alignment: leading ? .leading : .trailing)
+      }
+    }
   }
 }
 

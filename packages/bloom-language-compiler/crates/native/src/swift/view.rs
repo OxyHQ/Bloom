@@ -128,11 +128,17 @@ impl Emitter<'_> {
                             let ExprKind::Name(callee) = &call.callee.kind else { unreachable!() };
                             let hook = super::hooks::hook_type(callee);
                             let construction = self.hook_construction(call);
-                            let rt = ty_text.or_else(|| self.type_at(name.span).map(|t| self.swift_type_text(t)));
+                            let rt =
+                                ty_text.or_else(|| self.type_at(name.span).map(|t| self.swift_type_text(t)));
                             let _ = writeln!(out, "  private let _{}: {hook}", name.name);
                             match rt {
                                 Some(rt) => {
-                                    let _ = writeln!(out, "  {mvis}var {}: {rt} {{ _{}.value }}", kw(&name.name), name.name);
+                                    let _ = writeln!(
+                                        out,
+                                        "  {mvis}var {}: {rt} {{ _{}.value }}",
+                                        kw(&name.name),
+                                        name.name
+                                    );
                                 }
                                 None => {
                                     self.unsupported(name.span, "a view's hook `let` whose type is unknown");
@@ -217,6 +223,34 @@ impl Emitter<'_> {
                     out.push_str(&self.view_init(vis, &props, &children, Some((i, param))));
                 }
             }
+        }
+        // `View, Equatable` without its own `==`: equal when the props that are values are (a
+        // closure prop has no equality; a new one each render is the same view, as Mention's rows
+        // write by hand).
+        let declares_eq =
+            surface.members.iter().any(|m| matches!(&m.kind, TypeMemberKind::Func(f) if f.name.name == "=="));
+        if conforms.iter().any(|c| c == "Equatable")
+            && !declares_eq
+            && props.iter().any(|p| {
+                matches!(p.ty.kind, TypeKind::Fn { .. })
+                    || matches!(&p.ty.kind, TypeKind::Optional(i) if matches!(i.kind, TypeKind::Fn { .. }))
+            })
+        {
+            let compared: Vec<String> = props
+                .iter()
+                .filter(|p| !p.rest)
+                .filter(|p| {
+                    !matches!(p.ty.kind, TypeKind::Fn { .. })
+                        && !matches!(&p.ty.kind, TypeKind::Optional(i) if matches!(i.kind, TypeKind::Fn { .. }))
+                })
+                .map(|p| format!("a.{n} == b.{n}", n = kw(&p.name.name)))
+                .collect();
+            let body = if compared.is_empty() { "true".to_string() } else { compared.join(" && ") };
+            let mvis = if vis == "public " { "public " } else { "" };
+            let _ = write!(
+                out,
+                "\n  {mvis}nonisolated static func == (a: Self, b: Self) -> Bool {{\n    {body}\n  }}\n"
+            );
         }
         out.push_str("}\n");
         self.witness_names = saved;
@@ -358,7 +392,8 @@ impl Emitter<'_> {
             self.in_task = was;
             match &e.id {
                 Some(id) if !matches!(id.kind, ExprKind::Unit) => {
-                    let _ = write!(body, "\n    .task(id: {}) {{ @MainActor in\n{inner}    }}", self.expr(id));
+                    let _ =
+                        write!(body, "\n    .task(id: {}) {{ @MainActor in\n{inner}    }}", self.expr(id));
                 }
                 _ => {
                     let _ = write!(body, "\n    .task {{ @MainActor in\n{inner}    }}");
@@ -509,6 +544,10 @@ impl Emitter<'_> {
 
     /// An argument that may be a view (`.trailing(Toggle(…).label(t))`): drawn as one.
     fn view_arg(&mut self, e: &Expr, indent: usize) -> String {
+        // `"15"` where a token goes (`.corner("15")`, `spacing: "3"`): that many points.
+        if let Some(points) = numeric_token(e) {
+            return points;
+        }
         let chain = unwind(e);
         match constructor(chain.base) {
             Some(c) if nodes::is_node(c) || self.decls.views.contains_key(c) => self.view_expr(e, indent + 1),
@@ -592,6 +631,14 @@ fn swift_modifier(name: &str, own: bool) -> String {
     if nodes::is_universal(name) { format!("bloom{}", crate::upper_first(spec)) } else { kw(spec) }
 }
 
+/// A string literal of a number where a token goes (`"15"`): the number, as Swift writes it.
+fn numeric_token(e: &Expr) -> Option<String> {
+    let ExprKind::Str { parts, .. } = &e.kind else { return None };
+    let [StrPart::Text(text)] = parts.as_slice() else { return None };
+    let n: f64 = text.parse().ok()?;
+    n.is_finite().then(|| if text.contains('.') { text.clone() } else { format!("{text}.0") })
+}
+
 /// `xs` of `xs.enumerated()`.
 pub(crate) fn enumerated_base(e: &Expr) -> Option<&Expr> {
     let ExprKind::Call(call) = &e.kind else { return None };
@@ -602,7 +649,9 @@ pub(crate) fn enumerated_base(e: &Expr) -> Option<&Expr> {
 /// A closure with no parameters, isolated to the main actor (`{ @MainActor in … }`).
 fn main_actor(closure: &str) -> String {
     match closure.strip_prefix('{') {
-        Some(rest) if !rest.trim_start().starts_with('@') && !rest.lines().next().unwrap_or("").contains(" in") => {
+        Some(rest)
+            if !rest.trim_start().starts_with('@') && !rest.lines().next().unwrap_or("").contains(" in") =>
+        {
             format!("{{ @MainActor in{rest}")
         }
         _ => closure.to_string(),

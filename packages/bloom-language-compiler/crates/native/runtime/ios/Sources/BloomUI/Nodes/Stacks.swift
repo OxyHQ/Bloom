@@ -5,46 +5,62 @@ import SwiftUI
 
 public struct VStack<Content: View>: View {
   var align: Tokens.Alignment
-  var gap: Tokens.Space
+  var gap: Double
   var justification: Tokens.Justify = .start
   let content: Content
 
   public init(alignment: Tokens.Alignment = .stretch, spacing: Tokens.Space = .none, @ViewBuilder content: () -> Content) {
     self.align = alignment
-    self.gap = spacing
+    self.gap = spacing.value
+    self.content = content()
+  }
+
+  /// `spacing: "3"`: points.
+  public init(alignment: Tokens.Alignment = .stretch, spacing points: Double, @ViewBuilder content: () -> Content) {
+    self.align = alignment
+    self.gap = points
     self.content = content()
   }
 
   public var body: some View {
-    BloomFlexLayout(axis: .vertical, gap: CGFloat(gap.value), align: BloomCrossAlign(align), justify: BloomJustify(justification)) {
+    BloomFlexLayout(axis: .vertical, gap: CGFloat(gap), align: BloomCrossAlign(align), justify: BloomJustify(justification)) {
       content
     }
   }
 
-  public func spacing(_ space: Tokens.Space) -> Self { var c = self; c.gap = space; return c }
+  public func spacing(_ space: Tokens.Space) -> Self { var c = self; c.gap = space.value; return c }
+  public func spacing(_ points: Double) -> Self { var c = self; c.gap = points; return c }
   public func align(_ alignment: Tokens.Alignment) -> Self { var c = self; c.align = alignment; return c }
   public func justify(_ j: Tokens.Justify) -> Self { var c = self; c.justification = j; return c }
 }
 
 public struct HStack<Content: View>: View {
   var align: Tokens.Alignment
-  var gap: Tokens.Space
+  var gap: Double
   var justification: Tokens.Justify = .start
   let content: Content
 
   public init(alignment: Tokens.Alignment = .stretch, spacing: Tokens.Space = .none, @ViewBuilder content: () -> Content) {
     self.align = alignment
-    self.gap = spacing
+    self.gap = spacing.value
+    self.content = content()
+  }
+
+  /// `spacing: "3"`: points.
+  public init(alignment: Tokens.Alignment = .stretch, spacing points: Double, @ViewBuilder content: () -> Content) {
+    self.align = alignment
+    self.gap = points
     self.content = content()
   }
 
   public var body: some View {
-    BloomFlexLayout(axis: .horizontal, gap: CGFloat(gap.value), align: BloomCrossAlign(align), justify: BloomJustify(justification)) {
+    BloomFlexLayout(axis: .horizontal, gap: CGFloat(gap), align: BloomCrossAlign(align), justify: BloomJustify(justification)) {
       content
     }
   }
 
-  public func spacing(_ space: Tokens.Space) -> Self { var c = self; c.gap = space; return c }
+  public func spacing(_ space: Tokens.Space) -> Self { var c = self; c.gap = space.value; return c }
+  public func spacing(_ points: Double) -> Self { var c = self; c.gap = points; return c }
   public func align(_ alignment: Tokens.Alignment) -> Self { var c = self; c.align = alignment; return c }
   public func justify(_ j: Tokens.Justify) -> Self { var c = self; c.justification = j; return c }
 }

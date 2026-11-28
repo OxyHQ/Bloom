@@ -82,7 +82,11 @@ fn emit_on_this_thread(case: &Path) -> String {
     std::fs::write(module.join(format!("{name}.bloom")), &source).expect("source");
     let text: String = match bloom_native::load(&root) {
         Err(problems) => problems.iter().map(|p| format!("// error: {}\n", p.message)).collect(),
-        Ok(program) => {
+        Ok(mut program) => {
+            // `island_*`: the module hosted as an island (its `<Module>__island` entry).
+            if name.starts_with("island_") {
+                program.islands = vec![module_dir.clone()];
+            }
             let (files, problems) = bloom_native::swift::emit_all(&program);
             let mut text: String =
                 problems.iter().map(|p| format!("// uncovered: {}\n", p.render(Some(&source)))).collect();

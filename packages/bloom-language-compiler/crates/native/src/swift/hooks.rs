@@ -83,7 +83,9 @@ impl Emitter<'_> {
 
     /// `useCounter(start)` as the stored hook's construction: `UseCounter(start)`.
     pub(crate) fn hook_construction(&mut self, call: &Call) -> String {
-        let ExprKind::Name(n) = &call.callee.kind else { return self.unsupported(call.callee.span, "a hook call") };
+        let ExprKind::Name(n) = &call.callee.kind else {
+            return self.unsupported(call.callee.span, "a hook call");
+        };
         format!("{}({})", hook_type(n), self.args(call))
     }
 
@@ -110,7 +112,9 @@ impl Emitter<'_> {
                             .type_at(v.name.span)
                             .or_else(|| self.type_at(v.value.span))
                             .map(|t| self.swift_type_text(t))
-                            .unwrap_or_else(|| self.unsupported(v.span, "a hook's `@State` whose type is unknown")),
+                            .unwrap_or_else(|| {
+                                self.unsupported(v.span, "a hook's `@State` whose type is unknown")
+                            }),
                     };
                     let value = self.expr_value(&v.value, 2);
                     let n = kw(&v.name.name);

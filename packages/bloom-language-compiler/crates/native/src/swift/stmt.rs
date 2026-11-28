@@ -84,9 +84,14 @@ impl Emitter<'_> {
                 let label = w.label.as_ref().map(|l| format!("{}: ", kw(&l.name))).unwrap_or_default();
                 format!("{p}{label}while {cond} {{\n{body}{p}}}\n")
             }
-            StmtKind::Break(l) => format!("{p}break{}\n", l.as_ref().map(|l| format!(" {}", kw(&l.name))).unwrap_or_default()),
+            StmtKind::Break(l) => {
+                format!("{p}break{}\n", l.as_ref().map(|l| format!(" {}", kw(&l.name))).unwrap_or_default())
+            }
             StmtKind::Continue(l) => {
-                format!("{p}continue{}\n", l.as_ref().map(|l| format!(" {}", kw(&l.name))).unwrap_or_default())
+                format!(
+                    "{p}continue{}\n",
+                    l.as_ref().map(|l| format!(" {}", kw(&l.name))).unwrap_or_default()
+                )
             }
             StmtKind::For(f) => {
                 let pat = self.binding_pattern(&f.pattern);

@@ -27,6 +27,29 @@ public struct ScrollView<Content: View>: View {
   }
 }
 
+/// `ScrollArea { … }.axis(.horizontal)`: content that scrolls along its axis (a media strip).
+public struct ScrollArea<Content: View>: View {
+  let content: Content
+  var direction: Tokens.Axis = .vertical
+  var indicators = true
+
+  public init(@ViewBuilder content: () -> Content) { self.content = content() }
+
+  public func axis(_ axis: Tokens.Axis) -> Self { var s = self; s.direction = axis; return s }
+
+  public func scrollbar(_ visible: Bool) -> Self { var s = self; s.indicators = visible; return s }
+
+  public var body: some View {
+    if direction == .horizontal {
+      SwiftUI.ScrollView(.horizontal, showsIndicators: indicators) {
+        BloomFlexLayout(axis: .horizontal) { content }
+      }
+    } else {
+      ScrollView { content }
+    }
+  }
+}
+
 enum ScrollSpace {
   static let name = "bloom.scroll"
 }

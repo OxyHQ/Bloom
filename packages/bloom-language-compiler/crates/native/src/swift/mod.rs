@@ -222,6 +222,9 @@ pub fn emit_all(program: &Program) -> (Vec<Emitted>, Vec<Problem>) {
             let mut e = Emitter::new(&program.decls, file, &sendable);
             e.program_witnesses = Some(&witnesses);
             e.hooks = Some(&hooks);
+            if program.islands.iter().any(|i| i == &module.name) {
+                e.island = Some(&module.name);
+            }
             let text = e.file(&module.name, &modules);
             problems.extend(e.problems);
             let stem = file.path.file_stem().unwrap_or_default().to_string_lossy().into_owned();
@@ -274,6 +277,8 @@ pub(crate) struct Emitter<'a> {
     /// runs nothing (the cancellation stops the task, as the TypeScript backend's
     /// `if (signal.aborted) return`).
     pub(crate) in_task: bool,
+    /// The file's module when it is hosted as an island (`Program::islands`).
+    pub(crate) island: Option<&'a str>,
 }
 
 pub(crate) fn pad(indent: usize) -> String {
@@ -296,6 +301,7 @@ impl<'a> Emitter<'a> {
             view_hooks: Vec::new(),
             hooks: None,
             in_task: false,
+            island: None,
         }
     }
 
@@ -325,6 +331,14 @@ impl<'a> Emitter<'a> {
             if !text.is_empty() {
                 body.push_str(&self.docs(item.span));
                 body.push_str(&text);
+                body.push('\n');
+            }
+            // An island module's view named after it: the island host's entry, beside it.
+            if let ItemKind::View(v) = &item.kind
+                && self.island == Some(module)
+                && v.name.name == module
+            {
+                body.push_str(&self.island_entry(v));
                 body.push('\n');
             }
         }
@@ -617,7 +631,8 @@ impl<'a> Emitter<'a> {
                 let ExprKind::Name(n) = &c.value.kind else { unreachable!() };
                 // Never more visible than the type it names (`public let Card = CardContent` of a
                 // private view is private).
-                let target = self.file.ast.items.iter().find(|i| i.kind.name().name == *n).map(|i| i.visibility);
+                let target =
+                    self.file.ast.items.iter().find(|i| i.kind.name().name == *n).map(|i| i.visibility);
                 let vis = match target {
                     Some(Visibility::Private) => "private ",
                     Some(Visibility::Internal) if vis == "public " => "",
@@ -631,7 +646,11 @@ impl<'a> Emitter<'a> {
                 // A module-level value Swift cannot prove `Sendable` (a closure): Bloom code runs
                 // on the main actor, as a view's does.
                 // `private var x = …` at module level is a `ConstDecl` too: its word is the source's.
-                let word = if self.source_of(item.span).split_whitespace().any(|w| w == "var") { "var" } else { "let" };
+                let word = if self.source_of(item.span).split_whitespace().any(|w| w == "var") {
+                    "var"
+                } else {
+                    "let"
+                };
                 // A module-level `var` is shared mutable state Swift 6 will not let a nonisolated
                 // function touch: Bloom code runs on the main actor, so it is unchecked.
                 let unsafe_global = match &c.ty {
@@ -699,7 +718,10 @@ impl<'a> Emitter<'a> {
             conforms.push("Sendable".into());
         }
         // `==` on two structs is structural in Bloom: a struct of values is `Equatable`.
-        if s.generics.is_empty() && self.sendable(&field_tys, 0) && !conforms.iter().any(|c| c == "Equatable" || c == "Hashable") {
+        if s.generics.is_empty()
+            && self.sendable(&field_tys, 0)
+            && !conforms.iter().any(|c| c == "Equatable" || c == "Hashable")
+        {
             conforms.push("Equatable".into());
         }
         let head = if conforms.is_empty() { String::new() } else { format!(": {}", conforms.join(", ")) };
@@ -739,9 +761,13 @@ impl<'a> Emitter<'a> {
         }
         let decodes = conforms.iter().any(|c| c == "Codable" || c == "Decodable");
         let encodes = conforms.iter().any(|c| c == "Codable" || c == "Encodable");
-        let transparent = self.file.checked.defs.iter().enumerate().any(|(id, d)| {
-            *d.name == *s.name.name && self.file.checked.transparent.contains(&id)
-        });
+        let transparent = self
+            .file
+            .checked
+            .defs
+            .iter()
+            .enumerate()
+            .any(|(id, d)| *d.name == *s.name.name && self.file.checked.transparent.contains(&id));
         if transparent && let [field] = s.fields.as_slice() {
             // `@Transparent`: the value is its one field, on the wire too (`"u1"`, not
             // `{"raw":"u1"}`), as the TypeScript backend's `type UserID = string` is.
@@ -777,7 +803,9 @@ impl<'a> Emitter<'a> {
     /// default, as Bloom's derived decoder does (Swift's synthesized one requires every key).
     /// Encoding stays Swift's synthesized one (an absent optional is left out).
     fn decoding_init(&mut self, vis: &str, fields: &[Field]) -> String {
-        let mut out = format!("\n  {vis}init(from decoder: any Decoder) throws {{\n    let c = try decoder.container(keyedBy: CodingKeys.self)\n");
+        let mut out = format!(
+            "\n  {vis}init(from decoder: any Decoder) throws {{\n    let c = try decoder.container(keyedBy: CodingKeys.self)\n"
+        );
         for f in fields {
             let name = kw(&f.name.name);
             let (inner, optional) = match &f.ty.kind {
@@ -785,7 +813,10 @@ impl<'a> Emitter<'a> {
                 _ => (self.ty(&f.ty), false),
             };
             let line = match (&f.default, optional) {
-                (Some(d), _) => format!("try c.decodeIfPresent({inner}.self, forKey: .{name}) ?? {}", self.expr_value(d, 2)),
+                (Some(d), _) => format!(
+                    "try c.decodeIfPresent({inner}.self, forKey: .{name}) ?? {}",
+                    self.expr_value(d, 2)
+                ),
                 (None, true) => format!("try c.decodeIfPresent({inner}.self, forKey: .{name})"),
                 (None, false) => format!("try c.decode({inner}.self, forKey: .{name})"),
             };
@@ -798,7 +829,8 @@ impl<'a> Emitter<'a> {
     /// `init(id: String, likes: Int = 0)`: Bloom's memberwise construction, every field
     /// labelled by its name, a default where the field has one.
     fn memberwise_init(&mut self, vis: &str, fields: &[Field]) -> String {
-        let vis = if vis == "public " && fields.iter().any(|f| self.names_internal(&f.ty)) { "" } else { vis };
+        let vis =
+            if vis == "public " && fields.iter().any(|f| self.names_internal(&f.ty)) { "" } else { vis };
         let params: Vec<String> = fields
             .iter()
             .map(|f| {
@@ -824,8 +856,11 @@ impl<'a> Emitter<'a> {
         let generics = self.generics(&e.generics, &[]);
         let mut conforms = self.conformances(&e.conformances);
         // A case-only `Codable` enum is its case's name on the wire (Bloom's derived codec).
-        if e.variants.iter().all(|v| v.payload.is_empty()) && conforms.iter().any(|c| matches!(c.as_str(), "Codable" | "Encodable" | "Decodable")) {
-            conforms.retain(|c| !matches!(c.as_str(), "Codable" | "Encodable" | "Decodable" | "CaseIterable"));
+        if e.variants.iter().all(|v| v.payload.is_empty())
+            && conforms.iter().any(|c| matches!(c.as_str(), "Codable" | "Encodable" | "Decodable"))
+        {
+            conforms
+                .retain(|c| !matches!(c.as_str(), "Codable" | "Encodable" | "Decodable" | "CaseIterable"));
             conforms.insert(0, "BloomCaseCodable".into());
         }
         let payload_tys: Vec<&TypeExpr> =
@@ -1206,8 +1241,12 @@ impl<'a> Emitter<'a> {
             }
             TypeKind::List(i) | TypeKind::Optional(i) => self.names_internal(i),
             TypeKind::Map(k, v) => self.names_internal(k) || self.names_internal(v),
-            TypeKind::Tuple(items) | TypeKind::Composition(items) => items.iter().any(|i| self.names_internal(i)),
-            TypeKind::Fn { params, ret, .. } => params.iter().any(|p| self.names_internal(p)) || self.names_internal(ret),
+            TypeKind::Tuple(items) | TypeKind::Composition(items) => {
+                items.iter().any(|i| self.names_internal(i))
+            }
+            TypeKind::Fn { params, ret, .. } => {
+                params.iter().any(|p| self.names_internal(p)) || self.names_internal(ret)
+            }
             _ => false,
         }
     }
@@ -1250,6 +1289,83 @@ impl<'a> Emitter<'a> {
             None => ("", sig),
         };
         format!("{p}{attr}{vis}{st}{sig} {{\n{body}{p}}}\n")
+    }
+}
+
+impl Emitter<'_> {
+    /// `<Island>__island(props:emit:)` and `<Island>__register()`: what the iOS island host
+    /// (`BloomIslands`, the `BloomIsland` Fabric view) draws, as Android's `<Island>__island`.
+    /// `props` is the React Native side's JSON object of the view's props, each decoded by its
+    /// type's `Codable` (a prop with a default takes it when absent); each event prop
+    /// (`(T) -> Void`) emits its name and its value's JSON. A required prop that does not decode
+    /// draws nothing (`nil`).
+    fn island_entry(&mut self, v: &ViewDecl) -> String {
+        let name = v.name.name.clone();
+        let props: Vec<(Ident, TypeExpr, Option<Expr>)> = match v.surface.as_deref() {
+            Some(surface) => surface
+                .members
+                .iter()
+                .filter(|m| m.modifiers.attrs.is_empty())
+                .filter_map(|m| match &m.kind {
+                    TypeMemberKind::Stored { name, ty: Some(ty), value, .. } => {
+                        Some((name.clone(), ty.clone(), value.clone()))
+                    }
+                    _ => None,
+                })
+                .collect(),
+            None => {
+                v.params.iter().flatten().map(|p| (p.name.clone(), p.ty.clone(), p.default.clone())).collect()
+            }
+        };
+        let mut body = String::from(
+            "  let json = (try? JSON.parse(props.isEmpty ? \"{}\" : props)) ?? jsonObject([:])\n",
+        );
+        let mut args = Vec::new();
+        for (prop, ty, default) in &props {
+            let n = kw(&prop.name);
+            match &ty.kind {
+                TypeKind::Fn { params, .. } => {
+                    let emit = match params.as_slice() {
+                        [] => format!("{{ emit(\"{}\", \"null\") }}", prop.name),
+                        [_] => format!(
+                            "{{ value in emit(\"{}\", JSON.stringify(encodeValue(value))) }}",
+                            prop.name
+                        ),
+                        _ => self.unsupported(ty.span, "an island event with more than one value"),
+                    };
+                    args.push(format!("{n}: {emit}"));
+                }
+                _ => {
+                    let swift = self.ty(ty);
+                    let (inner, optional) = match &ty.kind {
+                        TypeKind::Optional(i) => (self.ty(i), true),
+                        _ => (swift.clone(), false),
+                    };
+                    let read = format!(
+                        "json.read(\"{p}\").flatMap({{ try? decodeValue({inner}.self, from: $0, at: \"{name}.{p}\") }})",
+                        p = prop.name
+                    );
+                    match (default, optional) {
+                        (Some(d), _) => {
+                            let d = self.expr_value(d, 1);
+                            let _ = writeln!(body, "  let p_{} = {read} ?? {d}", prop.name);
+                        }
+                        (None, true) => {
+                            let _ = writeln!(body, "  let p_{} = {read}", prop.name);
+                        }
+                        (None, false) => {
+                            let _ =
+                                writeln!(body, "  guard let p_{} = {read} else {{ return nil }}", prop.name);
+                        }
+                    }
+                    args.push(format!("{n}: p_{}", prop.name));
+                }
+            }
+        }
+        format!(
+            "/// The island host's entry for `{name}` (`BloomIslands`): its props decoded from `props`, its events to `emit`.\n@MainActor public func {name}__island(props: String, emit: @escaping (String, String) -> Void) -> AnyView? {{\n{body}  return AnyView({name}({}))\n}}\n\n/// Registers `{name}` with the island host (at launch, before React Native mounts it).\n@MainActor public func {name}__register() {{\n  BloomIslands.register(\"{name}\", {name}__island)\n}}\n",
+            args.join(", ")
+        )
     }
 }
 
@@ -1482,7 +1598,8 @@ fn sendable_types(program: &Program) -> HashSet<String> {
                 ItemKind::Enum(e) if e.generics.is_empty() => {
                     let mut with = known.clone();
                     with.insert(e.name.name.clone());
-                    if e.variants.iter().flat_map(|v| v.payload.iter()).all(|p| sendable_ty(&p.ty, &with, 0)) {
+                    if e.variants.iter().flat_map(|v| v.payload.iter()).all(|p| sendable_ty(&p.ty, &with, 0))
+                    {
                         known.insert(e.name.name.clone());
                     }
                 }

@@ -902,3 +902,11 @@ public struct Transaction {
 extension View {
   public func transformPreference<K: PreferenceKey>(_ key: K.Type = K.self, _ callback: @escaping (inout K.Value) -> Void) -> some View { self }
 }
+public struct ContentTransition: Sendable {
+  public static func numericText(countsDown: Bool = false) -> ContentTransition { ContentTransition() }
+  public static func numericText(value: Double) -> ContentTransition { ContentTransition() }
+  public static let identity = ContentTransition()
+}
+extension View {
+  public func contentTransition(_ transition: ContentTransition) -> some View { self }
+}

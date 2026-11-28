@@ -244,13 +244,15 @@ public struct GlyphShape: Shape {
 public struct Icon: View {
   let glyph: Glyph
   var size: Tokens.IconSize = .md
+  /// `.size("15")`: points, over the token.
+  var points: Double? = nil
   @Environment(\.bloomInk) private var ink
   @Environment(\.bloomPalette) private var palette
 
   public init(_ glyph: Glyph) { self.glyph = glyph }
 
   public var body: some View {
-    let side = CGFloat(size.value)
+    let side = CGFloat(points ?? size.value)
     let color = palette.color(ink.foreground ?? BloomColor(.foreground))
     let shape = GlyphShape(glyph)
     Group {
@@ -265,6 +267,8 @@ public struct Icon: View {
   }
 
   public func size(_ size: Tokens.IconSize) -> Icon { var i = self; i.size = size; return i }
+
+  public func size(_ points: Double) -> Icon { var i = self; i.points = points; return i }
 }
 
 extension Glyph.Cap {

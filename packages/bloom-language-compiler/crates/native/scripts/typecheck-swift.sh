@@ -8,6 +8,8 @@
 #   3. BloomUI against the stub.
 #   4. Every golden of tests/golden-swift/*.swift as its own module, and the bench package.
 #
+#   5. With SWIFT_ISLANDS set, an app's island modules and their host entries.
+#
 # What it proves: the emitted Swift and BloomUI are well-typed Swift against the runtime's API
 # and SwiftUI's signatures. What it does not: layout, drawing, the real SDK's full overload set
 # (the Mac lane builds against the SDK; see docs/adr/0003-native-backends.md, "iOS").
@@ -57,6 +59,21 @@ for mod in Feed Settings NativeBench; do
   if ! module "$mod" "$OUT/bench/Sources/$mod"/*.swift 2>"$OUT/bench-$mod.log"; then
     echo "typecheck-swift: the bench's $mod does not type-check:"; sed 's/^/  /' "$OUT/bench-$mod.log" | head -60
     failed=$((failed + 1))
+  fi
+done
+# An app's islands, when given (`SWIFT_ISLANDS="<package dir>:<Module> …"`, e.g. Mention's
+# `packages/frontend:FeedIsland`): emitted as `bloom build` does (`--module`) and type-checked
+# with their `<Island>__island` entry.
+for spec in ${SWIFT_ISLANDS:-}; do
+  pkg=${spec%:*}
+  mod=${spec##*:}
+  rm -rf "$OUT/island-$mod"
+  if ! "$TARGET/debug/bloom-native" emit --target swiftui "$pkg" --module "$mod" --out "$OUT/island-$mod" 2>"$OUT/island-$mod.log" \
+    || ! module "$mod" "$OUT/island-$mod/Sources/$mod"/*.swift 2>>"$OUT/island-$mod.log"; then
+    echo "typecheck-swift: the island $mod of $pkg does not type-check:"; sed 's/^/  /' "$OUT/island-$mod.log" | head -60
+    failed=$((failed + 1))
+  else
+    echo "typecheck-swift: the island $mod of $pkg type-checks"
   fi
 done
 count=$(ls "$HERE"/tests/golden-swift/*.swift | wc -l)

@@ -241,7 +241,10 @@ impl Emitter<'_> {
         let Some(NameRes::Local(id)) = ck.names.get(&e.id) else { return false };
         let Some(local) = ck.locals.get(*id) else { return false };
         if matches!(local.ty, Ty::Option(_)) {
-            return ck.types.get(&e.id).is_some_and(|t| !matches!(t, Ty::Option(_) | Ty::Unknown | Ty::Var(_) | Ty::Never));
+            return ck
+                .types
+                .get(&e.id)
+                .is_some_and(|t| !matches!(t, Ty::Option(_) | Ty::Unknown | Ty::Var(_) | Ty::Never));
         }
         // The checker narrows by a local of its own: the same name and declaration, present.
         ck.locals[..*id]
@@ -423,7 +426,10 @@ impl Emitter<'_> {
             ExprKind::Name(n) if n.chars().next().is_some_and(char::is_uppercase) => Some(n.clone()),
             _ => self.receiver_type(base),
         };
-        ty.as_deref().and_then(|t| renamed_member(t, member)).map(str::to_string).unwrap_or_else(|| kw(member))
+        ty.as_deref()
+            .and_then(|t| renamed_member(t, member))
+            .map(str::to_string)
+            .unwrap_or_else(|| kw(member))
     }
 
     /// The arguments of a call, labels as written: Bloom's labels are Swift's.
@@ -491,7 +497,7 @@ impl Emitter<'_> {
         if matches!(&call.callee.kind, ExprKind::Field(..)) {
             let chain = super::view::unwind(e);
             if !chain.mods.is_empty()
-                && super::view::constructor(chain.base).is_some_and(|c| super::nodes::is_node(c))
+                && super::view::constructor(chain.base).is_some_and(super::nodes::is_node)
             {
                 return self.view_expr(e, self.indent);
             }
