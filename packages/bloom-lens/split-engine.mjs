@@ -46,7 +46,8 @@ function move(rel) {
   fs.renameSync(from, to);
 }
 
-fs.rmSync(path.join(here, 'android-engine/src'), { recursive: true, force: true });
+// Only the synced engine is rewritten: the project's manifest and Bloom's own engine code (so.oxy.bloom.material) stay.
+fs.rmSync(engine, { recursive: true, force: true });
 for (const dir of ENGINE_DIRS) move(dir);
 for (const file of ENGINE_FILES) move(file);
 
