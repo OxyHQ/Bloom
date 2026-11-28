@@ -2007,15 +2007,10 @@ impl Mapper<'_> {
                 if !params.is_empty() && params.len() != args.len() {
                     return Ty::Foreign(path.into());
                 }
+                // Each base's fields, and its bases' (`PickerProps extends BaseProps extends
+                // ConstraintProps`), as tsc reads the chain.
                 let mut all = Vec::new();
-                for parent in &extends {
-                    if let TsType::Ref(parent_name, _) = parent
-                        && let Some(TsDecl::Interface { members: inherited, .. }) =
-                            file.decls.get(parent_name)
-                    {
-                        all.extend(inherited.iter().cloned());
-                        continue;
-                    }
+                if !inherited_members(file, &extends, &mut all, 0) {
                     return Ty::Foreign(path.into());
                 }
                 all.extend(members);
@@ -2348,4 +2343,23 @@ fn mentions_param(ty: &Ty) -> bool {
         None
     });
     found
+}
+
+/// The members `extends` gives an interface, base by base and each base's own bases first: false
+/// when a base is not an interface of the same file (TS's to check then).
+fn inherited_members(file: &TsFile, extends: &[TsType], out: &mut Vec<TsMember>, depth: usize) -> bool {
+    if depth > 16 {
+        return false;
+    }
+    for parent in extends {
+        let TsType::Ref(parent_name, _) = parent else { return false };
+        let Some(TsDecl::Interface { members, extends: grand, .. }) = file.decls.get(parent_name) else {
+            return false;
+        };
+        if !inherited_members(file, grand, out, depth + 1) {
+            return false;
+        }
+        out.extend(members.iter().cloned());
+    }
+    true
 }
