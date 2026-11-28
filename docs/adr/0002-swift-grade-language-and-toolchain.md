@@ -583,6 +583,85 @@ Next in this track:
    - Then `expo-router` and `expo-linking` leave the stopgaps.
 3. Then the stopgaps, one line at a time.
 
+#### Mention's switch to `bloom build`: OTA, release and rollback (2026-11-28)
+
+The coordinator gave the go to prepare Mention's switch, on a Mention branch (#2061, into
+`feat/mention-on-language`), never `main`.
+
+**OTA updates: expo-updates stays a stopgap, with a runtime of the Bloom build's own.**
+
+- Mention's updates come from Oxy Updates over the expo-updates protocol. The server serves an
+  update only to the binary whose `expo-runtime-version` equals the update's. The Expo build's
+  runtime is the app `version` (`withOxyUpdates`, appVersion policy).
+- The Bloom build's runtime is `<version>-bloom` (`2.2.0-bloom`; Mention's
+  `Native/android/res/values/overrides.xml`). Its native layer is not the Expo build's: Bloom's
+  splash, video and image modules are linked, `expo-video` and `expo-splash-screen` are not. So
+  an update exported from the Expo build must never run on it, and the reverse. A sideloaded build
+  was once replaced by an incompatible OTA; the distinct runtime makes that impossible.
+- It is checked three times: a Mention test keeps the runtime at `package.json`'s version plus
+  `-bloom`; oxy's `android-release.yml` (`builder: bloom`) reads the built APK's runtime with
+  `aapt2` and fails on any other; and on the emulator the APK asked Oxy Updates for
+  `2.2.0-bloom` and found none (expo-updates' `CheckCompleteUnavailable`).
+- Consequence: `publish-update.yml` publishes the Expo build's bundle under `2.2.0`, so the Bloom
+  build gets no OTA update until a Bloom bundle is published under its runtime. That needs
+  `bloom export android` (the hybrid bundle and assets in `expo export`'s layout) and a second
+  publish job with `oxy-ship publish --runtime-version <version>-bloom --dist-dir …`. Until then
+  the Bloom build runs its embedded bundle, and a JS fix reaches it with a binary.
+- Oxy Updates' own client (`Bloom.Updates`) replaces expo-updates later, as its stopgap line says.
+
+**Release.** oxy's shared `android-release.yml` takes `builder: bloom`: `bloomc build android
+--store` (the app bundle and one APK per ABI, Bloom #NNNN) with the ecosystem key from the
+runner's `ORG_GRADLE_PROJECT_OXY_UPLOAD_*`, every artifact checked against the ecosystem
+certificate, and `Package.bloom` checked against the app config's version and versionCode. The
+archive, the Play upload (internal testing) and the GitHub release are the Expo build's steps.
+Mention's caller passes `builder: bloom` in one commit.
+
+**Rollback** is reverting that one commit: the caller goes back to `builder: expo`, which
+prebuilds with Expo exactly as before. Nothing else of the Expo build changed. Tested: with the
+switch commit reverted, the Expo path (prebuild, `:app:bundleRelease`, `:app:assembleRelease`)
+builds the signed AAB and the arm64-v8a APK, with the ecosystem certificate and runtime `2.2.0`.
+
+**Firebase.** The hybrid build applies Google's services plugin when the overrides hold a
+`google-services.json`; Mention's is a symlink to its committed one.
+
+**Artifacts** (laptop, the ecosystem key; `native10/store/s2/`): `Mention.aab` (143 MB: arm64-v8a,
+armeabi-v7a, x86_64) and the three APKs (108, 90 and 115 MB). bloom checked every one against the
+ecosystem certificate (`b8ab3746…a58d`). The APK carries Firebase's resources and the runtime
+`2.2.0-bloom`.
+
+**Smoke.** On hangar-test-36 (x86_64, signed out) and on the Pixel 8a (arm64, through hangar,
+authorized by the coordinator, signed in):
+
+| Check | Result |
+|---|---|
+| Feed, BloomImage avatars and images | drawn |
+| Video (feed and the Videos tab) | plays |
+| Notifications tab | opens |
+| Composer | opened and closed; nothing typed or posted |
+| Account sheet | opens (from the drawer) |
+| Deep links | `https://mention.earth/<user>` and `mention://explore` open their routes |
+| OTA | checked Oxy Updates with `2.2.0-bloom`; no update |
+| Push registration | not verifiable on this Pixel: it runs LineageOS without Google Play services (`FirebaseMessaging: … NameNotFoundException: com.google.android.gms`). Firebase is initialized from the applied config. |
+| Crashes and ANRs | none |
+
+No device setting was changed. The installed `org.mention.app` 2.2.0 was pulled before the smoke
+and reinstalled after it.
+
+**The session across builds.** The Pixel's installed Expo APK (an older build, another services
+version) came up signed out, and the Bloom build signed in. Against this commit's own Expo build
+(the rollback build), the session is the same: Expo, then Bloom, then Expo again, all three signed
+in as the same account. Both builds are one application id and UID: one data directory, one
+keystore, and the same `@oxy.so/services` JS and `OxyDeviceSession` broker (a signature-level
+provider). No other app's credentials are read.
+
+**Before the switch ships** (checklist, with a test account only):
+
+- A session survives the Expo → Bloom upgrade as it does today: no forced sign-out, and a session
+  signed out in the Expo build is not revived by the Bloom build.
+- Push registration on a device with Google Play services, after release (the owner's Pixel 10
+  Pro is install-only; the owner confirms it).
+- `bloom export android` and the second OTA publish job, or the decision to ship without OTA.
+
 ## Consequences
 
 - **Kept:** the lexer, parser, recovery, checker, inference, the memo emitter, source maps,
