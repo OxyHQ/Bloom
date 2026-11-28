@@ -25,6 +25,39 @@ impl Checker<'_> {
             }
         }
         let task_allowed = std::mem::take(&mut self.task_allowed);
+        // What the call is expected to give, for a generic method's result (`uris.map { … }` where
+        // `[Item]` is expected: the closure gives `Item`s).
+        let inferred = self.inferred_expected.remove(&expr.id);
+        if let Some(expected) = expected
+            && !inferred
+        {
+            self.call_expected.insert(expr.id, expected.clone());
+        }
+        // `let all: [Item] = { … return a … return b }()`: the closure, called at once, gives what
+        // is expected (Swift reads the binding's type into it), so each `return` is checked against
+        // `[Item]`, not against the first one's.
+        if let ExprKind::Closure(closure) = &call.callee.kind
+            && closure.params.is_empty()
+            && call.args.is_empty()
+            && call.trailing.is_none()
+            && !call.optional
+            && !inferred
+            && let Some(expected) = expected
+            && !matches!(self.resolve(expected), Ty::Var(_) | Ty::Unknown)
+        {
+            let fn_ty = Ty::Fn(Rc::new(FnTy {
+                params: Vec::new(),
+                ret: expected.clone(),
+                is_async: false,
+                generics: 0,
+                ts: false,
+                throws: false,
+                bounds: Vec::new(),
+                shapes: Vec::new(),
+            }));
+            let ty = self.expr(&call.callee, Some(&fn_ty));
+            return self.value_call(expr, call, &ty);
+        }
         if call.optional {
             // `f?.(…)`: the call of `f`'s value when it is not `none`.
             let ty = self.expr(&call.callee, None);
@@ -1493,6 +1526,12 @@ impl Checker<'_> {
                     let field_ty = substitute(&field.ty, &targs);
                     self.expr(&arg.value, Some(&field_ty));
                 }
+                // A callback's result (`xs.map { x in ({ id: x.id, color: x.color }) }` where
+                // `[AvatarGroupItem]` is expected) may have more fields: TS checks no excess
+                // property there, only on a literal written where the type is declared.
+                None if self.callback_results.contains(&expr.id) => {
+                    self.boundary(&arg.value, None);
+                }
                 None => {
                     self.unknown_field(label, &ty);
                     self.boundary(&arg.value, None);
@@ -2728,6 +2767,18 @@ impl Checker<'_> {
             self.args_unchecked(call);
             return Ty::Unknown;
         };
+        // A generic method's result met with what is expected first (`[Item]` for `map`'s `[U]`), so
+        // its closure's literals are checked against `Item`, as Swift checks them in context.
+        if let Some(expected) = self.call_expected.remove(&expr.id)
+            && contains_var(&self.zonk(&ret))
+            && !matches!(self.resolve(&expected), Ty::Var(_) | Ty::Unknown | Ty::Foreign(_))
+        {
+            let target = match self.resolve(&expected) {
+                Ty::Option(inner) if !matches!(self.resolve(&ret), Ty::Option(_)) => *inner,
+                other => other,
+            };
+            let _ = self.unify(&ret, &target);
+        }
         self.positional(call, &params);
         self.out.calls.insert(expr.id, CallRes::Method { recv: recv_kind, name: method });
         ret
@@ -2958,4 +3009,16 @@ fn ordinal(n: usize) -> String {
         _ => "th",
     };
     format!("{n}{suffix}")
+}
+
+/// Whether `ty` still has an unsolved type variable.
+fn contains_var(ty: &Ty) -> bool {
+    let mut found = false;
+    map_ty(ty, &mut |t| {
+        if matches!(t, Ty::Var(_)) {
+            found = true;
+        }
+        None
+    });
+    found
 }

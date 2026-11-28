@@ -1229,7 +1229,11 @@ impl<'a> Formatter<'a> {
                 })
                 .collect();
             let params = join(params, || text(", "));
-            vec![if closure.tuple { concat(vec![text("("), params, text(")")]) } else { params }]
+            match &closure.ret {
+                // `{ () -> T in … }`, `{ (a: Int) -> T in … }`: Swift's signature.
+                Some(ret) => vec![concat(vec![text("("), params, text(") -> "), self.ty(ret)])],
+                None => vec![if closure.tuple { concat(vec![text("("), params, text(")")]) } else { params }],
+            }
         } else {
             Vec::new()
         };
