@@ -1,0 +1,18 @@
+// A `@State` optional narrows as a `let` does: its value is the render's (a handler that writes it
+// and reads it again is B0410). `selected != none` (or `== none` in a ternary) makes it present.
+func f(_ s: String) -> String { s }
+public struct Folders: View {
+  @State var selected: String? = none
+  @State var rating: Float? = none
+  let onSubmit: (Float) -> Unit
+  var body: some View {
+    VStack {
+      Text(selected == none ? "All" : f(selected))
+      if selected != none {
+        Text(f(selected))
+      }
+      Button(Text("Rate")).onPress { if rating != none { onSubmit(rating) } }
+      Button(Text("Pick")).onPress { selected = "a" }
+    }
+  }
+}
