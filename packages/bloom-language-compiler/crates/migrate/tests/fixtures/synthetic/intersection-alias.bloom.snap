@@ -1,0 +1,48 @@
+// `type P = Q & { … }` of object types here is one struct of all their fields; a menu whose
+// props it types, handed one such value (`Rows(options)`), takes each field. A write by key
+// into a captured table, inside a closure, is a subscript set.
+
+import { console } from "js"
+
+public struct Settings {
+  let quotesDisabled: Bool
+  let onQuotesDisabledChange: (Bool) -> Unit
+}
+
+public struct RowsProps {
+  let quotesDisabled: Bool
+  let onQuotesDisabledChange: (Bool) -> Unit
+  let title: String
+}
+
+public func SettingsMenu(_ trigger: View, _ options: RowsProps) -> View {
+  Menu(
+    trigger,
+    Rows(
+      quotesDisabled: options.quotesDisabled,
+      onQuotesDisabledChange: options.onQuotesDisabledChange,
+      title: options.title,
+    ),
+  )
+  .label(options.title)
+}
+
+struct Rows: MenuContent {
+  let quotesDisabled: Bool
+  let onQuotesDisabledChange: (Bool) -> Unit
+  let title: String
+
+  var body: some View {
+    Item(title).checked(!quotesDisabled).onPress { onQuotesDisabledChange(!quotesDisabled) }
+  }
+}
+
+public func tagged(_ tags: [String]) -> [String: () -> Unit] {
+  var handlers: [String: () -> Unit] = [:]
+  let add = { tag: String in
+    handlers[tag] = { console.log(tag) }
+    return tag
+  }
+  for tag in tags { add(tag) }
+  handlers
+}
