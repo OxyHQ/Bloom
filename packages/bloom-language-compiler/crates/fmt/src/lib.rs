@@ -127,7 +127,31 @@ fn effects_as_modifiers(source: &str, file: &bloom_lang::ast::File) -> Option<St
             || v.members.iter().any(
                 |m| matches!(m, Member::State(s) if matches!(s.attr, StateAttr::List | StateAttr::Record)),
             );
-        if stays {
+        // An `effect(id: x)` whose cleanup is a top-level `defer` and whose body does not wait:
+        // as a `.task(id: x)` the `defer` would run as soon as the body returns, not when React
+        // ran the cleanup (unmount, a new `x`). It stays an effect (so its view stays 0.x) until
+        // the stdlib's `Task.cancellation` lets the task wait for it
+        // (repros/mention15/task-defer-runs-at-once).
+        let cleanup_at_once = |e: &EffectDecl| {
+            let runs_once = matches!(
+                e.id.as_ref().map(|id| &id.kind),
+                Some(ExprKind::Unit | ExprKind::Int(_))
+            ) || matches!(e.id.as_ref().map(|id| &id.kind), Some(ExprKind::Tuple(values)) if values.is_empty());
+            let waits = |s: &Stmt| {
+                let text = slice(s.span);
+                !text.trim_start().starts_with("task ")
+                    && !text.trim_start().starts_with("task{")
+                    && (text.trim_start().starts_with("await ")
+                        || text.contains("= await ")
+                        || text.contains("try await ")
+                        || text.contains("match await "))
+            };
+            e.id.is_some()
+                && !runs_once
+                && e.body.stmts.iter().any(|s| matches!(s.kind, StmtKind::Defer(_)))
+                && !e.body.stmts.iter().any(waits)
+        };
+        if stays || effects.iter().any(|e| cleanup_at_once(e)) {
             continue;
         }
         // `.task(id:)` first: the parser reads `.onAppear`/`.onDisappear` only at the chain's end.

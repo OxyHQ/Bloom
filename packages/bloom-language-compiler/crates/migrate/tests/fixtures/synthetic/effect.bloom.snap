@@ -1,18 +1,3 @@
-// `useEffect` is an `effect` member: one dep is its id, `[]` runs once, and the
-// returned cleanup is a `defer`.
-
-import { subscribe } from "./feed"
-
-public struct Live: View {
-  let topic: String
-  @State private var count = 0
-
-  var body: some View {
-    Text("\(count)")
-    .task(id: topic) {
-      let stop = subscribe(topic, { count = count + 1 })
-      defer { stop() }
-    }
-    .onAppear { count = 0 }
-  }
-}
+refused
+0: 0.x:view: `view`/`screen`/`layout` declarations is Bloom 0.x (once in this file)
+0: 0.x:effect: the `effect` member is Bloom 0.x (2 times in this file)
