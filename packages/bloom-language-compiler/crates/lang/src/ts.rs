@@ -1762,7 +1762,10 @@ impl Mapper<'_> {
         if matches!(&inner, Ty::Foreign(_)) && !crate::check::is_element(&inner) {
             return Ty::Foreign(path.into());
         }
-        if nullable { Ty::Option(Box::new(inner)) } else { inner }
+        // `T | undefined` of a `T` that is optional already (`c ? undefined : server`, `server`
+        // a `ReturnType` that may be `undefined`): TS's `undefined | undefined` is one, so one
+        // optional.
+        if nullable && !matches!(inner, Ty::Option(_)) { Ty::Option(Box::new(inner)) } else { inner }
     }
 
     fn reference(
